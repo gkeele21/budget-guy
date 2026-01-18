@@ -17,20 +17,72 @@ export default {
                 mono: ['IBM Plex Mono', ...defaultTheme.fontFamily.mono],
             },
             colors: {
-                // Budget App Color Palette
-                'budget-primary': {
-                    light: '#8bd93e',
+                // ===========================================
+                // SEMANTIC COLORS
+                // ===========================================
+
+                // Primary brand color
+                'primary': {
                     DEFAULT: '#76cd26',
+                    light: '#8bd93e',
                     bg: '#edfce0',
+                    hover: '#68b821',
                 },
-                'budget-header': '#2c2c2e',
-                'budget-expense': '#c0392b',
-                'budget-income': '#76cd26',
-                'budget-transfer': '#888888',
-                'budget-text': '#333333',
-                'budget-text-secondary': '#888888',
-                'budget-background': '#f5f5f5',
-                'budget-card': '#ffffff',
+
+                // Secondary (neutral actions)
+                'secondary': {
+                    DEFAULT: '#6b7280',
+                    hover: '#4b5563',
+                },
+
+                // Feedback colors
+                'danger': {
+                    DEFAULT: '#c0392b',
+                    hover: '#a93226',
+                },
+                'success': {
+                    DEFAULT: '#76cd26',
+                    hover: '#68b821',
+                },
+                'warning': {
+                    DEFAULT: '#f59e0b',
+                    hover: '#d97706',
+                },
+                'info': {
+                    DEFAULT: '#3b82f6',
+                    hover: '#2563eb',
+                },
+
+                // Transaction type colors
+                'expense': {
+                    DEFAULT: '#c0392b',
+                    hover: '#a93226',
+                },
+                'income': {
+                    DEFAULT: '#76cd26',
+                    hover: '#68b821',
+                },
+                'transfer': {
+                    DEFAULT: '#3b82f6',
+                    hover: '#2563eb',
+                },
+
+                // Surfaces
+                'surface': {
+                    DEFAULT: '#ffffff',
+                    secondary: '#f5f5f5',
+                },
+
+                // Borders
+                'border': {
+                    DEFAULT: '#e5e7eb',
+                    dark: '#d1d5db',
+                },
+
+                // Text
+                'body': '#333333',
+                'subtle': '#888888',
+                'inverse': '#ffffff',
             },
             borderRadius: {
                 'card': '12px',

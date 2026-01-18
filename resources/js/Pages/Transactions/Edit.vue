@@ -1,7 +1,15 @@
 <script setup>
-import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, useForm, Link, router } from '@inertiajs/vue3';
-import { ref, computed, watch } from 'vue';
+import { ref, computed } from 'vue';
+import SegmentedControl from '@/Components/Form/SegmentedControl.vue';
+import TextField from '@/Components/Form/TextField.vue';
+import AmountField from '@/Components/Form/AmountField.vue';
+import PickerField from '@/Components/Form/PickerField.vue';
+import DateField from '@/Components/Form/DateField.vue';
+import ToggleField from '@/Components/Form/ToggleField.vue';
+import AutocompleteField from '@/Components/Form/AutocompleteField.vue';
+import Button from '@/Components/Base/Button.vue';
+import BottomSheet from '@/Components/Base/BottomSheet.vue';
 
 const props = defineProps({
     transaction: Object,
@@ -12,37 +20,45 @@ const props = defineProps({
 
 const form = useForm({
     type: props.transaction.type,
-    amount: props.transaction.amount,
+    amount: parseFloat(props.transaction.amount).toFixed(2),
     account_id: props.transaction.account_id,
     category_id: props.transaction.category_id || '',
     payee_name: props.transaction.payee_name || '',
     date: props.transaction.date,
     cleared: props.transaction.cleared,
     memo: props.transaction.memo || '',
+    is_split: props.transaction.is_split || false,
+    splits: props.transaction.splits || [],
 });
 
 const showDeleteConfirm = ref(false);
 
-const payeeSuggestions = ref([]);
-const showPayeeSuggestions = ref(false);
+// Split transaction state
+const showSplitModal = ref(false);
+const splitItems = ref([{ category_id: '', amount: '' }]);
 
-watch(() => form.payee_name, (newValue) => {
-    if (newValue && newValue.length > 0) {
-        payeeSuggestions.value = props.payees.filter(p =>
-            p.name.toLowerCase().includes(newValue.toLowerCase())
-        ).slice(0, 5);
-        showPayeeSuggestions.value = payeeSuggestions.value.length > 0;
-    } else {
-        showPayeeSuggestions.value = false;
-    }
+// Type toggle options (transfer disabled in edit mode)
+const typeOptions = computed(() => [
+    { value: 'expense', label: 'Expense', color: 'expense', disabled: props.transaction.type === 'transfer' },
+    { value: 'income', label: 'Income', color: 'income', disabled: props.transaction.type === 'transfer' },
+    { value: 'transfer', label: 'Transfer', color: 'transfer', disabled: true },
+]);
+
+const flatCategories = computed(() => {
+    const result = [];
+    props.categories.forEach(group => {
+        group.categories.forEach(cat => {
+            result.push({ ...cat, groupName: group.name });
+        });
+    });
+    return result;
 });
 
 const selectPayee = (payee) => {
     form.payee_name = payee.name;
-    if (payee.default_category_id && !form.category_id) {
+    if (payee.default_category_id && !form.category_id && !form.is_split) {
         form.category_id = payee.default_category_id;
     }
-    showPayeeSuggestions.value = false;
 };
 
 const submit = () => {
@@ -53,229 +69,353 @@ const deleteTransaction = () => {
     router.delete(route('transactions.destroy', props.transaction.id));
 };
 
-const getAmountColor = () => {
-    if (form.type === 'expense') return 'text-budget-expense';
-    if (form.type === 'income') return 'text-budget-income';
-    return 'text-budget-transfer';
+// Split transaction functions
+const openSplitModal = () => {
+    if (form.splits.length > 0) {
+        splitItems.value = form.splits.map(s => ({ ...s }));
+    } else if (form.category_id && form.amount) {
+        splitItems.value = [{ category_id: form.category_id, amount: form.amount }];
+    } else {
+        splitItems.value = [{ category_id: '', amount: '' }];
+    }
+    showSplitModal.value = true;
+};
+
+const addSplitItem = () => {
+    splitItems.value.push({ category_id: '', amount: '' });
+};
+
+const removeSplitItem = (index) => {
+    if (splitItems.value.length > 1) {
+        splitItems.value.splice(index, 1);
+    }
+};
+
+const totalSplitAmount = computed(() => {
+    return splitItems.value.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+});
+
+const remainingAmount = computed(() => {
+    return (parseFloat(form.amount) || 0) - totalSplitAmount.value;
+});
+
+const isSplitBalanced = computed(() => Math.abs(remainingAmount.value) < 0.01);
+
+const saveSplit = () => {
+    const validSplits = splitItems.value.filter(s => s.category_id && parseFloat(s.amount) > 0);
+
+    if (validSplits.length === 0) {
+        form.is_split = false;
+        form.splits = [];
+        form.category_id = '';
+    } else if (validSplits.length === 1) {
+        form.is_split = false;
+        form.splits = [];
+        form.category_id = validSplits[0].category_id;
+    } else {
+        form.is_split = true;
+        form.splits = validSplits;
+        form.category_id = '';
+    }
+
+    showSplitModal.value = false;
+};
+
+const clearSplit = () => {
+    form.is_split = false;
+    form.splits = [];
+    form.category_id = '';
+    showSplitModal.value = false;
+};
+
+const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+};
+
+const getSaveButtonVariant = () => {
+    return form.type === 'expense' ? 'expense' : form.type === 'income' ? 'income' : 'transfer';
 };
 </script>
 
 <template>
     <Head title="Edit Transaction" />
 
-    <AppLayout>
-        <template #title>Edit Transaction</template>
-        <template #header-left>
-            <Link :href="route('transactions.index')" class="p-2 -ml-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                </svg>
-            </Link>
-        </template>
-        <template #header-right>
-            <button
-                @click="showDeleteConfirm = true"
-                class="p-2 text-budget-expense hover:bg-white/10 rounded-full"
-            >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-            </button>
-        </template>
-
-        <form @submit.prevent="submit" class="p-4 space-y-4">
-            <!-- Type Toggle (disabled for transfers) -->
-            <div class="flex bg-budget-card rounded-card p-1">
+    <div class="min-h-screen bg-gray-100 flex flex-col">
+        <!-- Header -->
+        <div class="bg-white border-b border-gray-200 px-4 py-3 safe-area-top">
+            <div class="flex items-center justify-between">
+                <Link
+                    :href="route('transactions.index')"
+                    class="text-subtle font-medium flex items-center gap-1"
+                >
+                    <span class="text-lg">×</span> Cancel
+                </Link>
+                <span class="font-semibold text-body">Edit Transaction</span>
                 <button
-                    type="button"
-                    @click="form.type = 'expense'"
-                    :disabled="transaction.type === 'transfer'"
+                    @click="submit"
+                    :disabled="form.processing"
                     :class="[
-                        'flex-1 py-2 rounded-lg font-medium transition-colors',
-                        form.type === 'expense'
-                            ? 'bg-budget-expense text-white'
-                            : 'text-budget-text-secondary'
+                        'font-semibold',
+                        form.type === 'expense' ? 'text-expense' :
+                        form.type === 'income' ? 'text-income' : 'text-transfer'
                     ]"
                 >
-                    Expense
-                </button>
-                <button
-                    type="button"
-                    @click="form.type = 'income'"
-                    :disabled="transaction.type === 'transfer'"
-                    :class="[
-                        'flex-1 py-2 rounded-lg font-medium transition-colors',
-                        form.type === 'income'
-                            ? 'bg-budget-income text-white'
-                            : 'text-budget-text-secondary'
-                    ]"
-                >
-                    Income
-                </button>
-                <button
-                    type="button"
-                    disabled
-                    :class="[
-                        'flex-1 py-2 rounded-lg font-medium transition-colors',
-                        form.type === 'transfer'
-                            ? 'bg-budget-transfer text-white'
-                            : 'text-budget-text-secondary'
-                    ]"
-                >
-                    Transfer
+                    Save
                 </button>
             </div>
+        </div>
 
-            <!-- Amount -->
-            <div class="bg-budget-card rounded-card p-4">
-                <label class="block text-sm text-budget-text-secondary mb-1">Amount</label>
-                <div class="flex items-center">
-                    <span :class="['text-3xl font-bold mr-2', getAmountColor()]">$</span>
-                    <input
-                        v-model="form.amount"
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        placeholder="0.00"
-                        :class="['text-3xl font-bold font-mono w-full bg-transparent focus:outline-none', getAmountColor()]"
-                        required
-                    />
-                </div>
+        <form @submit.prevent="submit" class="flex-1 flex flex-col">
+            <!-- Type Toggle -->
+            <div class="mx-3 mt-3">
+                <SegmentedControl
+                    v-model="form.type"
+                    :options="typeOptions"
+                />
             </div>
 
-            <!-- Payee (not for transfers) -->
-            <div v-if="form.type !== 'transfer'" class="bg-budget-card rounded-card p-4 relative">
-                <label class="block text-sm text-budget-text-secondary mb-1">Payee</label>
-                <input
+            <!-- Fields Card -->
+            <div class="mx-3 mt-3 bg-white rounded-xl overflow-hidden">
+                <!-- Payee (not for transfers) -->
+                <AutocompleteField
+                    v-if="form.type !== 'transfer'"
                     v-model="form.payee_name"
-                    type="text"
+                    label="Payee"
                     placeholder="Who did you pay?"
-                    class="w-full bg-transparent text-lg focus:outline-none"
-                    @focus="showPayeeSuggestions = payeeSuggestions.length > 0"
-                    @blur="setTimeout(() => showPayeeSuggestions = false, 200)"
+                    :suggestions="payees"
+                    @select="selectPayee"
                 />
-                <div
-                    v-if="showPayeeSuggestions"
-                    class="absolute left-0 right-0 top-full mt-1 bg-white rounded-card shadow-lg z-10 border"
-                >
-                    <button
-                        v-for="payee in payeeSuggestions"
-                        :key="payee.id"
-                        type="button"
-                        @click="selectPayee(payee)"
-                        class="w-full text-left px-4 py-3 hover:bg-gray-50"
-                    >
-                        {{ payee.name }}
-                    </button>
-                </div>
-            </div>
 
-            <!-- Category (not for transfers) -->
-            <div v-if="form.type !== 'transfer'" class="bg-budget-card rounded-card p-4">
-                <label class="block text-sm text-budget-text-secondary mb-1">Category</label>
-                <select
-                    v-model="form.category_id"
-                    class="w-full bg-transparent text-lg focus:outline-none"
-                >
-                    <option value="">Select a category</option>
-                    <optgroup v-for="group in categories" :key="group.id" :label="group.name">
-                        <option v-for="cat in group.categories" :key="cat.id" :value="cat.id">
-                            {{ cat.icon }} {{ cat.name }}
-                        </option>
-                    </optgroup>
-                </select>
-            </div>
+                <!-- Amount -->
+                <AmountField
+                    v-model="form.amount"
+                    :transaction-type="form.type"
+                />
 
-            <!-- Account -->
-            <div class="bg-budget-card rounded-card p-4">
-                <label class="block text-sm text-budget-text-secondary mb-1">Account</label>
-                <select
+                <!-- Category (not for transfers) -->
+                <template v-if="form.type !== 'transfer'">
+                    <!-- Split display -->
+                    <div v-if="form.is_split" class="flex items-center justify-between px-4 py-3.5 border-b border-gray-100">
+                        <span class="text-sm text-subtle">Category</span>
+                        <button
+                            type="button"
+                            @click="openSplitModal"
+                            class="text-sm font-medium text-primary"
+                        >
+                            Split ({{ form.splits.length }}) →
+                        </button>
+                    </div>
+                    <!-- Regular category picker -->
+                    <PickerField
+                        v-else
+                        v-model="form.category_id"
+                        label="Category"
+                        :options="categories"
+                        placeholder="Select category"
+                        grouped
+                        group-items-key="categories"
+                        :action-option="{ label: 'Split Transaction...' }"
+                        @action="openSplitModal"
+                    />
+                </template>
+
+                <!-- Account -->
+                <PickerField
                     v-model="form.account_id"
-                    class="w-full bg-transparent text-lg focus:outline-none"
-                    required
-                >
-                    <option v-for="account in accounts" :key="account.id" :value="account.id">
-                        {{ account.name }}
-                    </option>
-                </select>
-            </div>
+                    label="Account"
+                    :options="accounts"
+                    placeholder="Select account"
+                />
 
-            <!-- Date -->
-            <div class="bg-budget-card rounded-card p-4">
-                <label class="block text-sm text-budget-text-secondary mb-1">Date</label>
-                <input
+                <!-- Date -->
+                <DateField
                     v-model="form.date"
-                    type="date"
-                    class="w-full bg-transparent text-lg focus:outline-none"
-                    required
+                    label="Date"
+                />
+
+                <!-- Cleared -->
+                <ToggleField
+                    v-model="form.cleared"
+                    label="Cleared"
+                    on-label="Cleared"
+                    off-label="Not yet"
+                />
+
+                <!-- Memo -->
+                <TextField
+                    v-model="form.memo"
+                    label="Memo"
+                    placeholder="Add note..."
+                    :border-bottom="false"
                 />
             </div>
 
-            <!-- Cleared -->
-            <div class="bg-budget-card rounded-card p-4 flex items-center justify-between">
-                <span class="text-budget-text">Cleared</span>
+            <!-- Delete Button -->
+            <div class="mx-3 mt-3">
                 <button
                     type="button"
-                    @click="form.cleared = !form.cleared"
-                    :class="[
-                        'w-12 h-7 rounded-full transition-colors relative',
-                        form.cleared ? 'bg-budget-primary' : 'bg-gray-300'
-                    ]"
+                    @click="showDeleteConfirm = true"
+                    class="w-full py-3 text-expense font-medium text-sm"
                 >
-                    <span
-                        :class="[
-                            'absolute top-1 w-5 h-5 bg-white rounded-full transition-transform shadow',
-                            form.cleared ? 'translate-x-6' : 'translate-x-1'
-                        ]"
-                    ></span>
+                    Delete Transaction
                 </button>
             </div>
 
-            <!-- Memo -->
-            <div class="bg-budget-card rounded-card p-4">
-                <label class="block text-sm text-budget-text-secondary mb-1">Memo (optional)</label>
-                <input
-                    v-model="form.memo"
-                    type="text"
-                    placeholder="Add a note..."
-                    class="w-full bg-transparent text-lg focus:outline-none"
-                />
-            </div>
+            <!-- Spacer -->
+            <div class="flex-1"></div>
 
-            <!-- Submit -->
-            <button
-                type="submit"
-                :disabled="form.processing"
-                class="w-full py-4 bg-gradient-to-r from-budget-primary to-budget-primary-light text-white font-semibold rounded-card hover:shadow-lg transition-shadow disabled:opacity-50"
-            >
-                {{ form.processing ? 'Saving...' : 'Save Changes' }}
-            </button>
+            <!-- Submit Button -->
+            <div class="p-3 safe-area-bottom">
+                <Button
+                    type="submit"
+                    :variant="getSaveButtonVariant()"
+                    :loading="form.processing"
+                    full-width
+                    size="lg"
+                >
+                    Save Changes
+                </Button>
+            </div>
         </form>
 
         <!-- Delete Confirmation Modal -->
-        <div
-            v-if="showDeleteConfirm"
-            class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-            @click.self="showDeleteConfirm = false"
-        >
-            <div class="bg-white rounded-card p-6 max-w-sm w-full">
-                <h3 class="text-lg font-semibold text-budget-text mb-2">Delete Transaction?</h3>
-                <p class="text-budget-text-secondary mb-4">This action cannot be undone.</p>
-                <div class="flex gap-3">
-                    <button
-                        @click="showDeleteConfirm = false"
-                        class="flex-1 py-3 border border-gray-300 rounded-card font-medium"
+        <Teleport to="body">
+            <Transition
+                enter-active-class="transition ease-out duration-200"
+                enter-from-class="opacity-0"
+                enter-to-class="opacity-100"
+                leave-active-class="transition ease-in duration-150"
+                leave-from-class="opacity-100"
+                leave-to-class="opacity-0"
+            >
+                <div
+                    v-if="showDeleteConfirm"
+                    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+                    @click.self="showDeleteConfirm = false"
+                >
+                    <div class="bg-white rounded-2xl p-6 max-w-sm w-full space-y-4">
+                        <h3 class="text-lg font-semibold text-body">Delete Transaction?</h3>
+                        <p class="text-subtle">This action cannot be undone.</p>
+                        <div class="flex gap-3">
+                            <Button variant="secondary" @click="showDeleteConfirm = false" class="flex-1">
+                                Cancel
+                            </Button>
+                            <Button variant="danger" @click="deleteTransaction" class="flex-1">
+                                Delete
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
+
+        <!-- Split Transaction Modal -->
+        <BottomSheet :show="showSplitModal" title="Split Transaction" @close="showSplitModal = false">
+            <div class="px-4 pb-2 text-sm text-subtle">
+                Total: {{ formatCurrency(parseFloat(form.amount) || 0) }}
+            </div>
+
+            <div class="flex-1 overflow-y-auto">
+                <div class="bg-white mx-3 rounded-xl overflow-hidden">
+                    <div
+                        v-for="(item, index) in splitItems"
+                        :key="index"
+                        class="flex items-center px-4 py-3.5 border-b border-gray-100 last:border-b-0"
                     >
-                        Cancel
-                    </button>
-                    <button
-                        @click="deleteTransaction"
-                        class="flex-1 py-3 bg-budget-expense text-white rounded-card font-medium"
+                        <div class="flex-1 min-w-0">
+                            <select
+                                v-model="item.category_id"
+                                :class="[
+                                    'w-full bg-transparent text-sm font-medium focus:outline-none appearance-none cursor-pointer truncate',
+                                    item.category_id ? 'text-primary' : 'text-gray-400'
+                                ]"
+                            >
+                                <option value="">Select category</option>
+                                <optgroup v-for="group in categories" :key="group.id" :label="group.name">
+                                    <option v-for="cat in group.categories" :key="cat.id" :value="cat.id">
+                                        {{ cat.icon }} {{ cat.name }}
+                                    </option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div class="flex items-center gap-2 ml-3">
+                            <span :class="['text-sm font-medium', item.amount ? 'text-expense' : 'text-gray-400']">$</span>
+                            <input
+                                v-model="item.amount"
+                                type="text"
+                                inputmode="decimal"
+                                placeholder="0.00"
+                                :class="[
+                                    'w-20 bg-transparent text-sm font-medium text-right focus:outline-none',
+                                    item.amount ? 'text-expense' : 'text-gray-400'
+                                ]"
+                            />
+                        </div>
+                        <button
+                            type="button"
+                            @click="removeSplitItem(index)"
+                            class="ml-2 p-1 text-gray-300 hover:text-expense transition-colors"
+                            :class="{ 'opacity-30 pointer-events-none': splitItems.length <= 1 }"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <button
+                    type="button"
+                    @click="addSplitItem"
+                    class="w-full mt-3 mx-3 py-3 text-sm font-medium text-primary"
+                >
+                    + Add Category
+                </button>
+            </div>
+
+            <!-- Remaining indicator -->
+            <div class="px-4 py-3 border-t border-gray-100">
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-subtle">Remaining</span>
+                    <span
+                        class="font-mono font-semibold"
+                        :class="{
+                            'text-yellow-600': remainingAmount > 0.01,
+                            'text-income': isSplitBalanced,
+                            'text-expense': remainingAmount < -0.01,
+                        }"
                     >
-                        Delete
-                    </button>
+                        {{ formatCurrency(remainingAmount) }}
+                    </span>
+                </div>
+                <div class="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                        class="h-full transition-all duration-300"
+                        :class="{
+                            'bg-yellow-500': remainingAmount > 0.01,
+                            'bg-income': isSplitBalanced,
+                            'bg-expense': remainingAmount < -0.01,
+                        }"
+                        :style="{ width: `${Math.min(100, (totalSplitAmount / (parseFloat(form.amount) || 1)) * 100)}%` }"
+                    ></div>
                 </div>
             </div>
-        </div>
-    </AppLayout>
+
+            <template #footer>
+                <div class="flex gap-2">
+                    <Button variant="secondary" @click="clearSplit" class="flex-1">Clear</Button>
+                    <Button :disabled="!isSplitBalanced" @click="saveSplit" class="flex-1">Save Split</Button>
+                </div>
+            </template>
+        </BottomSheet>
+    </div>
 </template>
+
+<style scoped>
+.safe-area-top {
+    padding-top: max(12px, env(safe-area-inset-top));
+}
+.safe-area-bottom {
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+}
+</style>

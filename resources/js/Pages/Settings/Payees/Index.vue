@@ -1,0 +1,255 @@
+<script setup>
+import AppLayout from '@/Layouts/AppLayout.vue';
+import { Head, Link, useForm, router } from '@inertiajs/vue3';
+import { ref, computed } from 'vue';
+import TextField from '@/Components/Form/TextField.vue';
+import PickerField from '@/Components/Form/PickerField.vue';
+import Button from '@/Components/Base/Button.vue';
+import BottomSheet from '@/Components/Base/BottomSheet.vue';
+
+const props = defineProps({
+    payees: Array,
+    categories: Array,
+});
+
+// Edit modal state
+const showEditModal = ref(false);
+const editingPayee = ref(null);
+const editForm = useForm({
+    name: '',
+    default_category_id: '',
+});
+
+// Delete confirmation state
+const showDeleteConfirm = ref(false);
+const deletingPayee = ref(null);
+
+// Search/filter
+const searchQuery = ref('');
+
+const filteredPayees = computed(() => {
+    if (!searchQuery.value) return props.payees;
+    const query = searchQuery.value.toLowerCase();
+    return props.payees.filter(p => p.name.toLowerCase().includes(query));
+});
+
+const flatCategories = computed(() => {
+    const result = [];
+    props.categories.forEach(group => {
+        group.categories.forEach(cat => {
+            result.push({
+                ...cat,
+                groupName: group.name,
+            });
+        });
+    });
+    return result;
+});
+
+const openEditModal = (payee) => {
+    editingPayee.value = payee;
+    editForm.name = payee.name;
+    editForm.default_category_id = payee.default_category_id || '';
+    showEditModal.value = true;
+};
+
+const closeEditModal = () => {
+    showEditModal.value = false;
+    editingPayee.value = null;
+    editForm.reset();
+};
+
+const savePayee = () => {
+    editForm.put(route('payees.update', editingPayee.value.id), {
+        preserveScroll: true,
+        onSuccess: () => {
+            closeEditModal();
+        },
+    });
+};
+
+const openDeleteConfirm = (payee) => {
+    deletingPayee.value = payee;
+    showDeleteConfirm.value = true;
+};
+
+const deletePayee = () => {
+    router.delete(route('payees.destroy', deletingPayee.value.id), {
+        preserveScroll: true,
+        onSuccess: () => {
+            showDeleteConfirm.value = false;
+            deletingPayee.value = null;
+        },
+    });
+};
+
+const getCategoryName = (categoryId) => {
+    const cat = flatCategories.value.find(c => c.id === categoryId);
+    return cat ? `${cat.icon || ''} ${cat.name}`.trim() : 'None';
+};
+</script>
+
+<template>
+    <Head title="Payees - Settings" />
+
+    <AppLayout>
+        <template #title>Payees</template>
+        <template #header-left>
+            <Link :href="route('settings.index')" class="p-2 -ml-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+            </Link>
+        </template>
+
+        <div class="p-4 space-y-4">
+            <!-- Search -->
+            <div class="relative">
+                <input
+                    v-model="searchQuery"
+                    type="text"
+                    placeholder="Search payees..."
+                    class="w-full px-4 py-3 pl-10 bg-surface rounded-card text-body placeholder-subtle focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5 absolute left-3 top-1/2 -translate-y-1/2 text-subtle"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                >
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+            </div>
+
+            <!-- Payee Count -->
+            <div class="text-sm text-subtle px-1">
+                {{ filteredPayees.length }} payee{{ filteredPayees.length !== 1 ? 's' : '' }}
+            </div>
+
+            <!-- Payees List -->
+            <div v-if="filteredPayees.length > 0" class="bg-surface rounded-card overflow-hidden">
+                <div
+                    v-for="payee in filteredPayees"
+                    :key="payee.id"
+                    class="flex items-center justify-between px-4 py-3 border-b border-gray-100 last:border-b-0"
+                >
+                    <div class="flex-1 min-w-0">
+                        <div class="font-medium text-body">{{ payee.name }}</div>
+                        <div class="text-sm text-subtle">
+                            Default: {{ payee.default_category_name || 'None' }}
+                            <span v-if="payee.transaction_count > 0" class="ml-2">
+                                &middot; {{ payee.transaction_count }} transaction{{ payee.transaction_count !== 1 ? 's' : '' }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button
+                            @click="openEditModal(payee)"
+                            class="p-2 text-subtle hover:text-primary hover:bg-gray-100 rounded-full transition-colors"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                        </button>
+                        <button
+                            v-if="payee.transaction_count === 0"
+                            @click="openDeleteConfirm(payee)"
+                            class="p-2 text-subtle hover:text-expense hover:bg-red-50 rounded-full transition-colors"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div v-else class="bg-surface rounded-card p-8 text-center">
+                <div class="text-4xl mb-4">👤</div>
+                <h3 class="text-lg font-medium text-body mb-2">
+                    {{ searchQuery ? 'No matches found' : 'No payees yet' }}
+                </h3>
+                <p class="text-subtle">
+                    {{ searchQuery ? 'Try a different search term.' : 'Payees are created automatically when you add transactions.' }}
+                </p>
+            </div>
+
+            <!-- Info Card -->
+            <div class="bg-blue-50 border border-blue-200 rounded-card p-4 text-sm text-blue-800">
+                <p>
+                    <strong>Tip:</strong> Setting a default category for a payee will auto-fill the category when you select that payee in a new transaction.
+                </p>
+            </div>
+        </div>
+
+        <!-- Edit Modal -->
+        <BottomSheet :show="showEditModal" title="Edit Payee" @close="closeEditModal">
+            <form @submit.prevent="savePayee">
+                <div class="bg-white mx-3 rounded-xl overflow-hidden">
+                    <TextField
+                        v-model="editForm.name"
+                        label="Name"
+                        placeholder="Payee name"
+                        :error="editForm.errors.name"
+                        required
+                    />
+                    <PickerField
+                        v-model="editForm.default_category_id"
+                        label="Default Category"
+                        :options="categories"
+                        placeholder="None"
+                        grouped
+                        group-items-key="categories"
+                        :border-bottom="false"
+                    />
+                </div>
+            </form>
+
+            <template #footer>
+                <Button
+                    type="button"
+                    @click="savePayee"
+                    :loading="editForm.processing"
+                    full-width
+                >
+                    Save Changes
+                </Button>
+            </template>
+        </BottomSheet>
+
+        <!-- Delete Confirmation Modal -->
+        <Teleport to="body">
+            <Transition
+                enter-active-class="transition ease-out duration-200"
+                enter-from-class="opacity-0"
+                enter-to-class="opacity-100"
+                leave-active-class="transition ease-in duration-150"
+                leave-from-class="opacity-100"
+                leave-to-class="opacity-0"
+            >
+                <div
+                    v-if="showDeleteConfirm"
+                    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+                    @click.self="showDeleteConfirm = false"
+                >
+                    <div class="bg-white rounded-2xl p-6 max-w-sm w-full space-y-4">
+                        <h3 class="text-lg font-semibold text-body">Delete Payee?</h3>
+                        <p class="text-subtle">
+                            Delete "{{ deletingPayee?.name }}"? This action cannot be undone.
+                        </p>
+                        <div class="flex gap-3">
+                            <Button variant="secondary" @click="showDeleteConfirm = false" class="flex-1">
+                                Cancel
+                            </Button>
+                            <Button variant="danger" @click="deletePayee" class="flex-1">
+                                Delete
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
+    </AppLayout>
+</template>

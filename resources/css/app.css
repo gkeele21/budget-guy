@@ -4,12 +4,30 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom form input styling */
+/* Custom form input styling - remove default borders/outlines */
 input[type="date"],
 input[type="number"],
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+input[type="url"],
+input[type="search"],
+textarea,
 select {
     -webkit-appearance: none;
     appearance: none;
+    border: none;
+    outline: none;
+    box-shadow: none;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    border: none;
+    outline: none;
+    box-shadow: none;
 }
 
 /* Ensure touch-friendly sizing */
@@ -17,9 +35,22 @@ button, input, select, textarea {
     min-height: 44px;
 }
 
+/* Override for toggle switches */
+button.toggle-switch {
+    min-height: auto;
+}
+
 /* Smooth scrolling */
 html {
     scroll-behavior: smooth;
+}
+
+/* iOS Safe Area Support */
+:root {
+    --safe-area-inset-top: env(safe-area-inset-top, 0px);
+    --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-area-inset-left: env(safe-area-inset-left, 0px);
+    --safe-area-inset-right: env(safe-area-inset-right, 0px);
 }
 
 /* Mobile-first responsive max-width */

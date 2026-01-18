@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Account;
 use App\Models\Payee;
+use App\Models\SplitTransaction;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class TransactionController extends Controller
@@ -20,14 +22,57 @@ class TransactionController extends Controller
         }
 
         $accountFilter = $request->get('account');
+        $searchQuery = $request->get('search');
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
+        $clearedFilter = $request->get('cleared'); // 'all', 'cleared', 'uncleared'
+        $recurringFilter = $request->get('recurring'); // 'all', 'recurring'
 
         $query = $budget->transactions()
-            ->with(['account', 'category', 'payee'])
+            ->with(['account', 'category', 'payee', 'splits.category'])
             ->orderBy('date', 'desc')
             ->orderBy('created_at', 'desc');
 
         if ($accountFilter) {
             $query->where('account_id', $accountFilter);
+        }
+
+        // Date range filter
+        if ($startDate) {
+            $query->where('date', '>=', $startDate);
+        }
+        if ($endDate) {
+            $query->where('date', '<=', $endDate);
+        }
+
+        // Cleared status filter
+        if ($clearedFilter === 'cleared') {
+            $query->where('cleared', true);
+        } elseif ($clearedFilter === 'uncleared') {
+            $query->where('cleared', false);
+        }
+
+        // Recurring filter
+        if ($recurringFilter === 'recurring') {
+            $query->whereNotNull('recurring_id');
+        }
+
+        // Search functionality
+        if ($searchQuery) {
+            $query->where(function ($q) use ($searchQuery) {
+                // Search by payee name
+                $q->whereHas('payee', function ($pq) use ($searchQuery) {
+                    $pq->where('name', 'like', "%{$searchQuery}%");
+                })
+                // Search by memo
+                ->orWhere('memo', 'like', "%{$searchQuery}%")
+                // Search by amount (exact or partial)
+                ->orWhere('amount', 'like', "%{$searchQuery}%")
+                // Search by category name
+                ->orWhereHas('category', function ($cq) use ($searchQuery) {
+                    $cq->where('name', 'like', "%{$searchQuery}%");
+                });
+            });
         }
 
         $transactions = $query->get()->map(fn($t) => [
@@ -36,13 +81,21 @@ class TransactionController extends Controller
             'payee' => $t->payee?->name ?? ($t->type === 'transfer' ? 'Transfer' : 'Unknown'),
             'account' => $t->account->name,
             'account_id' => $t->account_id,
-            'category' => $t->category?->name,
+            'category' => $t->isSplit()
+                ? 'Split (' . $t->splits->count() . ')'
+                : ($t->category?->name ?? null),
             'category_id' => $t->category_id,
             'amount' => (float) $t->amount,
             'type' => $t->type,
             'cleared' => $t->cleared,
             'memo' => $t->memo,
             'recurring_id' => $t->recurring_id,
+            'is_split' => $t->isSplit(),
+            'splits' => $t->isSplit() ? $t->splits->map(fn($s) => [
+                'category' => $s->category?->name,
+                'category_id' => $s->category_id,
+                'amount' => (float) $s->amount,
+            ]) : [],
         ]);
 
         // Group by date
@@ -57,6 +110,11 @@ class TransactionController extends Controller
             'transactions' => $groupedTransactions,
             'accounts' => $accounts,
             'currentAccountId' => $accountFilter ? (int) $accountFilter : null,
+            'searchQuery' => $searchQuery,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'clearedFilter' => $clearedFilter ?? 'all',
+            'recurringFilter' => $recurringFilter ?? 'all',
         ]);
     }
 
@@ -116,6 +174,11 @@ class TransactionController extends Controller
             'cleared' => 'boolean',
             'memo' => 'nullable|string|max:500',
             'to_account_id' => 'required_if:type,transfer|nullable|exists:accounts,id',
+            'is_split' => 'boolean',
+            'splits' => 'array',
+            'splits.*.category_id' => 'required_with:splits|exists:categories,id',
+            'splits.*.amount' => 'required_with:splits|numeric|min:0.01',
+            'update_payee_default' => 'boolean',
         ]);
 
         $user = Auth::user();
@@ -123,11 +186,17 @@ class TransactionController extends Controller
         // Handle payee
         $payeeId = null;
         if ($validated['payee_name'] && $validated['type'] !== 'transfer') {
+            $categoryForDefault = $validated['category_id'] ?? ($validated['splits'][0]['category_id'] ?? null);
             $payee = Payee::firstOrCreate(
                 ['budget_id' => $budget->id, 'name' => $validated['payee_name']],
-                ['default_category_id' => $validated['category_id']]
+                ['default_category_id' => $categoryForDefault]
             );
             $payeeId = $payee->id;
+
+            // Update payee default category if requested
+            if (($validated['update_payee_default'] ?? false) && $categoryForDefault) {
+                $payee->update(['default_category_id' => $categoryForDefault]);
+            }
         }
 
         // Calculate amount (negative for expenses)
@@ -167,18 +236,36 @@ class TransactionController extends Controller
 
             $fromTransaction->update(['transfer_pair_id' => $toTransaction->id]);
         } else {
-            Transaction::create([
-                'budget_id' => $budget->id,
-                'account_id' => $validated['account_id'],
-                'category_id' => $validated['category_id'],
-                'payee_id' => $payeeId,
-                'amount' => $amount,
-                'type' => $validated['type'],
-                'date' => $validated['date'],
-                'cleared' => $validated['cleared'] ?? false,
-                'memo' => $validated['memo'],
-                'created_by' => $user->id,
-            ]);
+            DB::transaction(function () use ($validated, $budget, $payeeId, $amount, $user) {
+                // Create the main transaction
+                $transaction = Transaction::create([
+                    'budget_id' => $budget->id,
+                    'account_id' => $validated['account_id'],
+                    'category_id' => ($validated['is_split'] ?? false) ? null : $validated['category_id'],
+                    'payee_id' => $payeeId,
+                    'amount' => $amount,
+                    'type' => $validated['type'],
+                    'date' => $validated['date'],
+                    'cleared' => $validated['cleared'] ?? false,
+                    'memo' => $validated['memo'],
+                    'created_by' => $user->id,
+                ]);
+
+                // Create split transactions if this is a split
+                if (($validated['is_split'] ?? false) && !empty($validated['splits'])) {
+                    foreach ($validated['splits'] as $split) {
+                        $splitAmount = $validated['type'] === 'expense'
+                            ? -abs($split['amount'])
+                            : abs($split['amount']);
+
+                        SplitTransaction::create([
+                            'transaction_id' => $transaction->id,
+                            'category_id' => $split['category_id'],
+                            'amount' => $splitAmount,
+                        ]);
+                    }
+                }
+            });
         }
 
         return redirect()->route('transactions.index');
@@ -189,6 +276,9 @@ class TransactionController extends Controller
         $this->authorize('update', $transaction);
 
         $budget = Auth::user()->currentBudget;
+
+        // Load splits
+        $transaction->load('splits');
 
         $accounts = $budget->accounts()
             ->where('is_closed', false)
@@ -223,6 +313,11 @@ class TransactionController extends Controller
                 'cleared' => $transaction->cleared,
                 'memo' => $transaction->memo,
                 'transfer_pair_id' => $transaction->transfer_pair_id,
+                'is_split' => $transaction->isSplit(),
+                'splits' => $transaction->splits->map(fn($s) => [
+                    'category_id' => $s->category_id,
+                    'amount' => abs((float) $s->amount),
+                ]),
             ],
             'accounts' => $accounts,
             'categories' => $categories,
@@ -245,6 +340,10 @@ class TransactionController extends Controller
             'date' => 'required|date',
             'cleared' => 'boolean',
             'memo' => 'nullable|string|max:500',
+            'is_split' => 'boolean',
+            'splits' => 'array',
+            'splits.*.category_id' => 'required_with:splits|exists:categories,id',
+            'splits.*.amount' => 'required_with:splits|numeric|min:0.01',
         ]);
 
         // Handle payee
@@ -252,7 +351,7 @@ class TransactionController extends Controller
         if ($validated['payee_name'] && $validated['type'] !== 'transfer') {
             $payee = Payee::firstOrCreate(
                 ['budget_id' => $budget->id, 'name' => $validated['payee_name']],
-                ['default_category_id' => $validated['category_id']]
+                ['default_category_id' => $validated['category_id'] ?? ($validated['splits'][0]['category_id'] ?? null)]
             );
             $payeeId = $payee->id;
         }
@@ -263,16 +362,36 @@ class TransactionController extends Controller
             $amount = -abs($amount);
         }
 
-        $transaction->update([
-            'account_id' => $validated['account_id'],
-            'category_id' => $validated['category_id'],
-            'payee_id' => $payeeId,
-            'amount' => $amount,
-            'type' => $validated['type'],
-            'date' => $validated['date'],
-            'cleared' => $validated['cleared'] ?? false,
-            'memo' => $validated['memo'],
-        ]);
+        DB::transaction(function () use ($validated, $transaction, $payeeId, $amount) {
+            $transaction->update([
+                'account_id' => $validated['account_id'],
+                'category_id' => ($validated['is_split'] ?? false) ? null : $validated['category_id'],
+                'payee_id' => $payeeId,
+                'amount' => $amount,
+                'type' => $validated['type'],
+                'date' => $validated['date'],
+                'cleared' => $validated['cleared'] ?? false,
+                'memo' => $validated['memo'],
+            ]);
+
+            // Delete existing splits
+            $transaction->splits()->delete();
+
+            // Create new splits if this is a split transaction
+            if (($validated['is_split'] ?? false) && !empty($validated['splits'])) {
+                foreach ($validated['splits'] as $split) {
+                    $splitAmount = $validated['type'] === 'expense'
+                        ? -abs($split['amount'])
+                        : abs($split['amount']);
+
+                    SplitTransaction::create([
+                        'transaction_id' => $transaction->id,
+                        'category_id' => $split['category_id'],
+                        'amount' => $splitAmount,
+                    ]);
+                }
+            }
+        });
 
         return redirect()->route('transactions.index');
     }
@@ -285,6 +404,9 @@ class TransactionController extends Controller
         if ($transaction->transfer_pair_id) {
             Transaction::where('id', $transaction->transfer_pair_id)->delete();
         }
+
+        // Delete splits (cascades automatically due to foreign key, but being explicit)
+        $transaction->splits()->delete();
 
         $transaction->delete();
 

@@ -11,13 +11,14 @@ const isActive = (path) => {
 </script>
 
 <template>
-    <div class="min-h-screen bg-budget-background flex flex-col">
+    <div class="h-screen bg-surface-secondary flex flex-col overflow-hidden">
         <!-- Header -->
-        <header class="bg-budget-header text-white px-4 py-3 flex items-center justify-between sticky top-0 z-50">
+        <header class="bg-gray-800 text-white px-4 py-3 flex items-center justify-between flex-shrink-0" style="padding-top: max(0.75rem, var(--safe-area-inset-top))">
             <div class="flex items-center gap-3">
                 <slot name="header-left" />
+                <img src="/images/logo.png" alt="Budget Guy" class="h-8 w-8 rounded" />
                 <h1 class="text-lg font-semibold">
-                    <slot name="title">Family Budget</slot>
+                    <slot name="title">Budget Guy</slot>
                 </h1>
             </div>
             <div class="flex items-center gap-2">
@@ -32,31 +33,30 @@ const isActive = (path) => {
         </header>
 
         <!-- Main Content -->
-        <main class="flex-1 overflow-auto pb-20">
+        <main class="flex-1 overflow-auto relative">
             <slot />
+            <!-- FAB (Floating Action Button) -->
+            <slot name="fab" />
         </main>
 
-        <!-- FAB (Floating Action Button) -->
-        <slot name="fab" />
-
         <!-- Bottom Navigation -->
-        <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-2 z-50">
+        <nav class="bg-white border-t border-gray-200 px-4 py-2 flex-shrink-0" style="padding-bottom: max(0.5rem, var(--safe-area-inset-bottom))">
             <div class="flex justify-around items-center max-w-md mx-auto">
                 <Link
                     :href="route('dashboard')"
-                    class="flex flex-col items-center py-2 px-4"
-                    :class="isActive('/dashboard') ? 'text-budget-primary' : 'text-budget-text-secondary'"
+                    class="flex flex-col items-center py-2 px-2"
+                    :class="isActive('/dashboard') ? 'text-primary' : 'text-subtle'"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                     </svg>
-                    <span class="text-xs mt-1 font-medium">Accounts</span>
+                    <span class="text-xs mt-1 font-medium">Home</span>
                 </Link>
 
                 <Link
                     :href="route('budget.index')"
-                    class="flex flex-col items-center py-2 px-4"
-                    :class="isActive('/budget') ? 'text-budget-primary' : 'text-budget-text-secondary'"
+                    class="flex flex-col items-center py-2 px-2"
+                    :class="isActive('/budget') ? 'text-primary' : 'text-subtle'"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
@@ -66,13 +66,24 @@ const isActive = (path) => {
 
                 <Link
                     :href="route('transactions.index')"
-                    class="flex flex-col items-center py-2 px-4"
-                    :class="isActive('/transactions') ? 'text-budget-primary' : 'text-budget-text-secondary'"
+                    class="flex flex-col items-center py-2 px-2"
+                    :class="isActive('/transactions') ? 'text-primary' : 'text-subtle'"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                     </svg>
                     <span class="text-xs mt-1 font-medium">Transactions</span>
+                </Link>
+
+                <Link
+                    :href="route('plan.index')"
+                    class="flex flex-col items-center py-2 px-2"
+                    :class="isActive('/plan') ? 'text-primary' : 'text-subtle'"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    <span class="text-xs mt-1 font-medium">Plan</span>
                 </Link>
             </div>
         </nav>

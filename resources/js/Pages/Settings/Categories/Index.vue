@@ -1,22 +1,42 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, Link, useForm, router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
+import TextField from '@/Components/Form/TextField.vue';
+import AmountField from '@/Components/Form/AmountField.vue';
+import PickerField from '@/Components/Form/PickerField.vue';
+import Button from '@/Components/Base/Button.vue';
+import BottomSheet from '@/Components/Base/BottomSheet.vue';
 
 const props = defineProps({
     categoryGroups: Array,
 });
 
+// Transform category groups for PickerField
+const groupOptions = computed(() => {
+    return props.categoryGroups.map(g => ({ id: g.id, name: g.name }));
+});
+
 const showAddGroupModal = ref(false);
 const showAddCategoryModal = ref(false);
+const showEditCategoryModal = ref(false);
 const selectedGroupId = ref(null);
 const editingCategory = ref(null);
+const showIconPicker = ref(false);
 
 const groupForm = useForm({
     name: '',
 });
 
 const categoryForm = useForm({
+    group_id: '',
+    name: '',
+    icon: '',
+    default_amount: '',
+});
+
+const editForm = useForm({
+    id: null,
     group_id: '',
     name: '',
     icon: '',
@@ -54,9 +74,29 @@ const deleteGroup = (groupId) => {
 };
 
 const deleteCategory = (categoryId) => {
-    if (confirm('Delete this category?')) {
+    if (confirm('Delete this category? Transactions will become uncategorized.')) {
         router.delete(route('categories.destroy', categoryId));
+        showEditCategoryModal.value = false;
     }
+};
+
+const openEditCategory = (category, groupId) => {
+    editForm.id = category.id;
+    editForm.group_id = groupId;
+    editForm.name = category.name;
+    editForm.icon = category.icon || '';
+    editForm.default_amount = category.default_amount || '';
+    showEditCategoryModal.value = true;
+    showIconPicker.value = false;
+};
+
+const submitEditCategory = () => {
+    editForm.put(route('categories.update', editForm.id), {
+        onSuccess: () => {
+            showEditCategoryModal.value = false;
+            editForm.reset();
+        },
+    });
 };
 
 const formatCurrency = (amount) => {
@@ -67,8 +107,12 @@ const formatCurrency = (amount) => {
     }).format(amount);
 };
 
-// Common emoji suggestions for budgeting
-const emojiSuggestions = ['🛒', '🍔', '⛽', '🏠', '💡', '📱', '🚗', '🎬', '👕', '💊', '🎁', '✈️', '💰', '📚', '🐕'];
+// Common emoji suggestions for budgeting - organized grid from wireframe
+const emojiGrid = [
+    '🛒', '🍎', '🥗', '🛍️', '🏠', '⚡', '💧', '📱',
+    '🌐', '🚗', '⛽', '🍽️', '☕', '🎬', '🎮', '🎵',
+    '💪', '💊', '👕', '✂️', '🎁', '✈️', '🏖️', '📚',
+];
 </script>
 
 <template>
@@ -88,19 +132,19 @@ const emojiSuggestions = ['🛒', '🍔', '⛽', '🏠', '💡', '📱', '🚗',
             <!-- Category Groups -->
             <div v-for="group in categoryGroups" :key="group.id" class="space-y-2">
                 <div class="flex items-center justify-between px-1">
-                    <h2 class="text-sm font-semibold text-budget-text-secondary uppercase tracking-wide">
+                    <h2 class="text-sm font-semibold text-subtle uppercase tracking-wide">
                         {{ group.name }}
                     </h2>
                     <div class="flex items-center gap-2">
                         <button
                             @click="openAddCategory(group.id)"
-                            class="text-budget-primary text-sm font-medium"
+                            class="text-primary text-sm font-medium"
                         >
-                            + Add
+                            + Add Category
                         </button>
                         <button
                             @click="deleteGroup(group.id)"
-                            class="text-budget-text-secondary hover:text-budget-expense p-1"
+                            class="text-subtle hover:text-expense p-1"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -109,33 +153,27 @@ const emojiSuggestions = ['🛒', '🍔', '⛽', '🏠', '💡', '📱', '🚗',
                     </div>
                 </div>
 
-                <div class="bg-budget-card rounded-card divide-y divide-gray-100">
-                    <div
+                <div class="bg-surface rounded-card divide-y divide-gray-100">
+                    <button
                         v-for="category in group.categories"
                         :key="category.id"
-                        class="flex items-center justify-between p-4"
+                        @click="openEditCategory(category, group.id)"
+                        class="w-full flex items-center justify-between p-4 hover:bg-gray-50 text-left"
                         :class="{ 'opacity-50': category.is_hidden }"
                     >
                         <div class="flex items-center gap-3">
                             <span class="text-xl">{{ category.icon || '📁' }}</span>
                             <div>
-                                <div class="font-medium text-budget-text">{{ category.name }}</div>
-                                <div v-if="category.default_amount" class="text-sm text-budget-text-secondary">
+                                <div class="font-medium text-body">{{ category.name }}</div>
+                                <div v-if="category.default_amount" class="text-sm text-subtle">
                                     Default: {{ formatCurrency(category.default_amount) }}
                                 </div>
                             </div>
                         </div>
-                        <button
-                            @click="deleteCategory(category.id)"
-                            class="text-budget-text-secondary hover:text-budget-expense p-2"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                        </button>
-                    </div>
+                        <span class="text-subtle">›</span>
+                    </button>
 
-                    <div v-if="group.categories.length === 0" class="p-4 text-center text-budget-text-secondary">
+                    <div v-if="group.categories.length === 0" class="p-4 text-center text-subtle">
                         No categories yet
                     </div>
                 </div>
@@ -144,130 +182,175 @@ const emojiSuggestions = ['🛒', '🍔', '⛽', '🏠', '💡', '📱', '🚗',
             <!-- Add Category Group Button -->
             <button
                 @click="showAddGroupModal = true"
-                class="w-full py-4 border-2 border-dashed border-budget-primary text-budget-primary rounded-card font-medium hover:bg-budget-primary-bg transition-colors"
+                class="w-full py-4 border-2 border-dashed border-primary text-primary rounded-card font-medium hover:bg-primary-bg transition-colors"
             >
-                + Add Category Group
+                + New Group
             </button>
         </div>
 
         <!-- Add Group Modal -->
-        <div
-            v-if="showAddGroupModal"
-            class="fixed inset-0 bg-black/50 flex items-end justify-center z-50"
-            @click.self="showAddGroupModal = false"
-        >
-            <div class="bg-white rounded-t-2xl w-full max-w-md p-6 pb-8">
-                <h3 class="text-lg font-semibold text-budget-text mb-4">Add Category Group</h3>
+        <BottomSheet :show="showAddGroupModal" title="Add Category Group" @close="showAddGroupModal = false">
+            <form @submit.prevent="submitGroup">
+                <div class="bg-white mx-3 rounded-xl overflow-hidden">
+                    <TextField
+                        v-model="groupForm.name"
+                        label="Group Name"
+                        placeholder="e.g., Bills, Everyday, Savings Goals"
+                        :border-bottom="false"
+                        required
+                    />
+                </div>
+            </form>
 
-                <form @submit.prevent="submitGroup" class="space-y-4">
-                    <div>
-                        <label class="block text-sm text-budget-text-secondary mb-1">Group Name</label>
-                        <input
-                            v-model="groupForm.name"
-                            type="text"
-                            placeholder="e.g., Bills, Everyday, Savings Goals"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-card focus:ring-2 focus:ring-budget-primary focus:border-transparent"
-                            required
-                        />
-                    </div>
-
-                    <div class="flex gap-3 pt-2">
-                        <button
-                            type="button"
-                            @click="showAddGroupModal = false"
-                            class="flex-1 py-3 border border-gray-300 rounded-card font-medium"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            :disabled="groupForm.processing"
-                            class="flex-1 py-3 bg-budget-primary text-white rounded-card font-medium disabled:opacity-50"
-                        >
-                            {{ groupForm.processing ? 'Adding...' : 'Add Group' }}
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+            <template #footer>
+                <div class="flex gap-2">
+                    <Button variant="secondary" @click="showAddGroupModal = false" class="flex-1">
+                        Cancel
+                    </Button>
+                    <Button @click="submitGroup" :loading="groupForm.processing" class="flex-1">
+                        Add Group
+                    </Button>
+                </div>
+            </template>
+        </BottomSheet>
 
         <!-- Add Category Modal -->
-        <div
-            v-if="showAddCategoryModal"
-            class="fixed inset-0 bg-black/50 flex items-end justify-center z-50"
-            @click.self="showAddCategoryModal = false"
-        >
-            <div class="bg-white rounded-t-2xl w-full max-w-md p-6 pb-8">
-                <h3 class="text-lg font-semibold text-budget-text mb-4">Add Category</h3>
+        <BottomSheet :show="showAddCategoryModal" title="Add Category" @close="showAddCategoryModal = false">
+            <form @submit.prevent="submitCategory">
+                <div class="bg-white mx-3 rounded-xl overflow-hidden">
+                    <TextField
+                        v-model="categoryForm.name"
+                        label="Name"
+                        placeholder="e.g., Groceries, Rent, Gas"
+                        required
+                    />
+                    <AmountField
+                        v-model="categoryForm.default_amount"
+                        label="Default Amount"
+                        :color-by-type="false"
+                        placeholder="0.00"
+                    />
+                </div>
 
-                <form @submit.prevent="submitCategory" class="space-y-4">
-                    <div>
-                        <label class="block text-sm text-budget-text-secondary mb-1">Category Name</label>
-                        <input
-                            v-model="categoryForm.name"
-                            type="text"
-                            placeholder="e.g., Groceries, Rent, Gas"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-card focus:ring-2 focus:ring-budget-primary focus:border-transparent"
-                            required
-                        />
+                <!-- Icon Picker -->
+                <div class="mx-3 mt-3">
+                    <div class="text-xs font-semibold text-subtle uppercase tracking-wide mb-2 px-1">
+                        Icon
                     </div>
-
-                    <div>
-                        <label class="block text-sm text-budget-text-secondary mb-1">Icon (Emoji)</label>
-                        <input
-                            v-model="categoryForm.icon"
-                            type="text"
-                            placeholder="🛒"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-card focus:ring-2 focus:ring-budget-primary focus:border-transparent"
-                            maxlength="2"
-                        />
-                        <div class="flex gap-2 mt-2 flex-wrap">
+                    <div class="bg-white rounded-xl p-3">
+                        <div class="grid grid-cols-8 gap-1.5">
                             <button
-                                v-for="emoji in emojiSuggestions"
+                                v-for="emoji in emojiGrid"
                                 :key="emoji"
                                 type="button"
                                 @click="categoryForm.icon = emoji"
-                                class="w-10 h-10 flex items-center justify-center text-xl hover:bg-gray-100 rounded"
+                                :class="[
+                                    'w-9 h-9 flex items-center justify-center text-xl rounded-lg transition-colors',
+                                    categoryForm.icon === emoji
+                                        ? 'bg-primary/20 ring-2 ring-primary'
+                                        : 'bg-gray-50 hover:bg-gray-100'
+                                ]"
                             >
                                 {{ emoji }}
                             </button>
                         </div>
                     </div>
+                </div>
 
-                    <div>
-                        <label class="block text-sm text-budget-text-secondary mb-1">Default Amount (optional)</label>
-                        <div class="relative">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-budget-text-secondary">$</span>
-                            <input
-                                v-model="categoryForm.default_amount"
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                placeholder="0.00"
-                                class="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-card focus:ring-2 focus:ring-budget-primary focus:border-transparent"
-                            />
+                <p class="text-xs text-subtle text-center mt-3 px-4">
+                    Default amount is used as reference when budgeting
+                </p>
+            </form>
+
+            <template #footer>
+                <div class="flex gap-2">
+                    <Button variant="secondary" @click="showAddCategoryModal = false" class="flex-1">
+                        Cancel
+                    </Button>
+                    <Button @click="submitCategory" :loading="categoryForm.processing" class="flex-1">
+                        Add Category
+                    </Button>
+                </div>
+            </template>
+        </BottomSheet>
+
+        <!-- Edit Category Modal -->
+        <BottomSheet :show="showEditCategoryModal" title="Edit Category" @close="showEditCategoryModal = false">
+            <form @submit.prevent="submitEditCategory">
+                <div class="bg-white mx-3 rounded-xl overflow-hidden">
+                    <TextField
+                        v-model="editForm.name"
+                        label="Name"
+                        placeholder="Category name"
+                        required
+                    />
+                    <PickerField
+                        v-model="editForm.group_id"
+                        label="Group"
+                        :options="groupOptions"
+                        placeholder="Select group"
+                    />
+                    <AmountField
+                        v-model="editForm.default_amount"
+                        label="Default Amount"
+                        :color-by-type="false"
+                        placeholder="0.00"
+                        :border-bottom="false"
+                    />
+                </div>
+
+                <!-- Icon Picker -->
+                <div class="mx-3 mt-3">
+                    <div class="flex items-center justify-between mb-2 px-1">
+                        <span class="text-xs font-semibold text-subtle uppercase tracking-wide">Icon</span>
+                        <span class="text-2xl">{{ editForm.icon || '📁' }}</span>
+                    </div>
+                    <div class="bg-white rounded-xl p-3">
+                        <div class="grid grid-cols-8 gap-1.5">
+                            <button
+                                v-for="emoji in emojiGrid"
+                                :key="emoji"
+                                type="button"
+                                @click="editForm.icon = emoji"
+                                :class="[
+                                    'w-9 h-9 flex items-center justify-center text-xl rounded-lg transition-colors',
+                                    editForm.icon === emoji
+                                        ? 'bg-primary/20 ring-2 ring-primary'
+                                        : 'bg-gray-50 hover:bg-gray-100'
+                                ]"
+                            >
+                                {{ emoji }}
+                            </button>
                         </div>
-                        <p class="text-sm text-budget-text-secondary mt-1">Used as a starting point when budgeting</p>
                     </div>
+                </div>
 
-                    <div class="flex gap-3 pt-2">
-                        <button
-                            type="button"
-                            @click="showAddCategoryModal = false"
-                            class="flex-1 py-3 border border-gray-300 rounded-card font-medium"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            :disabled="categoryForm.processing"
-                            class="flex-1 py-3 bg-budget-primary text-white rounded-card font-medium disabled:opacity-50"
-                        >
-                            {{ categoryForm.processing ? 'Adding...' : 'Add Category' }}
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+                <p class="text-xs text-subtle text-center mt-3 px-4">
+                    Default amount is used as reference when budgeting
+                </p>
+
+                <!-- Delete Button -->
+                <div class="mx-3 mt-4">
+                    <button
+                        type="button"
+                        @click="deleteCategory(editForm.id)"
+                        class="w-full py-3 text-expense font-medium text-sm"
+                    >
+                        Delete Category
+                    </button>
+                </div>
+            </form>
+
+            <template #footer>
+                <Button
+                    type="button"
+                    @click="submitEditCategory"
+                    :loading="editForm.processing"
+                    full-width
+                >
+                    Save Changes
+                </Button>
+            </template>
+        </BottomSheet>
     </AppLayout>
 </template>
