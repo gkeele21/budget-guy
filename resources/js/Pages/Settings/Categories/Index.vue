@@ -6,7 +6,7 @@ import TextField from '@/Components/Form/TextField.vue';
 import AmountField from '@/Components/Form/AmountField.vue';
 import PickerField from '@/Components/Form/PickerField.vue';
 import Button from '@/Components/Base/Button.vue';
-import BottomSheet from '@/Components/Base/BottomSheet.vue';
+import Modal from '@/Components/Base/Modal.vue';
 
 const props = defineProps({
     categoryGroups: Array,
@@ -18,13 +18,23 @@ const groupOptions = computed(() => {
 });
 
 const showAddGroupModal = ref(false);
+const showEditGroupModal = ref(false);
 const showAddCategoryModal = ref(false);
 const showEditCategoryModal = ref(false);
 const selectedGroupId = ref(null);
 const editingCategory = ref(null);
+const editingGroup = ref(null);
 const showIconPicker = ref(false);
 
+// Track collapsed state for each group (all expanded by default)
+const collapsedGroups = ref({});
+
 const groupForm = useForm({
+    name: '',
+});
+
+const editGroupForm = useForm({
+    id: null,
     name: '',
 });
 
@@ -67,9 +77,27 @@ const submitCategory = () => {
     });
 };
 
+const openEditGroup = (group) => {
+    editingGroup.value = group;
+    editGroupForm.id = group.id;
+    editGroupForm.name = group.name;
+    showEditGroupModal.value = true;
+};
+
+const submitEditGroup = () => {
+    editGroupForm.put(route('category-groups.update', editGroupForm.id), {
+        onSuccess: () => {
+            showEditGroupModal.value = false;
+            editGroupForm.reset();
+            editingGroup.value = null;
+        },
+    });
+};
+
 const deleteGroup = (groupId) => {
     if (confirm('Delete this category group and all its categories?')) {
         router.delete(route('category-groups.destroy', groupId));
+        showEditGroupModal.value = false;
     }
 };
 
@@ -113,6 +141,14 @@ const emojiGrid = [
     '🌐', '🚗', '⛽', '🍽️', '☕', '🎬', '🎮', '🎵',
     '💪', '💊', '👕', '✂️', '🎁', '✈️', '🏖️', '📚',
 ];
+
+const toggleGroup = (groupId) => {
+    collapsedGroups.value[groupId] = !collapsedGroups.value[groupId];
+};
+
+const isGroupCollapsed = (groupId) => {
+    return collapsedGroups.value[groupId] === true;
+};
 </script>
 
 <template>
@@ -129,69 +165,96 @@ const emojiGrid = [
         </template>
 
         <div class="p-4 space-y-4">
+            <!-- Add Group Button -->
+            <Button
+                variant="primary"
+                full-width
+                @click="showAddGroupModal = true"
+            >
+                + Add Group
+            </Button>
             <!-- Category Groups -->
             <div v-for="group in categoryGroups" :key="group.id" class="space-y-2">
+                <!-- Group Header -->
                 <div class="flex items-center justify-between px-1">
-                    <h2 class="text-sm font-semibold text-subtle uppercase tracking-wide">
-                        {{ group.name }}
-                    </h2>
                     <div class="flex items-center gap-2">
+                        <!-- Expand/Collapse chevron -->
                         <button
-                            @click="openAddCategory(group.id)"
-                            class="text-primary text-sm font-medium"
+                            @click="toggleGroup(group.id)"
+                            class="p-1 -m-1"
                         >
-                            + Add Category
-                        </button>
-                        <button
-                            @click="deleteGroup(group.id)"
-                            class="text-subtle hover:text-expense p-1"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="h-4 w-4 text-subtle transition-transform"
+                                :class="{ '-rotate-90': isGroupCollapsed(group.id) }"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                             </svg>
                         </button>
+                        <!-- Group name - clickable to edit -->
+                        <button
+                            @click="openEditGroup(group)"
+                            class="text-sm font-semibold text-subtle uppercase tracking-wide hover:text-body"
+                        >
+                            {{ group.name }}
+                        </button>
+                        <span class="text-xs text-subtle font-normal">({{ group.categories.length }})</span>
                     </div>
                 </div>
 
-                <div class="bg-surface rounded-card divide-y divide-gray-100">
-                    <button
-                        v-for="category in group.categories"
-                        :key="category.id"
-                        @click="openEditCategory(category, group.id)"
-                        class="w-full flex items-center justify-between p-4 hover:bg-gray-50 text-left"
-                        :class="{ 'opacity-50': category.is_hidden }"
-                    >
-                        <div class="flex items-center gap-3">
-                            <span class="text-xl">{{ category.icon || '📁' }}</span>
-                            <div>
-                                <div class="font-medium text-body">{{ category.name }}</div>
-                                <div v-if="category.default_amount" class="text-sm text-subtle">
-                                    Default: {{ formatCurrency(category.default_amount) }}
+                <!-- Collapsible categories list -->
+                <Transition
+                    enter-active-class="transition-all duration-200 ease-out"
+                    enter-from-class="opacity-0 max-h-0"
+                    enter-to-class="opacity-100 max-h-[2000px]"
+                    leave-active-class="transition-all duration-200 ease-in"
+                    leave-from-class="opacity-100 max-h-[2000px]"
+                    leave-to-class="opacity-0 max-h-0"
+                >
+                    <div v-show="!isGroupCollapsed(group.id)" class="bg-surface rounded-card divide-y divide-border overflow-hidden">
+                        <button
+                            v-for="category in group.categories"
+                            :key="category.id"
+                            @click="openEditCategory(category, group.id)"
+                            class="w-full flex items-center justify-between p-4 hover:bg-surface-secondary text-left"
+                            :class="{ 'opacity-50': category.is_hidden }"
+                        >
+                            <div class="flex items-center gap-3">
+                                <span class="text-xl">{{ category.icon || '📁' }}</span>
+                                <div>
+                                    <div class="font-medium text-body">{{ category.name }}</div>
+                                    <div v-if="category.default_amount" class="text-sm text-subtle">
+                                        Default: {{ formatCurrency(category.default_amount) }}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <span class="text-subtle">›</span>
-                    </button>
+                            <span class="text-subtle">›</span>
+                        </button>
 
-                    <div v-if="group.categories.length === 0" class="p-4 text-center text-subtle">
-                        No categories yet
+                        <div v-if="group.categories.length === 0" class="p-4 text-center text-subtle">
+                            No categories yet
+                        </div>
                     </div>
-                </div>
+                </Transition>
             </div>
 
-            <!-- Add Category Group Button -->
-            <button
-                @click="showAddGroupModal = true"
-                class="w-full py-4 border-2 border-dashed border-primary text-primary rounded-card font-medium hover:bg-primary-bg transition-colors"
+            <!-- Add Category Button -->
+            <Button
+                variant="outline"
+                full-width
+                @click="openAddCategory(categoryGroups[0]?.id || null)"
             >
-                + New Group
-            </button>
+                + Add Category
+            </Button>
         </div>
 
         <!-- Add Group Modal -->
-        <BottomSheet :show="showAddGroupModal" title="Add Category Group" @close="showAddGroupModal = false">
+        <Modal :show="showAddGroupModal" title="Add Category Group" @close="showAddGroupModal = false">
             <form @submit.prevent="submitGroup">
-                <div class="bg-white mx-3 rounded-xl overflow-hidden">
+                <div class="bg-surface mx-3 rounded-xl overflow-hidden">
                     <TextField
                         v-model="groupForm.name"
                         label="Group Name"
@@ -212,12 +275,12 @@ const emojiGrid = [
                     </Button>
                 </div>
             </template>
-        </BottomSheet>
+        </Modal>
 
         <!-- Add Category Modal -->
-        <BottomSheet :show="showAddCategoryModal" title="Add Category" @close="showAddCategoryModal = false">
+        <Modal :show="showAddCategoryModal" title="Add Category" @close="showAddCategoryModal = false">
             <form @submit.prevent="submitCategory">
-                <div class="bg-white mx-3 rounded-xl overflow-hidden">
+                <div class="bg-surface mx-3 rounded-xl overflow-hidden">
                     <TextField
                         v-model="categoryForm.name"
                         label="Name"
@@ -237,7 +300,7 @@ const emojiGrid = [
                     <div class="text-xs font-semibold text-subtle uppercase tracking-wide mb-2 px-1">
                         Icon
                     </div>
-                    <div class="bg-white rounded-xl p-3">
+                    <div class="bg-surface rounded-xl p-3">
                         <div class="grid grid-cols-8 gap-1.5">
                             <button
                                 v-for="emoji in emojiGrid"
@@ -248,7 +311,7 @@ const emojiGrid = [
                                     'w-9 h-9 flex items-center justify-center text-xl rounded-lg transition-colors',
                                     categoryForm.icon === emoji
                                         ? 'bg-primary/20 ring-2 ring-primary'
-                                        : 'bg-gray-50 hover:bg-gray-100'
+                                        : 'bg-surface-secondary hover:bg-border'
                                 ]"
                             >
                                 {{ emoji }}
@@ -272,12 +335,12 @@ const emojiGrid = [
                     </Button>
                 </div>
             </template>
-        </BottomSheet>
+        </Modal>
 
         <!-- Edit Category Modal -->
-        <BottomSheet :show="showEditCategoryModal" title="Edit Category" @close="showEditCategoryModal = false">
+        <Modal :show="showEditCategoryModal" title="Edit Category" @close="showEditCategoryModal = false">
             <form @submit.prevent="submitEditCategory">
-                <div class="bg-white mx-3 rounded-xl overflow-hidden">
+                <div class="bg-surface mx-3 rounded-xl overflow-hidden">
                     <TextField
                         v-model="editForm.name"
                         label="Name"
@@ -305,7 +368,7 @@ const emojiGrid = [
                         <span class="text-xs font-semibold text-subtle uppercase tracking-wide">Icon</span>
                         <span class="text-2xl">{{ editForm.icon || '📁' }}</span>
                     </div>
-                    <div class="bg-white rounded-xl p-3">
+                    <div class="bg-surface rounded-xl p-3">
                         <div class="grid grid-cols-8 gap-1.5">
                             <button
                                 v-for="emoji in emojiGrid"
@@ -316,7 +379,7 @@ const emojiGrid = [
                                     'w-9 h-9 flex items-center justify-center text-xl rounded-lg transition-colors',
                                     editForm.icon === emoji
                                         ? 'bg-primary/20 ring-2 ring-primary'
-                                        : 'bg-gray-50 hover:bg-gray-100'
+                                        : 'bg-surface-secondary hover:bg-border'
                                 ]"
                             >
                                 {{ emoji }}
@@ -351,6 +414,43 @@ const emojiGrid = [
                     Save Changes
                 </Button>
             </template>
-        </BottomSheet>
+        </Modal>
+
+        <!-- Edit Group Modal -->
+        <Modal :show="showEditGroupModal" title="Edit Group" @close="showEditGroupModal = false">
+            <form @submit.prevent="submitEditGroup">
+                <div class="bg-surface mx-3 rounded-xl overflow-hidden">
+                    <TextField
+                        v-model="editGroupForm.name"
+                        label="Group Name"
+                        placeholder="e.g., Bills, Everyday, Savings Goals"
+                        :border-bottom="false"
+                        required
+                    />
+                </div>
+
+                <!-- Delete Button -->
+                <div class="mx-3 mt-4">
+                    <button
+                        type="button"
+                        @click="deleteGroup(editGroupForm.id)"
+                        class="w-full py-3 text-expense font-medium text-sm"
+                    >
+                        Delete Group
+                    </button>
+                </div>
+            </form>
+
+            <template #footer>
+                <Button
+                    type="button"
+                    @click="submitEditGroup"
+                    :loading="editGroupForm.processing"
+                    full-width
+                >
+                    Save Changes
+                </Button>
+            </template>
+        </Modal>
     </AppLayout>
 </template>

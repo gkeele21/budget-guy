@@ -44,7 +44,7 @@ const toggle = () => {
                 </span>
                 <div
                     class="relative w-10 h-6 rounded-full transition-colors"
-                    :class="modelValue ? 'bg-income' : 'bg-gray-300'"
+                    :class="modelValue ? 'bg-income' : 'bg-border-dark'"
                 >
                     <div
                         class="absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform"

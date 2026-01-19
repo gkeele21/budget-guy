@@ -75,7 +75,7 @@ const deleteAccount = () => {
                             'flex flex-col items-center p-3 rounded-xl border-2 transition-colors',
                             form.type === type.value
                                 ? 'border-primary bg-primary/10'
-                                : 'border-gray-200 bg-white'
+                                : 'border-border bg-surface'
                         ]"
                     >
                         <span class="text-2xl mb-1">{{ type.icon }}</span>
@@ -149,7 +149,7 @@ const deleteAccount = () => {
                     class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
                     @click.self="showDeleteConfirm = false"
                 >
-                    <div class="bg-white rounded-2xl p-6 max-w-sm w-full space-y-4">
+                    <div class="bg-surface rounded-2xl p-6 max-w-sm w-full space-y-4">
                         <h3 class="text-lg font-semibold text-body">Delete Account?</h3>
                         <p class="text-subtle">
                             This will delete all transactions in this account. This action cannot be undone.

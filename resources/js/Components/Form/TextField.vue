@@ -12,8 +12,6 @@ const props = defineProps({
     error: { type: String, default: '' },
     borderBottom: { type: Boolean, default: true },
     textAlign: { type: String, default: 'right' }, // left, right
-    // Visual style: 'default' matches picker fields (green value), 'subtle' uses body color
-    variant: { type: String, default: 'default' },
 });
 
 const emit = defineEmits(['update:modelValue', 'focus', 'blur']);
@@ -38,9 +36,7 @@ const onInput = (e) => {
             :class="[
                 'flex-1 bg-transparent focus:outline-none text-sm font-medium min-w-0',
                 textAlign === 'right' ? 'text-right' : 'text-left',
-                modelValue
-                    ? (variant === 'subtle' ? 'text-body' : 'text-primary')
-                    : 'text-gray-400',
+                modelValue ? 'text-body' : 'text-subtle',
                 disabled ? 'opacity-50' : '',
             ]"
         />

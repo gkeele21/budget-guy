@@ -1,5 +1,4 @@
 import defaultTheme from 'tailwindcss/defaultTheme';
-import forms from '@tailwindcss/forms';
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -18,69 +17,72 @@ export default {
             },
             colors: {
                 // ===========================================
-                // SEMANTIC COLORS
+                // PRIMARY (Brand Green)
                 // ===========================================
-
-                // Primary brand color
                 'primary': {
-                    DEFAULT: '#76cd26',
+                    DEFAULT: '#7ED957',
                     light: '#8bd93e',
                     bg: '#edfce0',
-                    hover: '#68b821',
+                    hover: '#6bc94a',
                 },
 
-                // Secondary (neutral actions)
+                // ===========================================
+                // SECONDARY (Brand Blue)
+                // ===========================================
                 'secondary': {
-                    DEFAULT: '#6b7280',
-                    hover: '#4b5563',
+                    DEFAULT: '#2196F3',
+                    hover: '#1976D2',
                 },
 
-                // Feedback colors
-                'danger': {
-                    DEFAULT: '#c0392b',
-                    hover: '#a93226',
-                },
-                'success': {
-                    DEFAULT: '#76cd26',
-                    hover: '#68b821',
-                },
-                'warning': {
-                    DEFAULT: '#f59e0b',
-                    hover: '#d97706',
-                },
-                'info': {
-                    DEFAULT: '#3b82f6',
-                    hover: '#2563eb',
-                },
-
-                // Transaction type colors
-                'expense': {
-                    DEFAULT: '#c0392b',
-                    hover: '#a93226',
-                },
+                // ===========================================
+                // FINANCIAL SEMANTICS
+                // ===========================================
                 'income': {
-                    DEFAULT: '#76cd26',
-                    hover: '#68b821',
+                    DEFAULT: '#2E7D32',
+                    hover: '#256b29',
+                },
+                'expense': {
+                    DEFAULT: '#E5533D',
+                    hover: '#d04a35',
                 },
                 'transfer': {
-                    DEFAULT: '#3b82f6',
-                    hover: '#2563eb',
+                    DEFAULT: '#2196F3',
+                    hover: '#1976D2',
                 },
 
-                // Surfaces
+                // ===========================================
+                // FEEDBACK (aliases to financial colors)
+                // ===========================================
+                'success': {
+                    DEFAULT: '#2E7D32',
+                    hover: '#256b29',
+                },
+                'danger': {
+                    DEFAULT: '#E5533D',
+                    hover: '#d04a35',
+                },
+
+                // ===========================================
+                // SURFACES
+                // ===========================================
                 'surface': {
                     DEFAULT: '#ffffff',
                     secondary: '#f5f5f5',
+                    tertiary: '#f0f0f0',
                 },
 
-                // Borders
+                // ===========================================
+                // BORDERS
+                // ===========================================
                 'border': {
                     DEFAULT: '#e5e7eb',
                     dark: '#d1d5db',
                 },
 
-                // Text
-                'body': '#333333',
+                // ===========================================
+                // TEXT
+                // ===========================================
+                'body': '#1F2933',
                 'subtle': '#888888',
                 'inverse': '#ffffff',
             },
@@ -90,5 +92,5 @@ export default {
         },
     },
 
-    plugins: [forms],
+    plugins: [],
 };

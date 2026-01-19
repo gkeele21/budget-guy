@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import FormRow from './FormRow.vue';
 
 const props = defineProps({
@@ -17,14 +17,21 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'blur']);
 
-const colorClass = computed(() => {
-    // If no value, show placeholder color
-    if (!props.modelValue && props.modelValue !== 0) {
-        return 'text-gray-400';
+// Store cents as integer for ATM-style input
+const centsValue = ref(parseInitialCents());
+
+function parseInitialCents() {
+    if (props.modelValue === '' || props.modelValue === null || props.modelValue === undefined) {
+        return 0;
     }
-    // If colorByType is false, use primary green like picker fields
+    const num = parseFloat(props.modelValue);
+    return isNaN(num) ? 0 : Math.round(num * 100);
+}
+
+const colorClass = computed(() => {
+    // If colorByType is false, use secondary blue like other fields
     if (!props.colorByType) {
-        return 'text-primary';
+        return 'text-secondary';
     }
     // Color by transaction type
     switch (props.transactionType) {
@@ -34,44 +41,75 @@ const colorClass = computed(() => {
     }
 });
 
-const onInput = (e) => {
-    emit('update:modelValue', e.target.value);
+const displayValue = computed(() => {
+    const dollars = (centsValue.value / 100).toFixed(2);
+    return `$${dollars}`;
+});
+
+const onKeyDown = (e) => {
+    // Allow backspace to remove last digit
+    if (e.key === 'Backspace') {
+        e.preventDefault();
+        centsValue.value = Math.floor(centsValue.value / 10);
+        emitValue();
+        return;
+    }
+
+    // Only allow digits
+    if (!/^\d$/.test(e.key)) {
+        // Allow tab, etc. for navigation
+        if (!['Tab', 'Enter', 'Escape'].includes(e.key)) {
+            e.preventDefault();
+        }
+        return;
+    }
+
+    e.preventDefault();
+
+    // Shift digits left and add new digit (ATM-style)
+    const digit = parseInt(e.key, 10);
+    const newCents = centsValue.value * 10 + digit;
+
+    // Limit to reasonable max (e.g., $999,999.99)
+    if (newCents <= 99999999) {
+        centsValue.value = newCents;
+        emitValue();
+    }
 };
 
-const formatOnBlur = (e) => {
-    const value = e.target.value;
-    if (value !== '' && value !== null) {
-        const formatted = parseFloat(value).toFixed(2);
-        if (!isNaN(formatted)) {
-            emit('update:modelValue', formatted);
-        }
-    }
+const emitValue = () => {
+    const dollars = (centsValue.value / 100).toFixed(2);
+    emit('update:modelValue', dollars);
+};
+
+const onBlur = (e) => {
     emit('blur', e);
 };
 
-const displayValue = computed(() => {
-    if (props.modelValue === '' || props.modelValue === null || props.modelValue === undefined) {
-        return '';
+// Watch for external changes to modelValue
+import { watch } from 'vue';
+watch(() => props.modelValue, (newVal) => {
+    const newCents = parseFloat(newVal) * 100;
+    if (!isNaN(newCents) && Math.round(newCents) !== centsValue.value) {
+        centsValue.value = Math.round(newCents);
     }
-    return props.modelValue;
 });
 </script>
 
 <template>
     <FormRow :label="label" :border-bottom="borderBottom" :error="error">
         <div class="flex items-center">
-            <span :class="['text-sm font-medium', colorClass]">$</span>
             <input
                 type="text"
-                inputmode="decimal"
+                inputmode="numeric"
                 :value="displayValue"
-                @input="onInput"
-                @blur="formatOnBlur"
-                :placeholder="placeholder"
+                @keydown="onKeyDown"
+                @blur="onBlur"
                 :required="required"
                 :disabled="disabled"
+                readonly
                 :class="[
-                    'bg-transparent focus:outline-none text-sm font-medium text-right w-24',
+                    'bg-transparent focus:outline-none text-sm font-medium text-right w-28 cursor-text caret-transparent',
                     colorClass,
                     disabled ? 'opacity-50' : '',
                 ]"

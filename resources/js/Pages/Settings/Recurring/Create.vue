@@ -1,5 +1,5 @@
 <script setup>
-import { Head, useForm, Link } from '@inertiajs/vue3';
+import { Head, useForm, Link, usePage } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
 import SegmentedControl from '@/Components/Form/SegmentedControl.vue';
 import AutocompleteField from '@/Components/Form/AutocompleteField.vue';
@@ -14,12 +14,21 @@ const props = defineProps({
     payees: Array,
 });
 
+// Get query params for prefilling from a transaction
+const query = new URLSearchParams(window.location.search);
+
+// Parse IDs as integers for proper matching with PickerField
+const parseIntOrDefault = (value, defaultValue) => {
+    const parsed = parseInt(value, 10);
+    return isNaN(parsed) ? defaultValue : parsed;
+};
+
 const form = useForm({
-    type: 'expense',
-    amount: '',
-    account_id: props.accounts[0]?.id || '',
-    category_id: '',
-    payee_name: '',
+    type: query.get('type') || 'expense',
+    amount: query.get('amount') || '',
+    account_id: parseIntOrDefault(query.get('account_id'), props.accounts[0]?.id || ''),
+    category_id: parseIntOrDefault(query.get('category_id'), ''),
+    payee_name: query.get('payee_name') || '',
     frequency: 'monthly',
     next_date: new Date().toISOString().split('T')[0],
     end_date: '',
@@ -70,9 +79,9 @@ const getSaveButtonVariant = () => {
 <template>
     <Head title="New Recurring" />
 
-    <div class="min-h-screen bg-gray-100 flex flex-col">
+    <div class="min-h-screen bg-surface-secondary flex flex-col">
         <!-- Header with Cancel / Title / Save -->
-        <div class="bg-white border-b border-gray-200 px-4 py-3 safe-area-top">
+        <div class="bg-surface border-b border-border px-4 py-3 safe-area-top">
             <div class="flex items-center justify-between">
                 <Link
                     :href="route('recurring.index')"
@@ -104,7 +113,7 @@ const getSaveButtonVariant = () => {
             </div>
 
             <!-- Compact Fields Card -->
-            <div class="mx-3 mt-3 bg-white rounded-xl overflow-hidden">
+            <div class="mx-3 mt-3 bg-surface rounded-xl overflow-hidden">
                 <!-- Payee -->
                 <AutocompleteField
                     v-model="form.payee_name"

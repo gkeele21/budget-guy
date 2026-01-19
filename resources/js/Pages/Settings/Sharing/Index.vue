@@ -42,15 +42,13 @@ const removeMember = (member) => {
 };
 
 const getAvatarColor = (name) => {
+    // Use our 5-color palette for avatars
     const colors = [
-        'bg-blue-500',
-        'bg-green-500',
-        'bg-purple-500',
-        'bg-pink-500',
-        'bg-indigo-500',
-        'bg-teal-500',
-        'bg-orange-500',
-        'bg-red-500',
+        'bg-primary',     // Brand Green
+        'bg-secondary',   // Brand Blue
+        'bg-income',      // Income Green
+        'bg-expense',     // Expense Red
+        'bg-body',        // Charcoal
     ];
     const index = name.charCodeAt(0) % colors.length;
     return colors[index];
@@ -82,7 +80,7 @@ const getAvatarColor = (name) => {
                 <h3 class="text-sm font-semibold text-subtle uppercase tracking-wide px-1 mb-2">
                     People with Access
                 </h3>
-                <div class="bg-surface rounded-card divide-y divide-gray-100">
+                <div class="bg-surface rounded-card divide-y divide-border">
                     <div
                         v-for="member in members"
                         :key="member.id"
@@ -92,7 +90,7 @@ const getAvatarColor = (name) => {
                             <!-- Avatar -->
                             <div
                                 :class="[
-                                    'w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm',
+                                    'w-10 h-10 rounded-full flex items-center justify-center text-inverse font-semibold text-sm',
                                     getAvatarColor(member.name)
                                 ]"
                             >
@@ -121,7 +119,7 @@ const getAvatarColor = (name) => {
                         <button
                             v-if="isOwner && !member.is_current_user && member.role !== 'owner'"
                             @click="removeMember(member)"
-                            class="p-2 text-subtle hover:text-expense hover:bg-gray-100 rounded-full transition-colors"
+                            class="p-2 text-subtle hover:text-expense hover:bg-surface-secondary rounded-full transition-colors"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -136,7 +134,7 @@ const getAvatarColor = (name) => {
                 <h3 class="text-sm font-semibold text-subtle uppercase tracking-wide px-1 mb-2">
                     Pending Invites
                 </h3>
-                <div class="bg-surface rounded-card divide-y divide-gray-100">
+                <div class="bg-surface rounded-card divide-y divide-border">
                     <div
                         v-for="invite in pendingInvites"
                         :key="invite.id"
@@ -144,7 +142,7 @@ const getAvatarColor = (name) => {
                     >
                         <div class="flex items-center gap-3">
                             <!-- Placeholder avatar -->
-                            <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-400">
+                            <div class="w-10 h-10 rounded-full bg-surface-secondary flex items-center justify-center text-subtle">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                 </svg>
@@ -173,7 +171,7 @@ const getAvatarColor = (name) => {
                 <div v-if="!showInviteForm" class="bg-surface rounded-card">
                     <button
                         @click="showInviteForm = true"
-                        class="w-full flex items-center gap-3 p-4 text-primary hover:bg-gray-50 transition-colors"
+                        class="w-full flex items-center gap-3 p-4 text-primary hover:bg-surface-secondary transition-colors"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -192,7 +190,7 @@ const getAvatarColor = (name) => {
                             v-model="inviteForm.email"
                             type="email"
                             placeholder="Enter email address"
-                            class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
+                            class="w-full px-4 py-3 border border-border rounded-lg focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
                             :class="{ 'border-expense': inviteForm.errors.email }"
                         />
                         <p v-if="inviteForm.errors.email" class="mt-1 text-sm text-expense">
@@ -204,14 +202,14 @@ const getAvatarColor = (name) => {
                         <button
                             type="button"
                             @click="showInviteForm = false; inviteForm.reset();"
-                            class="flex-1 py-3 bg-gray-100 text-body rounded-card font-medium hover:bg-gray-200 transition-colors"
+                            class="flex-1 py-3 bg-surface-secondary text-body rounded-card font-medium hover:bg-surface-secondary transition-colors"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
                             :disabled="inviteForm.processing || !inviteForm.email"
-                            class="flex-1 py-3 bg-primary text-white rounded-card font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
+                            class="flex-1 py-3 bg-primary text-body rounded-card font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
                         >
                             {{ inviteForm.processing ? 'Sending...' : 'Send Invite' }}
                         </button>

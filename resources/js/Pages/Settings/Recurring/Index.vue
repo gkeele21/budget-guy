@@ -2,6 +2,7 @@
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import Button from '@/Components/Base/Button.vue';
 
 const props = defineProps({
     recurring: Array,
@@ -105,17 +106,18 @@ const toggleActive = (id) => {
                             class="block bg-surface rounded-card p-3 shadow-sm"
                             :class="{ 'opacity-50': !item.is_active }"
                         >
-                            <div class="flex items-center justify-between">
-                                <!-- Left: Emoji + Payee, Account · Category -->
+                            <div class="flex items-start justify-between">
+                                <!-- Left: Payee (next date), Category -->
                                 <div class="min-w-0 flex-1">
                                     <div class="font-medium text-body truncate">
-                                        {{ item.category_icon || '📋' }} {{ item.payee }}
+                                        {{ item.payee }}
+                                        <span class="text-subtle font-normal">({{ formatNextDate(item.next_date, item.frequency) }})</span>
                                     </div>
-                                    <div class="text-xs text-subtle mt-0.5 truncate">
-                                        {{ item.account }}<template v-if="item.category"> · {{ item.category }}</template>
+                                    <div v-if="item.category" class="text-xs text-subtle mt-0.5 truncate">
+                                        {{ item.category }}
                                     </div>
                                 </div>
-                                <!-- Right: Amount + Next date -->
+                                <!-- Right: Amount, Account -->
                                 <div class="flex-shrink-0 ml-3 text-right">
                                     <div
                                         class="font-mono font-medium"
@@ -124,7 +126,7 @@ const toggleActive = (id) => {
                                         {{ formatCurrency(item.amount) }}
                                     </div>
                                     <div class="text-xs text-subtle mt-0.5">
-                                        {{ formatNextDate(item.next_date, item.frequency) }}
+                                        {{ item.account }}
                                     </div>
                                 </div>
                             </div>
@@ -143,12 +145,13 @@ const toggleActive = (id) => {
             </div>
 
             <!-- Add Button -->
-            <Link
+            <Button
+                variant="outline"
+                full-width
                 :href="route('recurring.create')"
-                class="block w-full py-4 border-2 border-dashed border-primary text-primary rounded-card font-medium hover:bg-primary-bg transition-colors text-center"
             >
                 + Add Recurring Transaction
-            </Link>
+            </Button>
         </div>
     </AppLayout>
 </template>

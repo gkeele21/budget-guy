@@ -162,7 +162,7 @@ const isOverspent = props.category.available < 0;
                                     ></div>
                                     <div
                                         v-else
-                                        class="w-2 h-2 rounded-full border-[1.5px] border-gray-400"
+                                        class="w-2 h-2 rounded-full border-[1.5px] border-subtle"
                                     ></div>
                                 </button>
                             </div>
@@ -183,7 +183,7 @@ const isOverspent = props.category.available < 0;
                 </p>
                 <Link
                     :href="route('transactions.create')"
-                    class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-card font-medium hover:bg-primary/90 transition-colors"
+                    class="inline-flex items-center px-4 py-2 bg-primary text-body rounded-card font-medium hover:bg-primary/90 transition-colors"
                 >
                     Add Transaction
                 </Link>

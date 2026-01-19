@@ -1,10 +1,7 @@
 <script setup>
 import GuestLayout from '@/Layouts/GuestLayout.vue';
 import InputError from '@/Components/Form/InputError.vue';
-import InputLabel from '@/Components/Form/InputLabel.vue';
-import Button from '@/Components/Base/Button.vue';
-import TextInput from '@/Components/Form/TextInput.vue';
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 
 defineProps({
     status: {
@@ -22,48 +19,59 @@ const submit = () => {
 </script>
 
 <template>
-    <GuestLayout>
+    <GuestLayout title="Forgot password?">
         <Head title="Forgot Password" />
 
-        <div class="mb-4 text-sm text-gray-600">
-            Forgot your password? No problem. Just let us know your email
-            address and we will email you a password reset link that will allow
-            you to choose a new one.
-        </div>
+        <p class="text-sm text-subtle mb-6">
+            No problem. Enter your email and we'll send you a reset link.
+        </p>
 
         <div
             v-if="status"
-            class="mb-4 text-sm font-medium text-green-600"
+            class="mb-4 p-3 bg-income/10 border border-income/20 rounded-xl"
         >
-            {{ status }}
+            <p class="text-sm text-income text-center">{{ status }}</p>
         </div>
 
         <form @submit.prevent="submit">
-            <div>
-                <InputLabel for="email" value="Email" />
-
-                <TextInput
-                    id="email"
-                    type="email"
-                    class="mt-1 block w-full"
-                    v-model="form.email"
-                    required
-                    autofocus
-                    autocomplete="username"
-                />
-
-                <InputError class="mt-2" :message="form.errors.email" />
+            <!-- Form Fields - FormRow Style -->
+            <div class="space-y-1">
+                <div class="flex items-center justify-between py-4 border-b border-border">
+                    <label for="email" class="text-sm text-subtle">Email</label>
+                    <input
+                        id="email"
+                        type="email"
+                        v-model="form.email"
+                        required
+                        autofocus
+                        autocomplete="username"
+                        class="text-sm text-body text-right bg-transparent border-none focus:ring-0 focus:outline-none p-0 w-2/3"
+                        placeholder="you@example.com"
+                    />
+                </div>
+                <InputError class="mt-1" :message="form.errors.email" />
             </div>
 
-            <div class="mt-4 flex items-center justify-end">
-                <Button
-                    type="submit"
-                    :disabled="form.processing"
-                    :loading="form.processing"
+            <!-- Submit Button -->
+            <button
+                type="submit"
+                :disabled="form.processing"
+                class="w-full py-4 mt-6 bg-gradient-to-r from-primary to-primary-light text-body rounded-xl font-semibold text-center shadow-[0_8px_16px_-4px_rgba(126,217,87,0.4)] hover:shadow-[0_10px_20px_-4px_rgba(126,217,87,0.5)] transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+                <span v-if="form.processing">Sending...</span>
+                <span v-else>Send Reset Link</span>
+            </button>
+
+            <!-- Back to Login -->
+            <p class="mt-6 text-sm text-subtle text-center">
+                Remember your password?
+                <Link
+                    :href="route('login')"
+                    class="text-secondary font-semibold hover:text-secondary/80 transition-colors"
                 >
-                    Email Password Reset Link
-                </Button>
-            </div>
+                    Sign in
+                </Link>
+            </p>
         </form>
     </GuestLayout>
 </template>

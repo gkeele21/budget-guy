@@ -77,9 +77,9 @@ const getSaveButtonVariant = () => {
 <template>
     <Head title="Edit Recurring" />
 
-    <div class="min-h-screen bg-gray-100 flex flex-col">
+    <div class="min-h-screen bg-surface-secondary flex flex-col">
         <!-- Header with Cancel / Title / Save -->
-        <div class="bg-white border-b border-gray-200 px-4 py-3 safe-area-top">
+        <div class="bg-surface border-b border-border px-4 py-3 safe-area-top">
             <div class="flex items-center justify-between">
                 <Link
                     :href="route('recurring.index')"
@@ -111,7 +111,7 @@ const getSaveButtonVariant = () => {
             </div>
 
             <!-- Compact Fields Card -->
-            <div class="mx-3 mt-3 bg-white rounded-xl overflow-hidden">
+            <div class="mx-3 mt-3 bg-surface rounded-xl overflow-hidden">
                 <!-- Payee -->
                 <AutocompleteField
                     v-model="form.payee_name"
@@ -232,7 +232,7 @@ const getSaveButtonVariant = () => {
                     class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
                     @click.self="showDeleteConfirm = false"
                 >
-                    <div class="bg-white rounded-2xl p-6 max-w-sm w-full space-y-4">
+                    <div class="bg-surface rounded-2xl p-6 max-w-sm w-full space-y-4">
                         <h3 class="text-lg font-semibold text-body">Delete Recurring?</h3>
                         <p class="text-subtle">This will stop future transactions from being created. Past transactions will not be affected.</p>
                         <div class="flex gap-3">

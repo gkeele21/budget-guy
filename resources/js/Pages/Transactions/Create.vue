@@ -8,8 +8,9 @@ import PickerField from '@/Components/Form/PickerField.vue';
 import DateField from '@/Components/Form/DateField.vue';
 import ToggleField from '@/Components/Form/ToggleField.vue';
 import AutocompleteField from '@/Components/Form/AutocompleteField.vue';
+import SelectInput from '@/Components/Form/SelectInput.vue';
 import Button from '@/Components/Base/Button.vue';
-import BottomSheet from '@/Components/Base/BottomSheet.vue';
+import Modal from '@/Components/Base/Modal.vue';
 
 const props = defineProps({
     accounts: Array,
@@ -158,9 +159,9 @@ const getSaveButtonVariant = () => {
 <template>
     <Head title="Add Transaction" />
 
-    <div class="min-h-screen bg-gray-100 flex flex-col">
+    <div class="min-h-screen bg-surface-secondary flex flex-col">
         <!-- Header -->
-        <div class="bg-white border-b border-gray-200 px-4 py-3 safe-area-top">
+        <div class="bg-surface border-b border-border px-4 py-3 safe-area-top">
             <div class="flex items-center justify-between">
                 <Link
                     :href="route('transactions.index')"
@@ -193,7 +194,7 @@ const getSaveButtonVariant = () => {
             </div>
 
             <!-- Fields Card -->
-            <div class="mx-3 mt-3 bg-white rounded-xl overflow-hidden">
+            <div class="mx-3 mt-3 bg-surface rounded-xl overflow-hidden">
                 <!-- Payee (not for transfers) -->
                 <AutocompleteField
                     v-if="form.type !== 'transfer'"
@@ -214,7 +215,7 @@ const getSaveButtonVariant = () => {
                 <!-- Category (not for transfers) -->
                 <template v-if="form.type !== 'transfer'">
                     <!-- Split display -->
-                    <div v-if="form.is_split" class="flex items-center justify-between px-4 py-3.5 border-b border-gray-100">
+                    <div v-if="form.is_split" class="flex items-center justify-between px-4 py-3.5 border-b border-border">
                         <span class="text-sm text-subtle">Category</span>
                         <button
                             type="button"
@@ -303,36 +304,33 @@ const getSaveButtonVariant = () => {
         </form>
 
         <!-- Split Transaction Modal -->
-        <BottomSheet :show="showSplitModal" title="Split Transaction" @close="showSplitModal = false">
+        <Modal :show="showSplitModal" title="Split Transaction" @close="showSplitModal = false">
             <div class="px-4 pb-2 text-sm text-subtle">
                 Total: {{ formatCurrency(parseFloat(form.amount) || 0) }}
             </div>
 
             <div class="flex-1 overflow-y-auto">
-                <div class="bg-white mx-3 rounded-xl overflow-hidden">
+                <div class="bg-surface mx-3 rounded-xl overflow-hidden">
                     <div
                         v-for="(item, index) in splitItems"
                         :key="index"
-                        class="flex items-center px-4 py-3.5 border-b border-gray-100 last:border-b-0"
+                        class="flex items-center px-4 py-3.5 border-b border-border last:border-b-0"
                     >
                         <div class="flex-1 min-w-0">
-                            <select
+                            <SelectInput
                                 v-model="item.category_id"
-                                :class="[
-                                    'w-full bg-transparent text-sm font-medium focus:outline-none appearance-none cursor-pointer truncate',
-                                    item.category_id ? 'text-primary' : 'text-gray-400'
-                                ]"
-                            >
-                                <option value="">Select category</option>
-                                <optgroup v-for="group in categories" :key="group.id" :label="group.name">
-                                    <option v-for="cat in group.categories" :key="cat.id" :value="cat.id">
-                                        {{ cat.icon }} {{ cat.name }}
-                                    </option>
-                                </optgroup>
-                            </select>
+                                :options="categories"
+                                placeholder="Select category"
+                                variant="minimal"
+                                grouped
+                                value-key="id"
+                                label-key="name"
+                                group-label-key="name"
+                                group-options-key="categories"
+                            />
                         </div>
                         <div class="flex items-center gap-2 ml-3">
-                            <span :class="['text-sm font-medium', item.amount ? 'text-expense' : 'text-gray-400']">$</span>
+                            <span :class="['text-sm font-medium', item.amount ? 'text-expense' : 'text-subtle']">$</span>
                             <input
                                 v-model="item.amount"
                                 type="text"
@@ -340,14 +338,14 @@ const getSaveButtonVariant = () => {
                                 placeholder="0.00"
                                 :class="[
                                     'w-20 bg-transparent text-sm font-medium text-right focus:outline-none',
-                                    item.amount ? 'text-expense' : 'text-gray-400'
+                                    item.amount ? 'text-expense' : 'text-subtle'
                                 ]"
                             />
                         </div>
                         <button
                             type="button"
                             @click="removeSplitItem(index)"
-                            class="ml-2 p-1 text-gray-300 hover:text-expense transition-colors"
+                            class="ml-2 p-1 text-border-dark hover:text-expense transition-colors"
                             :class="{ 'opacity-30 pointer-events-none': splitItems.length <= 1 }"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -367,13 +365,13 @@ const getSaveButtonVariant = () => {
             </div>
 
             <!-- Remaining indicator -->
-            <div class="px-4 py-3 border-t border-gray-100">
+            <div class="px-4 py-3 border-t border-border">
                 <div class="flex justify-between items-center">
                     <span class="text-sm text-subtle">Remaining</span>
                     <span
                         class="font-mono font-semibold"
                         :class="{
-                            'text-yellow-600': remainingAmount > 0.01,
+                            'text-expense': remainingAmount > 0.01,
                             'text-income': isSplitBalanced,
                             'text-expense': remainingAmount < -0.01,
                         }"
@@ -381,11 +379,11 @@ const getSaveButtonVariant = () => {
                         {{ formatCurrency(remainingAmount) }}
                     </span>
                 </div>
-                <div class="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div class="mt-2 h-2 bg-border rounded-full overflow-hidden">
                     <div
                         class="h-full transition-all duration-300"
                         :class="{
-                            'bg-yellow-500': remainingAmount > 0.01,
+                            'bg-expense': remainingAmount > 0.01,
                             'bg-income': isSplitBalanced,
                             'bg-expense': remainingAmount < -0.01,
                         }"
@@ -400,7 +398,7 @@ const getSaveButtonVariant = () => {
                     <Button :disabled="!isSplitBalanced" @click="saveSplit" class="flex-1">Save Split</Button>
                 </div>
             </template>
-        </BottomSheet>
+        </Modal>
 
         <!-- Update Payee Default Prompt -->
         <Teleport to="body">
@@ -417,7 +415,7 @@ const getSaveButtonVariant = () => {
                     class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
                     @click.self="submitWithPayeeUpdate(false)"
                 >
-                    <div class="w-full max-w-sm bg-white rounded-2xl p-6 space-y-4">
+                    <div class="w-full max-w-sm bg-surface rounded-2xl p-6 space-y-4">
                         <h3 class="text-lg font-semibold text-body">Update default category?</h3>
                         <p class="text-subtle">
                             You're using a different category for <strong>{{ selectedPayeeForUpdate?.name }}</strong>.

@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Guy — Component Showcase</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Primary (Brand Green) */
+            --primary: #7ED957;
+            --primary-light: #8bd93e;
+            --primary-bg: #edfce0;
+            --primary-hover: #6bc94a;
+
+            /* Secondary (Brand Blue) */
+            --secondary: #2196F3;
+            --secondary-hover: #1976D2;
+            --secondary-bg: rgba(33, 150, 243, 0.1);
+
+            /* Financial Semantics */
+            --income: #2E7D32;
+            --income-hover: #256b29;
+            --income-bg: rgba(46, 125, 50, 0.1);
+            --expense: #E5533D;
+            --expense-hover: #d04a35;
+            --expense-bg: rgba(229, 83, 61, 0.1);
+            --transfer: #2196F3;
+
+            /* Feedback */
+            --success: #2E7D32;
+            --danger: #E5533D;
+
+            /* Surfaces */
+            --surface: #ffffff;
+            --surface-secondary: #f5f5f5;
+
+            /* Borders */
+            --border: #e5e7eb;
+            --border-dark: #d1d5db;
+
+            /* Text */
+            --body: #1F2933;
+            --subtle: #888888;
+            --inverse: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--surface-secondary);
+            color: var(--body);
+            line-height: 1.5;
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .mobile-preview {
+            max-width: 428px;
+            margin: 0 auto 24px;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--subtle);
+            margin: 40px 0 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin: 24px 0 12px;
+            color: var(--body);
+        }
+
+        .subtitle {
+            color: var(--subtle);
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        .component-note {
+            font-size: 12px;
+            color: var(--subtle);
+            margin-bottom: 12px;
+            font-style: italic;
+        }
+
+        .component-code {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            background: var(--surface-secondary);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: var(--secondary);
+        }
+
+        /* Brand Palette Card */
+        .palette-card {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 32px;
+        }
+
+        .palette-title {
+            text-align: center;
+            margin-bottom: 24px;
+            font-size: 20px;
+        }
+
+        .palette-title span {
+            font-weight: 400;
+            color: var(--subtle);
+        }
+
+        .palette-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+        }
+
+        .palette-swatch {
+            display: flex;
+            flex-direction: column;
+            border-radius: 12px;
+            overflow: hidden;
+            background: var(--surface);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .palette-color {
+            height: 80px;
+        }
+
+        .palette-label {
+            padding: 10px 6px;
+            text-align: center;
+        }
+
+        .palette-name {
+            font-size: 9px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: var(--subtle);
+            margin-bottom: 2px;
+        }
+
+        .palette-role {
+            font-size: 8px;
+            color: var(--subtle);
+            opacity: 0.7;
+        }
+
+        .palette-hex {
+            display: inline-block;
+            background: var(--surface-secondary);
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 9px;
+            font-weight: 500;
+            color: var(--body);
+            margin-top: 4px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        /* ==========================================
+           BUTTON COMPONENT
+           ========================================== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-height: 44px;
+        }
+
+        .btn-sm { padding: 8px 16px; font-size: 12px; min-height: 36px; }
+        .btn-lg { padding: 16px 32px; font-size: 16px; min-height: 52px; }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--body);
+        }
+        .btn-primary:hover { background: var(--primary-hover); }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: var(--inverse);
+        }
+        .btn-secondary:hover { background: var(--secondary-hover); }
+
+        .btn-danger {
+            background: var(--danger);
+            color: var(--inverse);
+        }
+        .btn-danger:hover { background: var(--expense-hover); }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--secondary);
+        }
+        .btn-ghost:hover { background: var(--surface-secondary); }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--secondary);
+            border: 2px solid var(--secondary);
+        }
+        .btn-outline:hover { background: var(--secondary-bg); }
+
+        .btn-income {
+            background: var(--income);
+            color: var(--inverse);
+        }
+        .btn-income:hover { background: var(--income-hover); }
+
+        .btn-expense {
+            background: var(--expense);
+            color: var(--inverse);
+        }
+        .btn-expense:hover { background: var(--expense-hover); }
+
+        .btn-transfer {
+            background: var(--transfer);
+            color: var(--inverse);
+        }
+        .btn-transfer:hover { background: var(--secondary-hover); }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        /* ==========================================
+           FORM ROW COMPONENT
+           ========================================== */
+        .form-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .form-row:last-child {
+            border-bottom: none;
+        }
+
+        .form-label {
+            font-size: 14px;
+            color: var(--subtle);
+        }
+
+        .form-value {
+            font-size: 14px;
+            color: var(--body);
+            text-align: right;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .form-value.placeholder {
+            color: var(--subtle);
+        }
+
+        .form-value.selected {
+            color: var(--secondary);
+        }
+
+        .form-value.income {
+            color: var(--income);
+            font-family: 'IBM Plex Mono', monospace;
+            font-weight: 600;
+        }
+
+        .form-value.expense {
+            color: var(--expense);
+            font-family: 'IBM Plex Mono', monospace;
+            font-weight: 600;
+        }
+
+        .form-value .chevron {
+            color: var(--subtle);
+        }
+
+        /* ==========================================
+           SEGMENTED CONTROL COMPONENT
+           ========================================== */
+        .segmented-control {
+            display: flex;
+            background: var(--surface-secondary);
+            border-radius: 10px;
+            padding: 4px;
+        }
+
+        .segment {
+            flex: 1;
+            padding: 10px 16px;
+            text-align: center;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--subtle);
+        }
+
+        .segment.active-primary {
+            background: var(--primary);
+            color: var(--body);
+        }
+
+        .segment.active-expense {
+            background: var(--expense);
+            color: var(--inverse);
+        }
+
+        .segment.active-income {
+            background: var(--income);
+            color: var(--inverse);
+        }
+
+        .segment.active-transfer {
+            background: var(--transfer);
+            color: var(--inverse);
+        }
+
+        /* ==========================================
+           AVAILABLE TO BUDGET (HERO CARD)
+           ========================================== */
+        .hero-card {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border-radius: 16px;
+            padding: 24px;
+            color: var(--body);
+            text-align: center;
+        }
+
+        .hero-label {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 4px;
+        }
+
+        .hero-amount {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 36px;
+            font-weight: 700;
+        }
+
+        /* ==========================================
+           ACCOUNT CARD COMPONENT
+           ========================================== */
+        .account-card {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            padding: 16px;
+            background: var(--surface);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-left: 4px solid var(--secondary); /* Default color */
+        }
+
+        .account-card:hover {
+            background: var(--surface-secondary);
+        }
+
+        /* Account type border colors */
+        .account-card.cash { border-left-color: var(--primary); }
+        .account-card.checking { border-left-color: var(--secondary); }
+        .account-card.savings { border-left-color: var(--income); }
+        .account-card.credit-card { border-left-color: var(--expense); }
+
+        .account-info {
+            display: flex;
+            gap: 12px;
+        }
+
+        .account-icon {
+            font-size: 24px;
+        }
+
+        .account-name {
+            font-weight: 500;
+            color: var(--body);
+        }
+
+        .account-pending {
+            font-size: 12px;
+            color: var(--expense);
+        }
+
+        .account-balance {
+            text-align: right;
+        }
+
+        .account-balance-main {
+            font-family: 'IBM Plex Mono', monospace;
+            font-weight: 600;
+        }
+
+        .account-balance-cleared {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+            color: var(--subtle);
+        }
+
+        /* ==========================================
+           FAB COMPONENT
+           ========================================== */
+        .fab-container {
+            position: relative;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 16px;
+        }
+
+        .fab {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(126, 217, 87, 0.4);
+            cursor: pointer;
+            transition: box-shadow 0.2s;
+        }
+
+        .fab:hover {
+            box-shadow: 0 6px 16px rgba(126, 217, 87, 0.5);
+        }
+
+        .fab svg {
+            width: 24px;
+            height: 24px;
+            stroke: var(--body);
+            fill: none;
+            stroke-width: 2.5;
+        }
+
+        /* ==========================================
+           BOTTOM SHEET PREVIEW
+           ========================================== */
+        .bottom-sheet-preview {
+            background: var(--surface);
+            border-radius: 16px 16px 0 0;
+            overflow: hidden;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+        }
+
+        .bottom-sheet-handle {
+            display: flex;
+            justify-content: center;
+            padding: 12px 0 8px;
+        }
+
+        .bottom-sheet-handle-bar {
+            width: 40px;
+            height: 4px;
+            background: var(--border-dark);
+            border-radius: 2px;
+        }
+
+        .bottom-sheet-header {
+            padding: 0 16px 12px;
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .bottom-sheet-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .bottom-sheet-content {
+            padding: 8px 0;
+        }
+
+        .bottom-sheet-option {
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .bottom-sheet-option:hover {
+            background: var(--surface-secondary);
+        }
+
+        .bottom-sheet-option.selected {
+            color: var(--secondary);
+            font-weight: 500;
+        }
+
+        .bottom-sheet-option .checkmark {
+            color: var(--secondary);
+        }
+
+        .bottom-sheet-group-header {
+            padding: 8px 16px;
+            background: var(--surface-secondary);
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--subtle);
+        }
+
+        .bottom-sheet-footer {
+            padding: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        /* ==========================================
+           TRANSACTION LIST
+           ========================================== */
+        .transaction {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .transaction:last-child {
+            border-bottom: none;
+        }
+
+        .transaction-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .transaction-payee {
+            font-weight: 500;
+            color: var(--body);
+        }
+
+        .transaction-category {
+            font-size: 13px;
+            color: var(--subtle);
+        }
+
+        .transaction-amount {
+            font-family: 'IBM Plex Mono', monospace;
+            font-weight: 600;
+        }
+
+        .transaction-amount.expense {
+            color: var(--expense);
+        }
+
+        .transaction-amount.income {
+            color: var(--income);
+        }
+
+        .transaction-amount.transfer {
+            color: var(--transfer);
+        }
+
+        /* ==========================================
+           ALERTS / FEEDBACK
+           ========================================== */
+        .alert {
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+        }
+
+        .alert-success {
+            background: var(--income-bg);
+            color: var(--success);
+        }
+
+        .alert-danger {
+            background: var(--expense-bg);
+            color: var(--danger);
+        }
+
+        /* ==========================================
+           CHIPS / TAGS
+           ========================================== */
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .chip-primary {
+            background: var(--primary-bg);
+            color: var(--primary-hover);
+        }
+
+        .chip-secondary {
+            background: var(--secondary-bg);
+            color: var(--secondary-hover);
+        }
+
+        .chip-expense {
+            background: var(--expense-bg);
+            color: var(--expense);
+        }
+
+        .chip-income {
+            background: var(--income-bg);
+            color: var(--income);
+        }
+
+        .chips {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        /* ==========================================
+           LINKS
+           ========================================== */
+        .link {
+            color: var(--secondary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .link:hover {
+            text-decoration: underline;
+        }
+
+        /* ==========================================
+           SECTION HEADERS
+           ========================================== */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .section-title {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--subtle);
+        }
+
+        /* Variants grid */
+        .variants-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        /* ==========================================
+           DATE PICKER WHEEL
+           ========================================== */
+        .date-picker-wheels {
+            position: relative;
+            display: flex;
+            height: 220px;
+            padding: 0 16px;
+        }
+
+        .date-picker-highlight {
+            position: absolute;
+            left: 16px;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 44px;
+            background: var(--surface-secondary);
+            border-radius: 8px;
+            pointer-events: none;
+        }
+
+        .date-wheel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .date-wheel-month {
+            flex: 1;
+        }
+
+        .date-wheel-day {
+            width: 64px;
+        }
+
+        .date-wheel-year {
+            width: 80px;
+        }
+
+        .date-wheel-item {
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: var(--subtle);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .date-wheel-item.selected {
+            color: var(--body);
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .date-wheel-item.faded {
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Budget Guy</h1>
+        <p class="subtitle">Component Showcase & Design System</p>
+
+        <!-- ==========================================
+             BRAND PALETTE
+             ========================================== -->
+        <div class="palette-card">
+            <div class="palette-title">Brand Palette</div>
+            <div class="palette-grid">
+                <div class="palette-swatch">
+                    <div class="palette-color" style="background: var(--primary)"></div>
+                    <div class="palette-label">
+                        <div class="palette-name">Brand Green</div>
+                        <div class="palette-role">(Primary)</div>
+                        <div class="palette-hex">#7ED957</div>
+                    </div>
+                </div>
+                <div class="palette-swatch">
+                    <div class="palette-color" style="background: var(--income)"></div>
+                    <div class="palette-label">
+                        <div class="palette-name">Income Green</div>
+                        <div class="palette-role"></div>
+                        <div class="palette-hex">#2E7D32</div>
+                    </div>
+                </div>
+                <div class="palette-swatch">
+                    <div class="palette-color" style="background: var(--expense)"></div>
+                    <div class="palette-label">
+                        <div class="palette-name">Expense Red</div>
+                        <div class="palette-role"></div>
+                        <div class="palette-hex">#E5533D</div>
+                    </div>
+                </div>
+                <div class="palette-swatch">
+                    <div class="palette-color" style="background: var(--secondary)"></div>
+                    <div class="palette-label">
+                        <div class="palette-name">Brand Blue</div>
+                        <div class="palette-role">(Secondary)</div>
+                        <div class="palette-hex">#2196F3</div>
+                    </div>
+                </div>
+                <div class="palette-swatch">
+                    <div class="palette-color" style="background: var(--body)"></div>
+                    <div class="palette-label">
+                        <div class="palette-name">Charcoal</div>
+                        <div class="palette-role">(Text/Base)</div>
+                        <div class="palette-hex">#1F2933</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             BUTTON COMPONENT
+             ========================================== -->
+        <h2>Button Component</h2>
+        <p class="component-note">Vue: <span class="component-code">&lt;Button variant="primary"&gt;</span> | File: Components/Base/Button.vue</p>
+
+        <h3>Variants</h3>
+        <div class="card">
+            <div class="btn-group">
+                <button class="btn btn-primary">Primary</button>
+                <button class="btn btn-secondary">Secondary</button>
+                <button class="btn btn-danger">Danger</button>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-ghost">Ghost</button>
+                <button class="btn btn-outline">Outline</button>
+            </div>
+        </div>
+
+        <h3>Transaction Type Variants</h3>
+        <div class="card">
+            <div class="btn-group">
+                <button class="btn btn-income">Income</button>
+                <button class="btn btn-expense">Expense</button>
+                <button class="btn btn-transfer">Transfer</button>
+            </div>
+        </div>
+
+        <h3>Sizes</h3>
+        <div class="card">
+            <div class="btn-group" style="align-items: center;">
+                <button class="btn btn-primary btn-sm">Small</button>
+                <button class="btn btn-primary">Medium</button>
+                <button class="btn btn-primary btn-lg">Large</button>
+            </div>
+        </div>
+
+        <h3>States</h3>
+        <div class="card">
+            <div class="btn-group">
+                <button class="btn btn-primary">Normal</button>
+                <button class="btn btn-primary" disabled>Disabled</button>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             AVAILABLE TO BUDGET
+             ========================================== -->
+        <h2>AvailableToBudget Component</h2>
+        <p class="component-note">Vue: <span class="component-code">&lt;AvailableToBudget :amount="2450"&gt;</span> | File: Components/Domain/AvailableToBudget.vue</p>
+
+        <div class="mobile-preview">
+            <div class="hero-card">
+                <div class="hero-label">Available to Budget</div>
+                <div class="hero-amount">$2,450.00</div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             ACCOUNT CARD
+             ========================================== -->
+        <h2>AccountCard Component</h2>
+        <p class="component-note">Vue: <span class="component-code">&lt;AccountCard :account="account"&gt;</span> | File: Components/Domain/AccountCard.vue</p>
+        <p class="component-note">Each account type has a colored left border: Cash (green), Checking (blue), Savings (dark green), Credit Card (red)</p>
+
+        <div class="mobile-preview">
+            <div class="card" style="padding: 0;">
+                <div class="account-card cash">
+                    <div class="account-info">
+                        <span class="account-icon">💵</span>
+                        <div>
+                            <div class="account-name">Wallet Cash</div>
+                        </div>
+                    </div>
+                    <div class="account-balance">
+                        <div class="account-balance-main">$150.00</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="padding: 0;">
+                <div class="account-card checking">
+                    <div class="account-info">
+                        <span class="account-icon">🏦</span>
+                        <div>
+                            <div class="account-name">Chase Checking</div>
+                        </div>
+                    </div>
+                    <div class="account-balance">
+                        <div class="account-balance-main">$4,250.00</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="padding: 0;">
+                <div class="account-card savings">
+                    <div class="account-info">
+                        <span class="account-icon">💰</span>
+                        <div>
+                            <div class="account-name">Emergency Fund</div>
+                        </div>
+                    </div>
+                    <div class="account-balance">
+                        <div class="account-balance-main">$12,500.00</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="padding: 0;">
+                <div class="account-card credit-card">
+                    <div class="account-info">
+                        <span class="account-icon">💳</span>
+                        <div>
+                            <div class="account-name">Amex Credit Card</div>
+                            <div class="account-pending">-$125.00 pending</div>
+                        </div>
+                    </div>
+                    <div class="account-balance">
+                        <div class="account-balance-main" style="color: var(--expense);">-$1,892.50</div>
+                        <div class="account-balance-cleared">-$1,767.50</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             SEGMENTED CONTROL
+             ========================================== -->
+        <h2>SegmentedControl Component</h2>
+        <p class="component-note">Vue: <span class="component-code">&lt;SegmentedControl v-model="type" :options="options"&gt;</span> | File: Components/Form/SegmentedControl.vue</p>
+
+        <h3>Transaction Type (with colors)</h3>
+        <div class="mobile-preview">
+            <div class="card">
+                <div class="segmented-control" style="margin-bottom: 16px">
+                    <div class="segment active-expense">Expense</div>
+                    <div class="segment">Income</div>
+                    <div class="segment">Transfer</div>
+                </div>
+                <div class="segmented-control" style="margin-bottom: 16px">
+                    <div class="segment">Expense</div>
+                    <div class="segment active-income">Income</div>
+                    <div class="segment">Transfer</div>
+                </div>
+                <div class="segmented-control">
+                    <div class="segment">Expense</div>
+                    <div class="segment">Income</div>
+                    <div class="segment active-transfer">Transfer</div>
+                </div>
+            </div>
+        </div>
+
+        <h3>Default (primary color)</h3>
+        <div class="mobile-preview">
+            <div class="card">
+                <div class="segmented-control">
+                    <div class="segment active-primary">Monthly</div>
+                    <div class="segment">Weekly</div>
+                    <div class="segment">Daily</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             FORM FIELDS
+             ========================================== -->
+        <h2>Form Field Components</h2>
+        <p class="component-note">Vue: <span class="component-code">&lt;TextField&gt;</span>, <span class="component-code">&lt;PickerField&gt;</span>, <span class="component-code">&lt;DateField&gt;</span>, <span class="component-code">&lt;AmountField&gt;</span></p>
+
+        <h3>TextField & AutocompleteField</h3>
+        <div class="mobile-preview">
+            <div class="card" style="padding: 0;">
+                <div class="form-row">
+                    <span class="form-label">Payee</span>
+                    <span class="form-value">Whole Foods Market</span>
+                </div>
+                <div class="form-row">
+                    <span class="form-label">Memo</span>
+                    <span class="form-value placeholder">Add a note...</span>
+                </div>
+            </div>
+        </div>
+
+        <h3>PickerField (with selection indicator)</h3>
+        <div class="mobile-preview">
+            <div class="card" style="padding: 0;">
+                <div class="form-row">
+                    <span class="form-label">Category</span>
+                    <span class="form-value selected">
+                        🛒 Groceries
+                        <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 18l6-6-6-6"/>
+                        </svg>
+                    </span>
+                </div>
+                <div class="form-row">
+                    <span class="form-label">Account</span>
+                    <span class="form-value placeholder">
+                        Select account
+                        <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 18l6-6-6-6"/>
+                        </svg>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <h3>DateField</h3>
+        <div class="mobile-preview">
+            <div class="card" style="padding: 0;">
+                <div class="form-row">
+                    <span class="form-label">Date</span>
+                    <span class="form-value">
+                        Today, Jan 18
+                        <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 18l6-6-6-6"/>
+                        </svg>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <h3>DateField Wheel Picker (opened)</h3>
+        <p class="component-note">iOS-style wheel picker with Month, Day, Year columns</p>
+        <div class="mobile-preview">
+            <div class="bottom-sheet-preview">
+                <div class="bottom-sheet-handle">
+                    <div class="bottom-sheet-handle-bar"></div>
+                </div>
+                <div class="bottom-sheet-header">
+                    <div class="bottom-sheet-title">Date</div>
+                </div>
+                <div class="date-picker-wheels">
+                    <!-- Selection highlight bar -->
+                    <div class="date-picker-highlight"></div>
+
+                    <!-- Month wheel -->
+                    <div class="date-wheel date-wheel-month">
+                        <div class="date-wheel-item faded">November</div>
+                        <div class="date-wheel-item faded">December</div>
+                        <div class="date-wheel-item selected">January</div>
+                        <div class="date-wheel-item faded">February</div>
+                        <div class="date-wheel-item faded">March</div>
+                    </div>
+
+                    <!-- Day wheel -->
+                    <div class="date-wheel date-wheel-day">
+                        <div class="date-wheel-item faded">16</div>
+                        <div class="date-wheel-item faded">17</div>
+                        <div class="date-wheel-item selected">18</div>
+                        <div class="date-wheel-item faded">19</div>
+                        <div class="date-wheel-item faded">20</div>
+                    </div>
+
+                    <!-- Year wheel -->
+                    <div class="date-wheel date-wheel-year">
+                        <div class="date-wheel-item faded">2024</div>
+                        <div class="date-wheel-item faded">2025</div>
+                        <div class="date-wheel-item selected">2026</div>
+                        <div class="date-wheel-item faded">2027</div>
+                        <div class="date-wheel-item faded">2028</div>
+                    </div>
+                </div>
+                <div class="bottom-sheet-footer">
+                    <button class="btn btn-primary" style="width: 100%;">Select Sat, Jan 18, 2026</button>
+                </div>
+            </div>
+        </div>
+
+        <h3>AmountField (transaction type colors)</h3>
+        <div class="mobile-preview">
+            <div class="card" style="padding: 0;">
+                <div class="form-row">
+                    <span class="form-label">Amount</span>
+                    <span class="form-value expense">-$82.14</span>
+                </div>
+                <div class="form-row">
+                    <span class="form-label">Amount</span>
+                    <span class="form-value income">+$2,450.00</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             BOTTOM SHEET
+             ========================================== -->
+        <h2>BottomSheet Component</h2>
+        <p class="component-note">Vue: <span class="component-code">&lt;BottomSheet :show="isOpen" title="Select Category"&gt;</span> | File: Components/Base/BottomSheet.vue</p>
+
+        <div class="mobile-preview">
+            <div class="bottom-sheet-preview">
+                <div class="bottom-sheet-handle">
+                    <div class="bottom-sheet-handle-bar"></div>
+                </div>
+                <div class="bottom-sheet-header">
+                    <div class="bottom-sheet-title">Category</div>
+                </div>
+                <div class="bottom-sheet-content">
+                    <div class="bottom-sheet-group-header">Everyday Expenses</div>
+                    <div class="bottom-sheet-option selected">
+                        <span>🛒 Groceries</span>
+                        <span class="checkmark">✓</span>
+                    </div>
+                    <div class="bottom-sheet-option">
+                        <span>🍽️ Restaurants</span>
+                    </div>
+                    <div class="bottom-sheet-option">
+                        <span>⛽ Transportation</span>
+                    </div>
+                    <div class="bottom-sheet-group-header">Bills</div>
+                    <div class="bottom-sheet-option">
+                        <span>🏠 Rent/Mortgage</span>
+                    </div>
+                    <div class="bottom-sheet-option">
+                        <span>💡 Utilities</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             FAB
+             ========================================== -->
+        <h2>FAB Component</h2>
+        <p class="component-note">Vue: <span class="component-code">&lt;FAB href="/transactions/create"&gt;</span> | File: Components/Domain/FAB.vue</p>
+
+        <div class="mobile-preview">
+            <div class="card">
+                <div class="fab-container">
+                    <div class="fab">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             TRANSACTION LIST
+             ========================================== -->
+        <h2>Transaction List</h2>
+        <p class="component-note">Pattern used in transaction index pages</p>
+
+        <div class="mobile-preview">
+            <div class="card">
+                <div class="section-header">
+                    <span class="section-title">Today</span>
+                    <a href="#" class="link">View All</a>
+                </div>
+                <div class="transaction">
+                    <div class="transaction-info">
+                        <span class="transaction-payee">Whole Foods</span>
+                        <span class="transaction-category">Groceries</span>
+                    </div>
+                    <span class="transaction-amount expense">-$82.14</span>
+                </div>
+                <div class="transaction">
+                    <div class="transaction-info">
+                        <span class="transaction-payee">Spotify</span>
+                        <span class="transaction-category">Subscriptions</span>
+                    </div>
+                    <span class="transaction-amount expense">-$9.99</span>
+                </div>
+                <div class="transaction">
+                    <div class="transaction-info">
+                        <span class="transaction-payee">Paycheck</span>
+                        <span class="transaction-category">Income</span>
+                    </div>
+                    <span class="transaction-amount income">+$2,450.00</span>
+                </div>
+                <div class="transaction">
+                    <div class="transaction-info">
+                        <span class="transaction-payee">Transfer to Savings</span>
+                        <span class="transaction-category">Transfer</span>
+                    </div>
+                    <span class="transaction-amount transfer">$500.00</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             ALERTS
+             ========================================== -->
+        <h2>Feedback Messages</h2>
+        <p class="component-note">Alert/toast patterns for user feedback</p>
+
+        <div class="mobile-preview">
+            <div class="alert alert-success">
+                <span>✓</span> Transaction saved successfully
+            </div>
+            <div class="alert alert-danger">
+                <span>!</span> Please enter a valid amount
+            </div>
+        </div>
+
+        <!-- ==========================================
+             CHIPS
+             ========================================== -->
+        <h2>Chips & Tags</h2>
+        <p class="component-note">Used for status indicators and labels</p>
+
+        <div class="card">
+            <div class="chips">
+                <span class="chip chip-primary">Budgeted</span>
+                <span class="chip chip-secondary">Recurring</span>
+                <span class="chip chip-expense">Over Budget</span>
+                <span class="chip chip-income">Under Budget</span>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             LINKS
+             ========================================== -->
+        <h2>Links & Text Actions</h2>
+        <p class="component-note">Interactive text elements use secondary (blue) color</p>
+
+        <div class="card">
+            <p>Need help? <a href="#" class="link">View documentation</a></p>
+            <p style="margin-top: 12px"><a href="#" class="link">+ Add new category</a></p>
+            <p style="margin-top: 12px"><a href="#" class="link">Edit account settings →</a></p>
+        </div>
+
+        <div style="height: 48px"></div>
+    </div>
+</body>
+</html>

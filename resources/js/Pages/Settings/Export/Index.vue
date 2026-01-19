@@ -91,11 +91,11 @@ const formatDateForInput = (dateStr) => {
                 <h2 class="text-sm font-semibold text-subtle uppercase tracking-wide px-1 mb-2">
                     Format
                 </h2>
-                <div class="bg-surface rounded-card divide-y divide-gray-100">
+                <div class="bg-surface rounded-card divide-y divide-border">
                     <label
                         v-for="option in formatOptions"
                         :key="option.value"
-                        class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50"
+                        class="flex items-center justify-between p-4 cursor-pointer hover:bg-surface-secondary"
                     >
                         <div>
                             <div class="text-body font-medium">{{ option.label }}</div>
@@ -116,11 +116,11 @@ const formatDateForInput = (dateStr) => {
                 <h2 class="text-sm font-semibold text-subtle uppercase tracking-wide px-1 mb-2">
                     What to Export
                 </h2>
-                <div class="bg-surface rounded-card divide-y divide-gray-100">
+                <div class="bg-surface rounded-card divide-y divide-border">
                     <label
                         v-for="option in typeOptions"
                         :key="option.value"
-                        class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50"
+                        class="flex items-center justify-between p-4 cursor-pointer hover:bg-surface-secondary"
                     >
                         <div>
                             <div class="text-body font-medium">{{ option.label }}</div>
@@ -141,7 +141,7 @@ const formatDateForInput = (dateStr) => {
                 <h2 class="text-sm font-semibold text-subtle uppercase tracking-wide px-1 mb-2">
                     Date Range (Optional)
                 </h2>
-                <div class="bg-surface rounded-card overflow-hidden divide-y divide-gray-100">
+                <div class="bg-surface rounded-card overflow-hidden divide-y divide-border">
                     <div class="flex items-center justify-between px-4 py-3.5">
                         <span class="text-sm text-subtle">From</span>
                         <input
@@ -150,7 +150,7 @@ const formatDateForInput = (dateStr) => {
                             :max="endDate || undefined"
                             :class="[
                                 'bg-transparent text-right text-sm font-medium focus:outline-none',
-                                startDate ? 'text-primary' : 'text-gray-400'
+                                startDate ? 'text-primary' : 'text-subtle'
                             ]"
                         />
                     </div>
@@ -162,7 +162,7 @@ const formatDateForInput = (dateStr) => {
                             :min="startDate || undefined"
                             :class="[
                                 'bg-transparent text-right text-sm font-medium focus:outline-none',
-                                endDate ? 'text-primary' : 'text-gray-400'
+                                endDate ? 'text-primary' : 'text-subtle'
                             ]"
                         />
                     </div>

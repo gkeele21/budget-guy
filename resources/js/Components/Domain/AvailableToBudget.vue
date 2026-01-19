@@ -15,8 +15,8 @@ const formatCurrency = (amount) => {
 </script>
 
 <template>
-    <div class="bg-gradient-to-br from-primary to-primary-light rounded-card p-4 text-white">
-        <div class="text-sm font-medium text-inverse/80">Available to Budget</div>
+    <div class="bg-gradient-to-br from-primary to-primary-light rounded-card p-4">
+        <div class="text-sm font-medium text-body/80">Available to Budget</div>
         <div class="text-3xl font-bold font-mono mt-1">
             {{ formatCurrency(amount) }}
         </div>

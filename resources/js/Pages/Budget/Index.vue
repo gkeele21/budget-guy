@@ -1,5 +1,6 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
+import Button from '@/Components/Base/Button.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { ref, computed, reactive, nextTick } from 'vue';
 
@@ -31,9 +32,31 @@ const editedAmounts = reactive({});
 // Track which field is being edited (to show input vs formatted)
 const editingField = ref(null);
 
+// Global toggle for showing category details (default/avg)
+const showDetails = ref(false);
+
+// Calculate group totals
+const getGroupTotals = (group) => {
+    let budgeted = 0;
+    let spent = 0;
+    // Handle both array and object (Laravel Collection) formats
+    const categories = Array.isArray(group.categories) ? group.categories : Object.values(group.categories);
+    categories.forEach(category => {
+        budgeted += budgetAmounts[category.id] || 0;
+        spent += category.spent || 0;
+    });
+    return {
+        budgeted,
+        spent,
+        available: budgeted - spent,
+    };
+};
+
 // Initialize budget amounts from props
 props.categoryGroups.forEach(group => {
-    group.categories.forEach(category => {
+    // Handle both array and object (Laravel Collection) formats
+    const categories = Array.isArray(group.categories) ? group.categories : Object.values(group.categories);
+    categories.forEach(category => {
         budgetAmounts[category.id] = category.budgeted;
     });
 });
@@ -287,11 +310,11 @@ const showToast = (message, type = 'success') => {
             >
                 <div
                     v-if="toast.show"
-                    class="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-lg shadow-lg text-white text-sm"
+                    class="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-lg shadow-lg text-sm"
                     :class="{
-                        'bg-primary': toast.type === 'success',
-                        'bg-blue-500': toast.type === 'info',
-                        'bg-expense': toast.type === 'error',
+                        'bg-primary text-body': toast.type === 'success',
+                        'bg-secondary text-inverse': toast.type === 'info',
+                        'bg-expense text-inverse': toast.type === 'error',
                     }"
                 >
                     {{ toast.message }}
@@ -302,7 +325,7 @@ const showToast = (message, type = 'success') => {
             <div class="flex items-center justify-between bg-surface rounded-card p-3">
                 <button
                     @click="navigateMonth(previousMonth)"
-                    class="p-2 hover:bg-gray-100 rounded-full"
+                    class="p-2 hover:bg-surface-secondary rounded-full"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -311,7 +334,7 @@ const showToast = (message, type = 'success') => {
                 <span class="font-semibold text-body">{{ formatMonth(month) }}</span>
                 <button
                     @click="navigateMonth(nextMonth)"
-                    class="p-2 hover:bg-gray-100 rounded-full"
+                    class="p-2 hover:bg-surface-secondary rounded-full"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -319,28 +342,37 @@ const showToast = (message, type = 'success') => {
                 </button>
             </div>
 
-            <!-- Quick Fill Button -->
-            <button
-                @click="handleQuickFill"
-                class="w-full px-4 py-3 rounded-card text-sm font-medium transition-colors"
-                :class="hasProjections
-                    ? 'bg-primary text-white hover:bg-primary/90'
-                    : 'bg-surface border border-gray-200 text-body hover:bg-gray-50'"
-            >
-                {{ hasProjections ? 'Apply Projections' : 'Copy Last Month' }}
-            </button>
+            <!-- Options Row: Toggle + Quick Fill -->
+            <div class="flex items-center justify-between">
+                <!-- Show Details Toggle -->
+                <div
+                    @click="showDetails = !showDetails"
+                    class="flex items-center gap-2 cursor-pointer select-none"
+                >
+                    <div
+                        class="relative w-8 h-[18px] rounded-full transition-colors"
+                        :class="showDetails ? 'bg-primary' : 'bg-border'"
+                    >
+                        <div
+                            class="absolute top-[2px] left-[2px] w-[14px] h-[14px] bg-white rounded-full shadow transition-transform"
+                            :class="{ 'translate-x-[14px]': showDetails }"
+                        ></div>
+                    </div>
+                    <span class="text-xs text-subtle">Show defaults & averages</span>
+                </div>
+
+                <!-- Quick Fill Button -->
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    @click="handleQuickFill"
+                >
+                    {{ hasProjections ? 'Apply Projections' : 'Copy Last Month' }}
+                </Button>
+            </div>
 
             <!-- Summary Stats -->
-            <div class="grid grid-cols-3 gap-2">
-                <div class="bg-surface rounded-card p-3 text-center">
-                    <div class="text-xs text-subtle uppercase">To Budget</div>
-                    <div
-                        class="font-mono font-semibold"
-                        :class="summary.toBudget >= 0 ? 'text-income' : 'text-expense'"
-                    >
-                        {{ formatCurrency(summary.toBudget) }}
-                    </div>
-                </div>
+            <div class="grid grid-cols-2 gap-2">
                 <div class="bg-surface rounded-card p-3 text-center">
                     <div class="text-xs text-subtle uppercase">Budgeted</div>
                     <div class="font-mono font-semibold text-body">
@@ -355,6 +387,19 @@ const showToast = (message, type = 'success') => {
                 </div>
             </div>
 
+            <!-- Ready to Assign -->
+            <div
+                class="rounded-card p-4 flex items-center justify-between"
+                :class="summary.toBudget >= 0 ? 'bg-primary' : 'bg-expense'"
+            >
+                <div class="text-xs uppercase tracking-wider text-inverse/90">
+                    Ready to Assign
+                </div>
+                <div class="font-mono text-2xl font-semibold text-inverse">
+                    {{ formatCurrency(summary.toBudget) }}
+                </div>
+            </div>
+
             <!-- Category Groups -->
             <div v-for="group in categoryGroups" :key="group.id" class="space-y-2">
                 <h2 class="text-sm font-semibold text-subtle uppercase tracking-wide px-1">
@@ -363,7 +408,7 @@ const showToast = (message, type = 'success') => {
 
                 <div class="bg-surface rounded-card overflow-hidden">
                     <!-- Column Headers -->
-                    <div class="grid grid-cols-12 gap-1 px-3 py-2 bg-gray-50 text-xs text-subtle uppercase border-b border-gray-100">
+                    <div class="grid grid-cols-12 gap-1 px-3 py-2 bg-surface-secondary text-xs text-subtle uppercase border-b border-border">
                         <div class="col-span-4">Category</div>
                         <div class="col-span-3 text-right">Budget</div>
                         <div class="col-span-2 text-right">Spent</div>
@@ -374,57 +419,94 @@ const showToast = (message, type = 'success') => {
                     <div
                         v-for="category in group.categories"
                         :key="category.id"
-                        class="grid grid-cols-12 gap-1 px-3 py-3 items-center border-b border-gray-100 last:border-b-0"
+                        class="border-b border-border last:border-b-0"
                     >
-                        <!-- Category Name (Clickable) -->
-                        <a
-                            :href="route('budget.category-detail', { month: month, category: category.id })"
-                            class="col-span-4 flex items-center gap-1 min-w-0 hover:text-primary transition-colors"
-                        >
-                            <span v-if="category.icon" class="flex-shrink-0 text-sm">{{ category.icon }}</span>
-                            <span class="text-sm text-body truncate hover:text-primary">{{ category.name }}</span>
-                        </a>
-
-                        <!-- Budgeted (Editable) -->
-                        <div class="col-span-3">
-                            <input
-                                v-if="editingField === category.id"
-                                v-model.number="budgetAmounts[category.id]"
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                class="w-full px-1 py-1 text-right text-sm bg-white rounded border border-primary outline-none"
-                                @blur="saveAmount(category.id)"
-                                @keyup.enter="$event.target.blur()"
-                            />
-                            <div
-                                v-else
-                                @click="startEditing(category.id)"
-                                :class="[
-                                    'w-full px-1 py-1 text-right text-sm rounded cursor-text transition-colors',
-                                    editedAmounts[category.id]
-                                        ? 'border-2 border-income bg-green-50'
-                                        : 'border border-transparent hover:bg-gray-50'
-                                ]"
+                        <!-- Main Row -->
+                        <div class="grid grid-cols-12 gap-1 px-3 pt-3 pb-1 items-center">
+                            <!-- Category Name (Clickable) -->
+                            <a
+                                :href="route('budget.category-detail', { month: month, category: category.id })"
+                                class="col-span-4 flex items-center gap-1 min-w-0 hover:text-primary transition-colors"
                             >
-                                {{ formatNumber(budgetAmounts[category.id]) }}
+                                <span v-if="category.icon" class="flex-shrink-0 text-sm">{{ category.icon }}</span>
+                                <span class="text-sm text-body truncate hover:text-primary">{{ category.name }}</span>
+                            </a>
+
+                            <!-- Budgeted (Editable) -->
+                            <div class="col-span-3">
+                                <input
+                                    v-if="editingField === category.id"
+                                    v-model.number="budgetAmounts[category.id]"
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    class="w-full px-1 py-1 text-right text-sm bg-surface rounded border border-primary outline-none"
+                                    @blur="saveAmount(category.id)"
+                                    @keyup.enter="$event.target.blur()"
+                                />
+                                <div
+                                    v-else
+                                    @click="startEditing(category.id)"
+                                    :class="[
+                                        'w-full px-1 py-1 text-right text-sm rounded cursor-text transition-colors',
+                                        editedAmounts[category.id]
+                                            ? 'border-2 border-income bg-primary-bg'
+                                            : 'border border-transparent hover:bg-surface-secondary'
+                                    ]"
+                                >
+                                    {{ formatNumber(budgetAmounts[category.id]) }}
+                                </div>
+                            </div>
+
+                            <!-- Spent -->
+                            <div class="col-span-2 text-right text-sm text-subtle">
+                                {{ formatNumber(category.spent) }}
+                            </div>
+
+                            <!-- Balance/Available (Clickable if overspent) -->
+                            <div
+                                class="col-span-3 text-right text-sm font-semibold"
+                                :class="[
+                                    isOverspent(getAvailable(category)) ? 'text-expense cursor-pointer hover:underline' : 'text-income',
+                                ]"
+                                @click="isOverspent(getAvailable(category)) && openMoveMoneyModal(category)"
+                            >
+                                {{ formatCurrency(getAvailable(category)) }}
                             </div>
                         </div>
 
-                        <!-- Spent -->
-                        <div class="col-span-2 text-right text-sm text-subtle">
-                            {{ formatNumber(category.spent) }}
-                        </div>
-
-                        <!-- Balance/Available (Clickable if overspent) -->
+                        <!-- Detail Row (Default & Avg Spent) -->
                         <div
-                            class="col-span-3 text-right text-sm font-semibold"
-                            :class="[
-                                isOverspent(getAvailable(category)) ? 'text-expense cursor-pointer hover:underline' : 'text-income',
-                            ]"
-                            @click="isOverspent(getAvailable(category)) && openMoveMoneyModal(category)"
+                            v-if="showDetails && (category.default_amount > 0 || category.avg_spent > 0)"
+                            class="grid grid-cols-12 gap-1 px-3 pb-2 items-center"
                         >
-                            {{ formatCurrency(getAvailable(category)) }}
+                            <div class="col-span-4"></div>
+                            <div class="col-span-8 flex items-center gap-3 text-xs text-subtle">
+                                <span v-if="category.default_amount > 0">
+                                    Default: {{ formatNumber(category.default_amount) }}
+                                </span>
+                                <span v-if="category.default_amount > 0 && category.avg_spent > 0">•</span>
+                                <span v-if="category.avg_spent > 0">
+                                    Avg: {{ formatNumber(category.avg_spent) }}/mo
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Group Totals Row -->
+                    <div class="grid grid-cols-12 gap-1 px-3 py-2 bg-surface-secondary text-xs font-semibold border-t border-border">
+                        <div class="col-span-4 text-subtle uppercase">Total</div>
+                        <div class="col-span-3 text-right text-body">
+                            {{ formatNumber(getGroupTotals(group).budgeted) }}
+                        </div>
+                        <div class="col-span-2 text-right text-subtle">
+                            {{ formatNumber(getGroupTotals(group).spent) }}
+                        </div>
+                        <div
+                            class="col-span-3 text-right"
+                            :class="getGroupTotals(group).available >= 0 ? 'text-income' : 'text-expense'"
+                        >
+                            {{ formatCurrency(getGroupTotals(group).available) }}
                         </div>
                     </div>
                 </div>
@@ -468,17 +550,17 @@ const showToast = (message, type = 'success') => {
                     >
                         <div
                             v-if="showMoveMoneyModal"
-                            class="w-full max-w-lg bg-white rounded-t-2xl max-h-[80vh] flex flex-col"
+                            class="w-full max-w-lg bg-surface rounded-t-2xl max-h-[80vh] flex flex-col"
                         >
                             <!-- Modal Header -->
-                            <div class="p-4 border-b border-gray-100">
+                            <div class="p-4 border-b border-border">
                                 <div class="flex items-center justify-between">
                                     <h3 class="text-lg font-semibold text-body">
                                         {{ moveMoneyTarget?.icon }} {{ moveMoneyTarget?.name }}
                                     </h3>
                                     <button
                                         @click="showMoveMoneyModal = false"
-                                        class="p-2 hover:bg-gray-100 rounded-full"
+                                        class="p-2 hover:bg-surface-secondary rounded-full"
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -499,7 +581,7 @@ const showToast = (message, type = 'success') => {
                                     v-for="category in categoriesWithSurplus"
                                     :key="category.id"
                                     @click="executeMoveMoneyFromCategory(category)"
-                                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
+                                    class="flex items-center justify-between p-3 bg-surface-secondary rounded-lg cursor-pointer hover:bg-surface-secondary transition-colors"
                                 >
                                     <div class="flex items-center gap-2">
                                         <span v-if="category.icon">{{ category.icon }}</span>
@@ -522,10 +604,10 @@ const showToast = (message, type = 'success') => {
                             </div>
 
                             <!-- Modal Footer -->
-                            <div class="p-4 border-t border-gray-100">
+                            <div class="p-4 border-t border-border">
                                 <button
                                     @click="showMoveMoneyModal = false"
-                                    class="w-full py-3 bg-gray-100 text-body rounded-card font-medium hover:bg-gray-200 transition-colors"
+                                    class="w-full py-3 bg-surface-secondary text-body rounded-card font-medium hover:bg-border transition-colors"
                                 >
                                     Done
                                 </button>
@@ -551,7 +633,7 @@ const showToast = (message, type = 'success') => {
                     class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
                     @click.self="showCopyConfirm = false"
                 >
-                    <div class="w-full max-w-sm bg-white rounded-2xl p-6 space-y-4">
+                    <div class="w-full max-w-sm bg-surface rounded-2xl p-6 space-y-4">
                         <h3 class="text-lg font-semibold text-body">Overwrite existing amounts?</h3>
                         <p class="text-subtle">
                             This month already has budget amounts. Copying from last month will overwrite them.
@@ -559,13 +641,13 @@ const showToast = (message, type = 'success') => {
                         <div class="flex gap-3">
                             <button
                                 @click="showCopyConfirm = false"
-                                class="flex-1 py-3 bg-gray-100 text-body rounded-card font-medium hover:bg-gray-200 transition-colors"
+                                class="flex-1 py-3 bg-surface-secondary text-body rounded-card font-medium hover:bg-border transition-colors"
                             >
                                 Cancel
                             </button>
                             <button
                                 @click="doCopyLastMonth"
-                                class="flex-1 py-3 bg-primary text-white rounded-card font-medium hover:bg-primary/90 transition-colors"
+                                class="flex-1 py-3 bg-primary text-body rounded-card font-medium hover:bg-primary/90 transition-colors"
                             >
                                 Overwrite
                             </button>
@@ -590,7 +672,7 @@ const showToast = (message, type = 'success') => {
                     class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
                     @click.self="showProjectionPicker = false"
                 >
-                    <div class="w-full max-w-sm bg-white rounded-2xl p-6 space-y-4">
+                    <div class="w-full max-w-sm bg-surface rounded-2xl p-6 space-y-4">
                         <h3 class="text-lg font-semibold text-body">Choose Projection</h3>
                         <p class="text-subtle text-sm">
                             Select which projection to apply to this month's budget.
@@ -600,14 +682,14 @@ const showToast = (message, type = 'success') => {
                                 v-for="projIndex in availableProjections"
                                 :key="projIndex"
                                 @click="applyProjections(parseInt(projIndex))"
-                                class="w-full py-3 bg-primary text-white rounded-card font-medium hover:bg-primary/90 transition-colors"
+                                class="w-full py-3 bg-primary text-body rounded-card font-medium hover:bg-primary/90 transition-colors"
                             >
                                 Projection {{ projIndex }}
                             </button>
                         </div>
                         <button
                             @click="showProjectionPicker = false"
-                            class="w-full py-3 bg-gray-100 text-body rounded-card font-medium hover:bg-gray-200 transition-colors"
+                            class="w-full py-3 bg-surface-secondary text-body rounded-card font-medium hover:bg-border transition-colors"
                         >
                             Cancel
                         </button>

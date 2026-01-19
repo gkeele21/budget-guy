@@ -1,6 +1,7 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
 import FAB from '@/Components/Domain/FAB.vue';
+import FilterChip from '@/Components/Base/FilterChip.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref, computed, watch } from 'vue';
 
@@ -12,7 +13,6 @@ const props = defineProps({
     startDate: String,
     endDate: String,
     clearedFilter: String,
-    recurringFilter: String,
 });
 
 // Search state
@@ -22,7 +22,6 @@ const localSearchQuery = ref(props.searchQuery || '');
 const localStartDate = ref(props.startDate || '');
 const localEndDate = ref(props.endDate || '');
 const localClearedFilter = ref(props.clearedFilter || 'all');
-const localRecurringFilter = ref(props.recurringFilter || 'all');
 const searchInputRef = ref(null);
 
 // Build params for router calls
@@ -34,9 +33,6 @@ const buildParams = () => {
     if (localEndDate.value) params.end_date = localEndDate.value;
     if (localClearedFilter.value && localClearedFilter.value !== 'all') {
         params.cleared = localClearedFilter.value;
-    }
-    if (localRecurringFilter.value && localRecurringFilter.value !== 'all') {
-        params.recurring = localRecurringFilter.value;
     }
     return params;
 };
@@ -129,13 +125,6 @@ const filterByAccount = (accountId) => {
     });
 };
 
-const setRecurringFilter = (value) => {
-    localRecurringFilter.value = value;
-    router.get(route('transactions.index'), buildParams(), {
-        preserveState: true,
-    });
-};
-
 const toggleCleared = (transaction) => {
     const newClearedState = !transaction.cleared;
     router.post(route('transactions.toggle-cleared', transaction.id), {}, {
@@ -212,8 +201,8 @@ const activeFilterDescription = computed(() => {
         <template #header-right>
             <button
                 @click="toggleFilters"
-                class="p-2 hover:bg-white/10 rounded-full transition-colors relative"
-                :class="{ 'bg-white/20': showFilters }"
+                class="p-2 hover:bg-surface/10 rounded-full transition-colors relative"
+                :class="{ 'bg-surface/20': showFilters }"
             >
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
@@ -222,8 +211,8 @@ const activeFilterDescription = computed(() => {
             </button>
             <button
                 @click="toggleSearch"
-                class="p-2 hover:bg-white/10 rounded-full transition-colors"
-                :class="{ 'bg-white/20': showSearch }"
+                class="p-2 hover:bg-surface/10 rounded-full transition-colors"
+                :class="{ 'bg-surface/20': showSearch }"
             >
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -243,7 +232,7 @@ const activeFilterDescription = computed(() => {
             >
                 <div
                     v-if="toast.show"
-                    class="fixed bottom-24 left-4 right-4 z-50 bg-body text-white rounded-card px-4 py-3 shadow-lg flex items-center justify-between"
+                    class="fixed bottom-24 left-4 right-4 z-50 bg-body text-inverse rounded-card px-4 py-3 shadow-lg flex items-center justify-between"
                 >
                     <div class="flex items-center gap-2">
                         <span class="text-income">✓</span>
@@ -251,7 +240,7 @@ const activeFilterDescription = computed(() => {
                     </div>
                     <button
                         @click="undoClear"
-                        class="text-income font-medium hover:underline"
+                        class="text-secondary font-medium hover:underline"
                     >
                         Undo
                     </button>
@@ -289,7 +278,7 @@ const activeFilterDescription = computed(() => {
                     <button
                         v-if="localSearchQuery"
                         @click="localSearchQuery = ''"
-                        class="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-200 rounded-full"
+                        class="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-surface-secondary rounded-full"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-subtle" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -309,7 +298,7 @@ const activeFilterDescription = computed(() => {
             >
                 <div v-if="showFilters" class="bg-surface rounded-card overflow-hidden">
                     <!-- Date Range -->
-                    <div class="divide-y divide-gray-100">
+                    <div class="divide-y divide-border">
                         <div class="flex items-center justify-between px-4 py-3.5">
                             <span class="text-sm text-subtle">From</span>
                             <input
@@ -318,7 +307,7 @@ const activeFilterDescription = computed(() => {
                                 :max="localEndDate || undefined"
                                 :class="[
                                     'bg-transparent text-right text-sm font-medium focus:outline-none',
-                                    localStartDate ? 'text-primary' : 'text-gray-400'
+                                    localStartDate ? 'text-primary' : 'text-subtle'
                                 ]"
                             />
                         </div>
@@ -330,14 +319,14 @@ const activeFilterDescription = computed(() => {
                                 :min="localStartDate || undefined"
                                 :class="[
                                     'bg-transparent text-right text-sm font-medium focus:outline-none',
-                                    localEndDate ? 'text-primary' : 'text-gray-400'
+                                    localEndDate ? 'text-primary' : 'text-subtle'
                                 ]"
                             />
                         </div>
                     </div>
 
                     <!-- Cleared Status -->
-                    <div class="px-4 py-3 border-t border-gray-100">
+                    <div class="px-4 py-3 border-t border-border">
                         <label class="block text-xs text-subtle mb-2">Status</label>
                         <div class="flex gap-2">
                             <button
@@ -345,8 +334,8 @@ const activeFilterDescription = computed(() => {
                                 :class="[
                                     'px-3 py-1.5 rounded-full text-sm font-medium transition-colors',
                                     localClearedFilter === 'all'
-                                        ? 'bg-primary text-white'
-                                        : 'bg-gray-100 text-subtle'
+                                        ? 'bg-primary text-body'
+                                        : 'bg-surface-secondary text-subtle'
                                 ]"
                             >
                                 All
@@ -356,8 +345,8 @@ const activeFilterDescription = computed(() => {
                                 :class="[
                                     'px-3 py-1.5 rounded-full text-sm font-medium transition-colors',
                                     localClearedFilter === 'cleared'
-                                        ? 'bg-primary text-white'
-                                        : 'bg-gray-100 text-subtle'
+                                        ? 'bg-primary text-body'
+                                        : 'bg-surface-secondary text-subtle'
                                 ]"
                             >
                                 Cleared
@@ -367,8 +356,8 @@ const activeFilterDescription = computed(() => {
                                 :class="[
                                     'px-3 py-1.5 rounded-full text-sm font-medium transition-colors',
                                     localClearedFilter === 'uncleared'
-                                        ? 'bg-primary text-white'
-                                        : 'bg-gray-100 text-subtle'
+                                        ? 'bg-primary text-body'
+                                        : 'bg-surface-secondary text-subtle'
                                 ]"
                             >
                                 Uncleared
@@ -377,17 +366,17 @@ const activeFilterDescription = computed(() => {
                     </div>
 
                     <!-- Filter Actions -->
-                    <div class="flex gap-2 px-4 py-3 border-t border-gray-100">
+                    <div class="flex gap-2 px-4 py-3 border-t border-border">
                         <button
                             @click="applyFilters"
-                            class="flex-1 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold"
+                            class="flex-1 py-2.5 bg-primary text-body rounded-xl text-sm font-semibold"
                         >
                             Apply Filters
                         </button>
                         <button
                             v-if="hasActiveFilters"
                             @click="clearFilters"
-                            class="px-4 py-2.5 text-subtle text-sm font-medium hover:bg-gray-100 rounded-xl"
+                            class="px-4 py-2.5 text-subtle text-sm font-medium hover:bg-surface-secondary rounded-xl"
                         >
                             Clear
                         </button>
@@ -401,58 +390,22 @@ const activeFilterDescription = computed(() => {
                 <button @click="clearFilters" class="text-primary ml-2">Clear</button>
             </div>
 
-            <!-- All/Recurring Toggle -->
-            <div class="flex bg-gray-200 rounded-[10px] p-1">
-                <button
-                    @click="setRecurringFilter('all')"
-                    :class="[
-                        'flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all',
-                        localRecurringFilter === 'all'
-                            ? 'bg-white text-income shadow-sm'
-                            : 'text-subtle'
-                    ]"
-                >
-                    All
-                </button>
-                <button
-                    @click="setRecurringFilter('recurring')"
-                    :class="[
-                        'flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all',
-                        localRecurringFilter === 'recurring'
-                            ? 'bg-white text-income shadow-sm'
-                            : 'text-subtle'
-                    ]"
-                >
-                    Recurring
-                </button>
-            </div>
-
             <!-- Account Filter -->
             <div class="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4">
-                <button
+                <FilterChip
+                    :active="!currentAccountId"
                     @click="filterByAccount(null)"
-                    :class="[
-                        'px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors',
-                        !currentAccountId
-                            ? 'bg-primary text-white'
-                            : 'bg-surface text-subtle hover:bg-gray-100'
-                    ]"
                 >
                     All Accounts
-                </button>
-                <button
+                </FilterChip>
+                <FilterChip
                     v-for="account in accounts"
                     :key="account.id"
+                    :active="currentAccountId === account.id"
                     @click="filterByAccount(account.id)"
-                    :class="[
-                        'px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors',
-                        currentAccountId === account.id
-                            ? 'bg-primary text-white'
-                            : 'bg-surface text-subtle hover:bg-gray-100'
-                    ]"
                 >
                     {{ account.name }}
-                </button>
+                </FilterChip>
             </div>
 
             <!-- Results Count (when searching or filtering) -->
@@ -474,28 +427,40 @@ const activeFilterDescription = computed(() => {
                         :href="route('transactions.edit', transaction.id)"
                         class="block bg-surface rounded-card p-3 shadow-sm"
                     >
-                        <div class="flex items-center justify-between">
-                            <!-- Left side: Payee + Account · Category -->
+                        <div class="flex items-start justify-between">
+                            <!-- Left side: Payee + Category/Splits -->
                             <div class="min-w-0 flex-1">
                                 <div class="flex items-center gap-1.5">
                                     <span class="font-medium text-body truncate">{{ transaction.payee }}</span>
                                     <span v-if="transaction.recurring_id" class="text-primary text-xs">↻</span>
-                                    <span v-if="transaction.is_split" class="text-xs text-primary">(split)</span>
                                 </div>
-                                <div class="text-xs text-subtle mt-0.5 truncate">
-                                    {{ transaction.account }}<template v-if="transaction.category"> · {{ transaction.category }}</template>
+                                <!-- Split categories with amounts -->
+                                <div v-if="transaction.is_split && transaction.splits" class="mt-0.5 grid grid-cols-[auto_auto] gap-x-1 gap-y-0.5 text-xs text-subtle w-fit">
+                                    <template v-for="split in transaction.splits" :key="split.id">
+                                        <span>{{ split.category }}:</span>
+                                        <span class="font-mono">{{ formatCurrency(Math.abs(split.amount)) }}</span>
+                                    </template>
+                                </div>
+                                <!-- Single category -->
+                                <div v-else-if="transaction.category" class="text-xs text-subtle mt-0.5 truncate">
+                                    {{ transaction.category }}
                                 </div>
                             </div>
 
-                            <!-- Right side: Amount + Cleared dot -->
-                            <div class="flex items-center gap-2 flex-shrink-0 ml-3">
-                                <div :class="['font-mono font-medium', getAmountColor(transaction.type)]">
-                                    {{ formatCurrency(transaction.amount) }}
+                            <!-- Right side: Amount + Account + Cleared dot -->
+                            <div class="flex items-start gap-2 flex-shrink-0 ml-3">
+                                <div class="text-right">
+                                    <div :class="['font-mono font-medium', getAmountColor(transaction.type)]">
+                                        {{ formatCurrency(transaction.amount) }}
+                                    </div>
+                                    <div v-if="!currentAccountId" class="text-xs text-subtle mt-0.5">
+                                        {{ transaction.account }}
+                                    </div>
                                 </div>
                                 <!-- Cleared Dot -->
                                 <button
                                     @click.prevent.stop="toggleCleared(transaction)"
-                                    class="flex-shrink-0 p-1"
+                                    class="flex-shrink-0 p-1 mt-0.5"
                                 >
                                     <div
                                         v-if="transaction.cleared"
@@ -503,7 +468,7 @@ const activeFilterDescription = computed(() => {
                                     ></div>
                                     <div
                                         v-else
-                                        class="w-2 h-2 rounded-full border-[1.5px] border-gray-400"
+                                        class="w-2 h-2 rounded-full border-[1.5px] border-subtle"
                                     ></div>
                                 </button>
                             </div>

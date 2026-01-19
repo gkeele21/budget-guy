@@ -183,12 +183,12 @@ accepted_at (nullable)
 
 Reference: `wireframes.html` for visual designs
 
-### 1. Dashboard (Screen 1)
+### 1. Accounts (Screen 1)
 - Shows all accounts grouped by type (Cash, Credit Cards)
-- "Available to Budget" summary card (green gradient, charcoal label, white amount)
 - Tap account → view transactions for that account
+- Used for quick balance overview and reconciliation with bank accounts
 - FAB (+) → add transaction
-- Bottom nav: Accounts | Budget | Transactions
+- Bottom nav: Budget | Transactions | Accounts | Plan
 - Settings gear icon in header
 
 ### 2. Add Transaction (Screen 2)
@@ -425,8 +425,8 @@ Sections:
 - Voice shortcut: "Move $50 from Dining to Groceries"
 - Both category budgets update, "Ready to Assign" stays same
 
-### Projection Mode
-**Purpose:** Plan your budget before the month starts
+### Plan (Projection Mode)
+**Purpose:** Plan your budget before the month starts. Accessed via the Plan tab in bottom nav.
 
 **Screen layout (sticky header):**
 1. Expected Income (editable, pre-fills from default)
@@ -435,12 +435,12 @@ Sections:
 4. Category list with Default | Projected columns (scrollable)
 
 **Flow:**
-1. Enter Projection Mode (toggle in budget view)
+1. Go to Plan tab
 2. Adjust expected income if needed (pre-filled from budget default)
 3. See "Left to Allocate" update as you work
 4. Adjust category projections — play with numbers
 5. "Apply Projections" → projections become the budget
-6. Exit projection mode → live with that budget for the month
+6. Return to Budget tab → live with that budget for the month
 
 **Key behaviors:**
 - Income + summary = sticky on scroll (always visible)

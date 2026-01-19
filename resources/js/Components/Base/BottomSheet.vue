@@ -60,16 +60,16 @@ onUnmounted(() => {
                 >
                     <div
                         v-if="show"
-                        class="relative w-full bg-white rounded-t-2xl flex flex-col"
+                        class="relative w-full bg-surface rounded-t-2xl flex flex-col"
                         :style="{ maxHeight }"
                     >
                         <!-- Handle -->
                         <div class="flex justify-center pt-3 pb-1">
-                            <div class="w-10 h-1 bg-gray-300 rounded-full" />
+                            <div class="w-10 h-1 bg-border-dark rounded-full" />
                         </div>
 
                         <!-- Header -->
-                        <div v-if="title || $slots.header" class="px-4 pb-3 border-b border-gray-100">
+                        <div v-if="title || $slots.header" class="px-4 pb-3 border-b border-border">
                             <slot name="header">
                                 <h3 class="text-lg font-semibold text-body text-center">{{ title }}</h3>
                             </slot>
@@ -81,7 +81,7 @@ onUnmounted(() => {
                         </div>
 
                         <!-- Footer -->
-                        <div v-if="$slots.footer" class="border-t border-gray-100 p-4 safe-area-bottom">
+                        <div v-if="$slots.footer" class="border-t border-border p-4 safe-area-bottom">
                             <slot name="footer" />
                         </div>
                     </div>

@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Picker Style Comparison - Budget Guy</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #7ED957;
+            --secondary: #2196F3;
+            --secondary-hover: #1976D2;
+            --surface: #ffffff;
+            --surface-secondary: #f5f5f5;
+            --border: #e5e7eb;
+            --border-dark: #d1d5db;
+            --body: #1F2933;
+            --subtle: #888888;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+            background: var(--surface-secondary);
+            color: var(--body);
+            line-height: 1.5;
+            padding: 24px;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--subtle);
+            margin-bottom: 32px;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .option-card {
+            background: var(--surface);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .option-header {
+            background: var(--surface-secondary);
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .option-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .option-desc {
+            font-size: 13px;
+            color: var(--subtle);
+        }
+
+        .phone-frame {
+            background: var(--surface);
+            margin: 20px;
+            border-radius: 24px;
+            border: 2px solid var(--border-dark);
+            overflow: hidden;
+            position: relative;
+            height: 500px;
+        }
+
+        .phone-header {
+            background: var(--surface);
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .phone-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .phone-content {
+            padding: 0;
+            height: calc(100% - 48px);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Form Row Styling */
+        .form-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface);
+        }
+
+        .form-label {
+            font-size: 14px;
+            color: var(--body);
+        }
+
+        .form-value {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--secondary);
+            cursor: pointer;
+        }
+
+        .form-value.placeholder {
+            color: var(--subtle);
+        }
+
+        .chevron {
+            width: 16px;
+            height: 16px;
+            color: var(--subtle);
+        }
+
+        /* ========================================
+           OPTION 1: BOTTOM SHEET
+           ======================================== */
+        .bottom-sheet-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: flex-end;
+        }
+
+        .bottom-sheet-overlay.active {
+            display: flex;
+        }
+
+        .bottom-sheet {
+            background: var(--surface);
+            width: 100%;
+            border-radius: 16px 16px 0 0;
+            max-height: 80%;
+            animation: slideUp 0.2s ease-out;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .bottom-sheet-handle {
+            display: flex;
+            justify-content: center;
+            padding: 12px 0 8px;
+            flex-shrink: 0;
+        }
+
+        .handle-bar {
+            width: 40px;
+            height: 4px;
+            background: var(--border-dark);
+            border-radius: 2px;
+        }
+
+        .bottom-sheet-title {
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .bottom-sheet-options {
+            padding: 8px 0;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .sheet-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 16px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .sheet-option:hover {
+            background: var(--surface-secondary);
+        }
+
+        .sheet-option.selected {
+            color: var(--secondary);
+            font-weight: 500;
+        }
+
+        .check-icon {
+            width: 20px;
+            height: 20px;
+            color: var(--secondary);
+        }
+
+        /* Category Group Headers */
+        .category-group {
+            padding: 10px 16px 6px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--subtle);
+            background: var(--surface-secondary);
+            position: sticky;
+            top: 0;
+        }
+
+        /* ========================================
+           OPTION 2: TRADITIONAL DROPDOWN
+           ======================================== */
+        .dropdown-container {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            min-width: 200px;
+            max-height: 280px;
+            overflow-y: auto;
+            z-index: 100;
+            display: none;
+            animation: fadeIn 0.15s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dropdown-menu.active {
+            display: block;
+        }
+
+        .dropdown-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .dropdown-option:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-option:hover {
+            background: var(--surface-secondary);
+        }
+
+        .dropdown-option:first-child {
+            border-radius: 8px 8px 0 0;
+        }
+
+        .dropdown-option:last-child {
+            border-radius: 0 0 8px 8px;
+        }
+
+        .dropdown-option.selected {
+            color: var(--secondary);
+            font-weight: 500;
+        }
+
+        .dropdown-group {
+            padding: 8px 16px 4px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--subtle);
+            background: var(--surface-secondary);
+            position: sticky;
+            top: 0;
+        }
+
+        /* ========================================
+           OPTION 3: FULL SCREEN MODAL
+           ======================================== */
+        .modal-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .full-modal {
+            position: absolute;
+            inset: 0;
+            background: var(--surface);
+            display: flex;
+            flex-direction: column;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            cursor: pointer;
+            color: var(--subtle);
+            font-size: 20px;
+        }
+
+        .modal-close:hover {
+            background: var(--surface-secondary);
+        }
+
+        .modal-search {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .modal-search input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+        }
+
+        .modal-search input:focus {
+            border-color: var(--secondary);
+        }
+
+        .modal-search input::placeholder {
+            color: var(--subtle);
+        }
+
+        .modal-options {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .modal-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-option:hover {
+            background: var(--surface-secondary);
+        }
+
+        .modal-option.selected {
+            color: var(--secondary);
+            font-weight: 500;
+        }
+
+        .modal-group {
+            padding: 12px 16px 8px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--subtle);
+            background: var(--surface-secondary);
+            position: sticky;
+            top: 0;
+        }
+
+        /* Pros/Cons */
+        .pros-cons {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border);
+            background: var(--surface-secondary);
+        }
+
+        .pros-cons h4 {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            color: var(--subtle);
+        }
+
+        .pro-con-list {
+            font-size: 13px;
+            list-style: none;
+        }
+
+        .pro-con-list li {
+            padding: 4px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .pro-con-list li::before {
+            position: absolute;
+            left: 0;
+        }
+
+        .pros li::before {
+            content: "✓";
+            color: #2E7D32;
+        }
+
+        .cons li::before {
+            content: "✗";
+            color: #E5533D;
+        }
+
+        .category-count {
+            text-align: center;
+            padding: 8px;
+            font-size: 11px;
+            color: var(--subtle);
+            background: #fff8e1;
+            border-bottom: 1px solid #ffe082;
+        }
+    </style>
+</head>
+<body>
+    <h1>Picker Style Comparison</h1>
+    <p class="subtitle">Click on "Category" in each phone to see the interaction (20 categories)</p>
+
+    <div class="comparison-grid">
+        <!-- Option 1: Bottom Sheet (Current) -->
+        <div class="option-card">
+            <div class="option-header">
+                <div class="option-title">1. Bottom Sheet (Current)</div>
+                <div class="option-desc">Slides up from bottom, scrollable list</div>
+            </div>
+            <div class="phone-frame">
+                <div class="phone-header">
+                    <span class="phone-title">Add Transaction</span>
+                    <span style="color: var(--subtle);">✕</span>
+                </div>
+                <div class="phone-content" id="bottomsheet-demo">
+                    <div class="form-row">
+                        <span class="form-label">Amount</span>
+                        <span class="form-value" style="font-family: 'IBM Plex Mono';">$45.00</span>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">Date</span>
+                        <span class="form-value">Jan 18, 2026</span>
+                    </div>
+                    <div class="form-row" onclick="toggleBottomSheet()" style="cursor: pointer;">
+                        <span class="form-label">Category</span>
+                        <span class="form-value" id="bs-value">
+                            <span id="bs-selected">Select...</span>
+                            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </span>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">Account</span>
+                        <span class="form-value">Checking</span>
+                    </div>
+
+                    <!-- Bottom Sheet Overlay -->
+                    <div class="bottom-sheet-overlay" id="bottomsheet-overlay" onclick="closeBottomSheet(event)">
+                        <div class="bottom-sheet" onclick="event.stopPropagation()">
+                            <div class="bottom-sheet-handle">
+                                <div class="handle-bar"></div>
+                            </div>
+                            <div class="bottom-sheet-title">Category</div>
+                            <div class="category-count">20 categories - scroll to see all</div>
+                            <div class="bottom-sheet-options">
+                                <div class="category-group">Everyday</div>
+                                <div class="sheet-option" onclick="selectBottomSheet('🍔 Dining Out')">🍔 Dining Out</div>
+                                <div class="sheet-option" onclick="selectBottomSheet('🛒 Groceries')">🛒 Groceries</div>
+                                <div class="sheet-option" onclick="selectBottomSheet('⛽ Gas')">⛽ Gas</div>
+                                <div class="sheet-option" onclick="selectBottomSheet('☕ Coffee')">☕ Coffee</div>
+                                <div class="sheet-option" onclick="selectBottomSheet('🚗 Transportation')">🚗 Transportation</div>
+
+                                <div class="category-group">Bills & Utilities</div>
+                                <div class="sheet-option" onclick="selectBottomSheet('🏠 Rent/Mortgage')">🏠 Rent/Mortgage</div>
+                                <div class="sheet-option" onclick="selectBottomSheet('💡 Electricity')">💡 Electricity</div>
+                                <div class="sheet-option" onclick="selectBottomSheet('💧 Water')">💧 Water</div>
+                                <div class="sheet-option" onclick="selectBottomSheet('📱 Phone')">📱 Phone</div>
+                                <div class="sheet-option" onclick="selectBottomSheet('📺 Internet')">📺 Internet</div>
+                                <div class="sheet-option" onclick="selectBottomSheet('🔒 Insurance')">🔒 Insurance</div>
+
+                                <div class="category-group">Personal</div>
+                                <div class="sheet-option" onclick="selectBottomSheet('👕 Clothing')">👕 Clothing</div>
+                                <div class="sheet-option" onclick="selectBottomSheet('💊 Healthcare')">💊 Healthcare</div>
+                                <div class="sheet-option" onclick="selectBottomSheet('💇 Personal Care')">💇 Personal Care</div>
+                                <div class="sheet-option" onclick="selectBottomSheet('🎁 Gifts')">🎁 Gifts</div>
+
+                                <div class="category-group">Fun & Entertainment</div>
+                                <div class="sheet-option" onclick="selectBottomSheet('🎬 Entertainment')">🎬 Entertainment</div>
+                                <div class="sheet-option" onclick="selectBottomSheet('🎮 Games')">🎮 Games</div>
+                                <div class="sheet-option" onclick="selectBottomSheet('✈️ Travel')">✈️ Travel</div>
+                                <div class="sheet-option" onclick="selectBottomSheet('📚 Books')">📚 Books</div>
+                                <div class="sheet-option" onclick="selectBottomSheet('🏋️ Fitness')">🏋️ Fitness</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pros-cons">
+                <h4>Characteristics</h4>
+                <ul class="pro-con-list pros">
+                    <li>Large touch targets for mobile</li>
+                    <li>Groups visible with sticky headers</li>
+                    <li>Familiar on iOS/Android native apps</li>
+                </ul>
+                <ul class="pro-con-list cons" style="margin-top: 8px;">
+                    <li>Can feel unexpected on desktop</li>
+                    <li>Partial screen - need to scroll</li>
+                    <li>Extra tap to dismiss</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Option 2: Traditional Dropdown -->
+        <div class="option-card">
+            <div class="option-header">
+                <div class="option-title">2. Traditional Dropdown</div>
+                <div class="option-desc">Classic dropdown menu with scroll</div>
+            </div>
+            <div class="phone-frame">
+                <div class="phone-header">
+                    <span class="phone-title">Add Transaction</span>
+                    <span style="color: var(--subtle);">✕</span>
+                </div>
+                <div class="phone-content" id="dropdown-demo">
+                    <div class="form-row">
+                        <span class="form-label">Amount</span>
+                        <span class="form-value" style="font-family: 'IBM Plex Mono';">$45.00</span>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">Date</span>
+                        <span class="form-value">Jan 18, 2026</span>
+                    </div>
+                    <div class="form-row dropdown-container">
+                        <span class="form-label">Category</span>
+                        <span class="form-value" id="dd-value" onclick="toggleDropdown()">
+                            <span id="dd-selected">Select...</span>
+                            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </span>
+                        <div class="dropdown-menu" id="dropdown-menu">
+                            <div class="dropdown-group">Everyday</div>
+                            <div class="dropdown-option" onclick="selectDropdown('🍔 Dining Out')">🍔 Dining Out</div>
+                            <div class="dropdown-option" onclick="selectDropdown('🛒 Groceries')">🛒 Groceries</div>
+                            <div class="dropdown-option" onclick="selectDropdown('⛽ Gas')">⛽ Gas</div>
+                            <div class="dropdown-option" onclick="selectDropdown('☕ Coffee')">☕ Coffee</div>
+                            <div class="dropdown-option" onclick="selectDropdown('🚗 Transportation')">🚗 Transportation</div>
+
+                            <div class="dropdown-group">Bills & Utilities</div>
+                            <div class="dropdown-option" onclick="selectDropdown('🏠 Rent/Mortgage')">🏠 Rent/Mortgage</div>
+                            <div class="dropdown-option" onclick="selectDropdown('💡 Electricity')">💡 Electricity</div>
+                            <div class="dropdown-option" onclick="selectDropdown('💧 Water')">💧 Water</div>
+                            <div class="dropdown-option" onclick="selectDropdown('📱 Phone')">📱 Phone</div>
+                            <div class="dropdown-option" onclick="selectDropdown('📺 Internet')">📺 Internet</div>
+                            <div class="dropdown-option" onclick="selectDropdown('🔒 Insurance')">🔒 Insurance</div>
+
+                            <div class="dropdown-group">Personal</div>
+                            <div class="dropdown-option" onclick="selectDropdown('👕 Clothing')">👕 Clothing</div>
+                            <div class="dropdown-option" onclick="selectDropdown('💊 Healthcare')">💊 Healthcare</div>
+                            <div class="dropdown-option" onclick="selectDropdown('💇 Personal Care')">💇 Personal Care</div>
+                            <div class="dropdown-option" onclick="selectDropdown('🎁 Gifts')">🎁 Gifts</div>
+
+                            <div class="dropdown-group">Fun & Entertainment</div>
+                            <div class="dropdown-option" onclick="selectDropdown('🎬 Entertainment')">🎬 Entertainment</div>
+                            <div class="dropdown-option" onclick="selectDropdown('🎮 Games')">🎮 Games</div>
+                            <div class="dropdown-option" onclick="selectDropdown('✈️ Travel')">✈️ Travel</div>
+                            <div class="dropdown-option" onclick="selectDropdown('📚 Books')">📚 Books</div>
+                            <div class="dropdown-option" onclick="selectDropdown('🏋️ Fitness')">🏋️ Fitness</div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">Account</span>
+                        <span class="form-value">Checking</span>
+                    </div>
+                </div>
+            </div>
+            <div class="pros-cons">
+                <h4>Characteristics</h4>
+                <ul class="pro-con-list pros">
+                    <li>Familiar to all users</li>
+                    <li>Quick to use - single click</li>
+                    <li>Doesn't take over the screen</li>
+                </ul>
+                <ul class="pro-con-list cons" style="margin-top: 8px;">
+                    <li>Small touch targets on mobile</li>
+                    <li>Cramped with 20 items</li>
+                    <li>Hard to see all groups at once</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Option 3: Full Screen Modal -->
+        <div class="option-card">
+            <div class="option-header">
+                <div class="option-title">3. Full Screen Modal</div>
+                <div class="option-desc">Dedicated screen with search</div>
+            </div>
+            <div class="phone-frame">
+                <div class="phone-header">
+                    <span class="phone-title">Add Transaction</span>
+                    <span style="color: var(--subtle);">✕</span>
+                </div>
+                <div class="phone-content" id="modal-demo">
+                    <div class="form-row">
+                        <span class="form-label">Amount</span>
+                        <span class="form-value" style="font-family: 'IBM Plex Mono';">$45.00</span>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">Date</span>
+                        <span class="form-value">Jan 18, 2026</span>
+                    </div>
+                    <div class="form-row" onclick="toggleModal()" style="cursor: pointer;">
+                        <span class="form-label">Category</span>
+                        <span class="form-value" id="modal-value">
+                            <span id="modal-selected">Select...</span>
+                            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </span>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">Account</span>
+                        <span class="form-value">Checking</span>
+                    </div>
+
+                    <!-- Full Screen Modal -->
+                    <div class="modal-overlay" id="modal-overlay">
+                        <div class="full-modal">
+                            <div class="modal-header">
+                                <div class="modal-title">Select Category</div>
+                                <div class="modal-close" onclick="closeModal()">✕</div>
+                            </div>
+                            <div class="modal-search">
+                                <input type="text" placeholder="Search categories..." id="modal-search-input" oninput="filterCategories()">
+                            </div>
+                            <div class="modal-options" id="modal-options">
+                                <div class="modal-group" data-group="everyday">Everyday</div>
+                                <div class="modal-option" data-group="everyday" onclick="selectModal('🍔 Dining Out')">🍔 Dining Out</div>
+                                <div class="modal-option" data-group="everyday" onclick="selectModal('🛒 Groceries')">🛒 Groceries</div>
+                                <div class="modal-option" data-group="everyday" onclick="selectModal('⛽ Gas')">⛽ Gas</div>
+                                <div class="modal-option" data-group="everyday" onclick="selectModal('☕ Coffee')">☕ Coffee</div>
+                                <div class="modal-option" data-group="everyday" onclick="selectModal('🚗 Transportation')">🚗 Transportation</div>
+
+                                <div class="modal-group" data-group="bills">Bills & Utilities</div>
+                                <div class="modal-option" data-group="bills" onclick="selectModal('🏠 Rent/Mortgage')">🏠 Rent/Mortgage</div>
+                                <div class="modal-option" data-group="bills" onclick="selectModal('💡 Electricity')">💡 Electricity</div>
+                                <div class="modal-option" data-group="bills" onclick="selectModal('💧 Water')">💧 Water</div>
+                                <div class="modal-option" data-group="bills" onclick="selectModal('📱 Phone')">📱 Phone</div>
+                                <div class="modal-option" data-group="bills" onclick="selectModal('📺 Internet')">📺 Internet</div>
+                                <div class="modal-option" data-group="bills" onclick="selectModal('🔒 Insurance')">🔒 Insurance</div>
+
+                                <div class="modal-group" data-group="personal">Personal</div>
+                                <div class="modal-option" data-group="personal" onclick="selectModal('👕 Clothing')">👕 Clothing</div>
+                                <div class="modal-option" data-group="personal" onclick="selectModal('💊 Healthcare')">💊 Healthcare</div>
+                                <div class="modal-option" data-group="personal" onclick="selectModal('💇 Personal Care')">💇 Personal Care</div>
+                                <div class="modal-option" data-group="personal" onclick="selectModal('🎁 Gifts')">🎁 Gifts</div>
+
+                                <div class="modal-group" data-group="fun">Fun & Entertainment</div>
+                                <div class="modal-option" data-group="fun" onclick="selectModal('🎬 Entertainment')">🎬 Entertainment</div>
+                                <div class="modal-option" data-group="fun" onclick="selectModal('🎮 Games')">🎮 Games</div>
+                                <div class="modal-option" data-group="fun" onclick="selectModal('✈️ Travel')">✈️ Travel</div>
+                                <div class="modal-option" data-group="fun" onclick="selectModal('📚 Books')">📚 Books</div>
+                                <div class="modal-option" data-group="fun" onclick="selectModal('🏋️ Fitness')">🏋️ Fitness</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pros-cons">
+                <h4>Characteristics</h4>
+                <ul class="pro-con-list pros">
+                    <li>Search for quick filtering</li>
+                    <li>Full space for all options</li>
+                    <li>Clear navigation with X</li>
+                    <li>Large touch targets</li>
+                </ul>
+                <ul class="pro-con-list cons" style="margin-top: 8px;">
+                    <li>Feels like a page navigation</li>
+                    <li>More disruptive flow</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div style="max-width: 800px; margin: 32px auto; background: var(--surface); border-radius: 12px; padding: 24px;">
+        <h3 style="margin-bottom: 16px;">Observations with 20 Categories</h3>
+        <p style="color: var(--body); line-height: 1.7;">
+            <strong>Bottom Sheet:</strong> Works reasonably well - the grouped headers help organize, and scrolling feels natural. The partial coverage keeps context of where you are.
+        </p>
+        <p style="color: var(--body); line-height: 1.7; margin-top: 12px;">
+            <strong>Dropdown:</strong> Gets cramped quickly. The small scrollable area makes it hard to browse, especially on mobile where touch targets feel tight.
+        </p>
+        <p style="color: var(--body); line-height: 1.7; margin-top: 12px;">
+            <strong>Full Modal:</strong> The search box becomes very useful with this many options. If users know what they want, they can type "groc" and jump right to Groceries. The full screen feels more intentional.
+        </p>
+    </div>
+
+    <script>
+        // Bottom Sheet Demo
+        function toggleBottomSheet() {
+            document.getElementById('bottomsheet-overlay').classList.add('active');
+        }
+
+        function closeBottomSheet(e) {
+            if (e.target === document.getElementById('bottomsheet-overlay')) {
+                document.getElementById('bottomsheet-overlay').classList.remove('active');
+            }
+        }
+
+        function selectBottomSheet(value) {
+            document.getElementById('bs-selected').textContent = value;
+            document.getElementById('bs-value').classList.remove('placeholder');
+            document.getElementById('bottomsheet-overlay').classList.remove('active');
+
+            document.querySelectorAll('#bottomsheet-demo .sheet-option').forEach(opt => {
+                opt.classList.toggle('selected', opt.textContent === value);
+            });
+        }
+
+        // Dropdown Demo
+        function toggleDropdown() {
+            document.getElementById('dropdown-menu').classList.toggle('active');
+        }
+
+        function selectDropdown(value) {
+            document.getElementById('dd-selected').textContent = value;
+            document.getElementById('dd-value').classList.remove('placeholder');
+            document.getElementById('dropdown-menu').classList.remove('active');
+
+            document.querySelectorAll('#dropdown-demo .dropdown-option').forEach(opt => {
+                opt.classList.toggle('selected', opt.textContent === value);
+            });
+        }
+
+        // Full Modal Demo
+        function toggleModal() {
+            document.getElementById('modal-overlay').classList.add('active');
+            document.getElementById('modal-search-input').value = '';
+            filterCategories();
+        }
+
+        function closeModal() {
+            document.getElementById('modal-overlay').classList.remove('active');
+        }
+
+        function selectModal(value) {
+            document.getElementById('modal-selected').textContent = value;
+            document.getElementById('modal-value').classList.remove('placeholder');
+            closeModal();
+
+            document.querySelectorAll('#modal-demo .modal-option').forEach(opt => {
+                opt.classList.toggle('selected', opt.textContent === value);
+            });
+        }
+
+        function filterCategories() {
+            const search = document.getElementById('modal-search-input').value.toLowerCase();
+            const options = document.querySelectorAll('#modal-options .modal-option');
+            const groups = document.querySelectorAll('#modal-options .modal-group');
+
+            const visibleGroups = new Set();
+
+            options.forEach(opt => {
+                const matches = opt.textContent.toLowerCase().includes(search);
+                opt.style.display = matches ? 'flex' : 'none';
+                if (matches) {
+                    visibleGroups.add(opt.dataset.group);
+                }
+            });
+
+            groups.forEach(group => {
+                group.style.display = visibleGroups.has(group.dataset.group) ? 'block' : 'none';
+            });
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.dropdown-container')) {
+                document.getElementById('dropdown-menu').classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>

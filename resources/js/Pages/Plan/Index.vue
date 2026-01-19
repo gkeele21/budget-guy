@@ -165,11 +165,11 @@ const showToast = (message, type = 'success') => {
             >
                 <div
                     v-if="toast.show"
-                    class="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-lg shadow-lg text-white text-sm"
+                    class="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-lg shadow-lg text-sm"
                     :class="{
-                        'bg-primary': toast.type === 'success',
-                        'bg-blue-500': toast.type === 'info',
-                        'bg-expense': toast.type === 'error',
+                        'bg-primary text-body': toast.type === 'success',
+                        'bg-secondary text-inverse': toast.type === 'info',
+                        'bg-expense text-inverse': toast.type === 'error',
                     }"
                 >
                     {{ toast.message }}
@@ -177,19 +177,19 @@ const showToast = (message, type = 'success') => {
             </Transition>
 
             <!-- Projection Header (Sticky) -->
-            <div class="sticky top-0 z-10 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-card p-4 space-y-3">
+            <div class="sticky top-0 z-10 bg-gradient-to-r from-secondary/5 to-secondary/5 border border-secondary/20 rounded-card p-4 space-y-3">
                 <div class="flex items-center justify-between">
                     <h3 class="font-semibold text-body">Plan Your Budget</h3>
                     <div class="flex gap-2">
                         <button
                             @click="saveProjections"
-                            class="px-3 py-1 bg-primary text-white rounded text-sm font-medium hover:bg-primary/90"
+                            class="px-3 py-1 bg-primary text-body rounded text-sm font-medium hover:bg-primary/90"
                         >
                             Save
                         </button>
                         <button
                             @click="clearProjections"
-                            class="px-3 py-1 bg-gray-200 text-body rounded text-sm font-medium hover:bg-gray-300"
+                            class="px-3 py-1 bg-surface-secondary text-body rounded text-sm font-medium hover:bg-border"
                         >
                             Clear All
                         </button>
@@ -203,7 +203,7 @@ const showToast = (message, type = 'success') => {
                             v-model.number="expectedIncome"
                             type="number"
                             step="0.01"
-                            class="w-full mt-1 px-2 py-1 text-center font-mono font-semibold text-income bg-white border border-gray-200 rounded focus:border-primary focus:outline-none"
+                            class="w-full mt-1 px-2 py-1 text-center font-mono font-semibold text-income bg-surface border border-border rounded focus:border-primary focus:outline-none"
                         />
                     </div>
                     <div>
@@ -226,7 +226,7 @@ const showToast = (message, type = 'success') => {
                 <div v-if="hasAnyProjections" class="flex gap-2 justify-center pt-2">
                     <button
                         @click="applyProjections(1)"
-                        class="px-4 py-2 bg-primary text-white rounded-card text-sm font-medium hover:bg-primary/90"
+                        class="px-4 py-2 bg-primary text-body rounded-card text-sm font-medium hover:bg-primary/90"
                     >
                         Apply to Current Month
                     </button>
@@ -241,7 +241,7 @@ const showToast = (message, type = 'success') => {
 
                 <div class="bg-surface rounded-card overflow-hidden">
                     <!-- Column Headers -->
-                    <div class="grid grid-cols-12 gap-2 px-3 py-2 bg-blue-50 text-xs text-subtle uppercase border-b border-blue-100">
+                    <div class="grid grid-cols-12 gap-2 px-3 py-2 bg-secondary/10 text-xs text-subtle uppercase border-b border-secondary/10">
                         <div class="col-span-4">Category</div>
                         <div class="col-span-2 text-right">Default</div>
                         <div class="col-span-2 text-right">Proj 1</div>
@@ -253,7 +253,7 @@ const showToast = (message, type = 'success') => {
                     <div
                         v-for="category in group.categories"
                         :key="category.id"
-                        class="grid grid-cols-12 gap-2 px-3 py-3 items-center border-b border-blue-100 last:border-b-0"
+                        class="grid grid-cols-12 gap-2 px-3 py-3 items-center border-b border-secondary/10 last:border-b-0"
                     >
                         <!-- Category Name -->
                         <div class="col-span-4 flex items-center gap-2 min-w-0">
@@ -275,7 +275,7 @@ const showToast = (message, type = 'success') => {
                                 step="0.01"
                                 min="0"
                                 placeholder="-"
-                                class="w-full px-1 py-1 text-right text-sm font-mono bg-white border border-gray-200 rounded focus:border-primary focus:outline-none"
+                                class="w-full px-1 py-1 text-right text-sm font-mono bg-surface border border-border rounded focus:border-primary focus:outline-none"
                             />
                             <div
                                 v-if="getProjectionDifference(category, '1') !== null"
@@ -295,7 +295,7 @@ const showToast = (message, type = 'success') => {
                                 step="0.01"
                                 min="0"
                                 placeholder="-"
-                                class="w-full px-1 py-1 text-right text-sm font-mono bg-white border border-gray-200 rounded focus:border-primary focus:outline-none"
+                                class="w-full px-1 py-1 text-right text-sm font-mono bg-surface border border-border rounded focus:border-primary focus:outline-none"
                             />
                             <div
                                 v-if="getProjectionDifference(category, '2') !== null"
@@ -315,7 +315,7 @@ const showToast = (message, type = 'success') => {
                                 step="0.01"
                                 min="0"
                                 placeholder="-"
-                                class="w-full px-1 py-1 text-right text-sm font-mono bg-white border border-gray-200 rounded focus:border-primary focus:outline-none"
+                                class="w-full px-1 py-1 text-right text-sm font-mono bg-surface border border-border rounded focus:border-primary focus:outline-none"
                             />
                             <div
                                 v-if="getProjectionDifference(category, '3') !== null"
@@ -342,7 +342,7 @@ const showToast = (message, type = 'success') => {
             </div>
 
             <!-- Help Text -->
-            <div class="bg-blue-50 border border-blue-200 rounded-card p-4 text-sm text-body">
+            <div class="bg-secondary/10 border border-secondary/20 rounded-card p-4 text-sm text-body">
                 <h4 class="font-semibold mb-2">How to use projections</h4>
                 <ul class="list-disc list-inside space-y-1 text-subtle">
                     <li>Set your expected monthly income at the top</li>

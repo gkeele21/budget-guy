@@ -10,7 +10,7 @@ defineProps({
     <div>
         <div
             class="flex items-center justify-between px-4 py-3.5"
-            :class="{ 'border-b border-gray-100': borderBottom && !error }"
+            :class="{ 'border-b border-border': borderBottom && !error }"
         >
             <span class="text-sm text-subtle shrink-0">{{ label }}</span>
             <div class="flex-1 flex justify-end items-center min-w-0 ml-4">

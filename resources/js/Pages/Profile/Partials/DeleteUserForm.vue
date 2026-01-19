@@ -39,11 +39,11 @@ const closeModal = () => {
 <template>
     <section class="space-y-6">
         <header>
-            <h2 class="text-lg font-medium text-gray-900">
+            <h2 class="text-lg font-medium text-body">
                 Delete Account
             </h2>
 
-            <p class="mt-1 text-sm text-gray-600">
+            <p class="mt-1 text-sm text-subtle">
                 Once your account is deleted, all of its resources and data will
                 be permanently deleted. Before deleting your account, please
                 download any data or information that you wish to retain.
@@ -67,12 +67,12 @@ const closeModal = () => {
                     class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
                     @click.self="closeModal"
                 >
-                    <div class="bg-white rounded-2xl p-6 max-w-md w-full">
-                        <h2 class="text-lg font-medium text-gray-900">
+                    <div class="bg-surface rounded-2xl p-6 max-w-md w-full">
+                        <h2 class="text-lg font-medium text-body">
                             Are you sure you want to delete your account?
                         </h2>
 
-                        <p class="mt-1 text-sm text-gray-600">
+                        <p class="mt-1 text-sm text-subtle">
                             Once your account is deleted, all of its resources and data
                             will be permanently deleted. Please enter your password to
                             confirm you would like to permanently delete your account.

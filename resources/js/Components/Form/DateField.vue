@@ -211,12 +211,12 @@ const tempDisplayValue = computed(() => {
             :disabled="disabled"
             class="flex items-center gap-1 text-sm font-medium"
             :class="[
-                displayValue ? 'text-body' : 'text-gray-400',
+                displayValue ? 'text-secondary' : 'text-subtle',
                 disabled ? 'opacity-50' : '',
             ]"
         >
             <span>{{ displayValue || 'Select date' }}</span>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-subtle shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
             </svg>
         </button>
@@ -225,7 +225,7 @@ const tempDisplayValue = computed(() => {
     <BottomSheet :show="isOpen" :title="label" @close="closePicker">
         <div class="relative">
             <!-- Selection highlight bar -->
-            <div class="absolute inset-x-4 top-1/2 -translate-y-1/2 h-11 bg-gray-100 rounded-lg pointer-events-none z-0" />
+            <div class="absolute inset-x-4 top-1/2 -translate-y-1/2 h-11 bg-surface-secondary rounded-lg pointer-events-none z-0" />
 
             <!-- Wheels container -->
             <div class="flex relative z-10" style="height: 220px;">
@@ -245,7 +245,7 @@ const tempDisplayValue = computed(() => {
                         :key="month"
                         class="flex items-center justify-center cursor-pointer transition-all duration-150"
                         :class="[
-                            index === tempMonth ? 'text-body font-semibold text-lg' : 'text-gray-400 text-base'
+                            index === tempMonth ? 'text-body font-semibold text-lg' : 'text-subtle text-base'
                         ]"
                         style="height: 44px; scroll-snap-align: center;"
                         @click="selectItem('month', index)"
@@ -273,7 +273,7 @@ const tempDisplayValue = computed(() => {
                         :key="day"
                         class="flex items-center justify-center cursor-pointer transition-all duration-150"
                         :class="[
-                            day === tempDay ? 'text-body font-semibold text-lg' : 'text-gray-400 text-base'
+                            day === tempDay ? 'text-body font-semibold text-lg' : 'text-subtle text-base'
                         ]"
                         style="height: 44px; scroll-snap-align: center;"
                         @click="selectItem('day', day)"
@@ -301,7 +301,7 @@ const tempDisplayValue = computed(() => {
                         :key="year"
                         class="flex items-center justify-center cursor-pointer transition-all duration-150"
                         :class="[
-                            year === tempYear ? 'text-body font-semibold text-lg' : 'text-gray-400 text-base'
+                            year === tempYear ? 'text-body font-semibold text-lg' : 'text-subtle text-base'
                         ]"
                         style="height: 44px; scroll-snap-align: center;"
                         @click="selectItem('year', year)"
@@ -319,7 +319,7 @@ const tempDisplayValue = computed(() => {
             <button
                 type="button"
                 @click="confirm"
-                class="w-full bg-primary text-white py-3 rounded-xl font-semibold"
+                class="w-full bg-primary text-body py-3 rounded-xl font-semibold"
             >
                 Select {{ tempDisplayValue }}
             </button>

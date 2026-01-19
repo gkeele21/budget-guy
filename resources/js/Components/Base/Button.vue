@@ -3,7 +3,7 @@ import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 
 const props = defineProps({
-    variant: { type: String, default: 'primary' }, // primary, secondary, danger, ghost, income, expense, transfer
+    variant: { type: String, default: 'primary' }, // primary, secondary, danger, ghost, outline, income, expense, transfer
     size: { type: String, default: 'md' }, // sm, md, lg
     disabled: { type: Boolean, default: false },
     loading: { type: Boolean, default: false },
@@ -15,13 +15,11 @@ const props = defineProps({
 const baseClasses = 'inline-flex items-center justify-center font-semibold rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
 
 const variantClasses = {
-    primary: 'bg-primary text-inverse hover:bg-primary-hover focus:ring-primary',
-    secondary: 'bg-gray-100 text-body hover:bg-gray-200 focus:ring-gray-300',
-    danger: 'bg-danger text-inverse hover:bg-danger-hover focus:ring-danger',
-    ghost: 'bg-transparent text-subtle hover:bg-gray-100 focus:ring-gray-300',
-    success: 'bg-success text-inverse hover:bg-success-hover focus:ring-success',
-    warning: 'bg-warning text-inverse hover:bg-warning-hover focus:ring-warning',
-    info: 'bg-info text-inverse hover:bg-info-hover focus:ring-info',
+    primary: 'bg-primary text-body hover:bg-primary-hover focus:ring-primary',
+    secondary: 'bg-secondary text-inverse hover:bg-secondary-hover focus:ring-secondary',
+    danger: 'bg-danger text-inverse hover:bg-danger/80 focus:ring-danger',
+    ghost: 'bg-transparent text-secondary hover:bg-surface-secondary focus:ring-secondary',
+    outline: 'bg-transparent text-secondary border-2 border-secondary hover:bg-secondary/10 focus:ring-secondary',
     // Transaction type variants
     income: 'bg-income text-inverse hover:bg-income-hover focus:ring-income',
     expense: 'bg-expense text-inverse hover:bg-expense-hover focus:ring-expense',

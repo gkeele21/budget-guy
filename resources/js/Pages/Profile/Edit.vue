@@ -225,7 +225,7 @@ const closeDeleteModal = () => {
                     class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
                     @click.self="closeDeleteModal"
                 >
-                    <div class="w-full max-w-sm bg-white rounded-2xl p-6 space-y-4">
+                    <div class="w-full max-w-sm bg-surface rounded-2xl p-6 space-y-4">
                         <h3 class="text-lg font-semibold text-body">Delete Account?</h3>
                         <p class="text-subtle text-sm">
                             This action cannot be undone. All your data will be permanently deleted.

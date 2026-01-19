@@ -10,6 +10,52 @@ use Inertia\Inertia;
 
 class BudgetController extends Controller
 {
+    /**
+     * Calculate the average spent for all categories over the calendar year (excluding current month).
+     * Returns a map of category_id => average_spent.
+     */
+    private function calculateAverageSpentBulk(array $categoryIds, string $currentMonth): array
+    {
+        // Get the year from the current month
+        $year = date('Y', strtotime($currentMonth . '-01'));
+
+        // Start of the year
+        $startDate = $year . '-01-01';
+
+        // End of the month before the current month (or end of previous year if viewing January)
+        $currentMonthNum = (int) date('m', strtotime($currentMonth . '-01'));
+        if ($currentMonthNum === 1) {
+            // If viewing January, look at previous year
+            $prevYear = $year - 1;
+            $startDate = $prevYear . '-01-01';
+            $endDate = $prevYear . '-12-31';
+        } else {
+            // End of the previous month within the same year
+            $endDate = date('Y-m-t', strtotime($currentMonth . '-01 -1 month'));
+        }
+
+        // Single query to get total spent per category in the date range
+        $spentData = \App\Models\Transaction::whereIn('category_id', $categoryIds)
+            ->where('type', 'expense')
+            ->whereBetween('date', [$startDate, $endDate])
+            ->selectRaw('category_id, SUM(ABS(amount)) as total_spent, COUNT(DISTINCT DATE_FORMAT(date, "%Y-%m")) as months_with_data')
+            ->groupBy('category_id')
+            ->get()
+            ->keyBy('category_id');
+
+        $result = [];
+        foreach ($categoryIds as $categoryId) {
+            $data = $spentData->get($categoryId);
+            if ($data && $data->months_with_data > 0) {
+                $result[$categoryId] = round($data->total_spent / $data->months_with_data, 2);
+            } else {
+                $result[$categoryId] = 0;
+            }
+        }
+
+        return $result;
+    }
+
     public function create()
     {
         return Inertia::render('Budgets/Create');
@@ -68,7 +114,7 @@ class BudgetController extends Controller
         $month = $month ?? now()->format('Y-m');
 
         // Get all category groups with categories and their monthly budget data
-        $categoryGroups = $budget->categoryGroups()
+        $groups = $budget->categoryGroups()
             ->with(['categories' => function ($query) use ($month) {
                 $query->orderBy('sort_order')
                     ->with(['monthlyBudgets' => function ($q) use ($month) {
@@ -76,12 +122,19 @@ class BudgetController extends Controller
                     }]);
             }])
             ->orderBy('sort_order')
-            ->get()
-            ->map(function ($group) use ($month) {
+            ->get();
+
+        // Collect all category IDs for bulk average calculation
+        $allCategoryIds = $groups->pluck('categories')->flatten()->pluck('id')->toArray();
+
+        // Calculate average spent for all categories in one query (calendar year)
+        $avgSpentMap = $this->calculateAverageSpentBulk($allCategoryIds, $month);
+
+        $categoryGroups = $groups->map(function ($group) use ($month, $avgSpentMap) {
                 return [
                     'id' => $group->id,
                     'name' => $group->name,
-                    'categories' => $group->categories->map(function ($category) use ($month) {
+                    'categories' => $group->categories->map(function ($category) use ($month, $avgSpentMap) {
                         $budgeted = $category->getBudgetedForMonth($month);
                         $spent = $category->getSpentForMonth($month);
                         $available = $budgeted - $spent;
@@ -94,6 +147,7 @@ class BudgetController extends Controller
                             'spent' => $spent,
                             'available' => $available,
                             'default_amount' => (float) ($category->default_amount ?? 0),
+                            'avg_spent' => $avgSpentMap[$category->id] ?? 0,
                             'projections' => $category->projections ?? [],
                         ];
                     }),

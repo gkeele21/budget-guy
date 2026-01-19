@@ -26,10 +26,10 @@ const logout = () => {
                 <h2 class="text-sm font-semibold text-subtle uppercase tracking-wide px-1 mb-2">
                     Budget
                 </h2>
-                <div class="bg-surface rounded-card divide-y divide-gray-100">
+                <div class="bg-surface rounded-card divide-y divide-border">
                     <Link
                         :href="route('settings.accounts')"
-                        class="flex items-center justify-between p-4 hover:bg-gray-50"
+                        class="flex items-center justify-between p-4 hover:bg-surface-secondary"
                     >
                         <div class="flex items-center gap-3">
                             <span class="text-xl">🏦</span>
@@ -42,7 +42,7 @@ const logout = () => {
                     </Link>
                     <Link
                         :href="route('settings.categories')"
-                        class="flex items-center justify-between p-4 hover:bg-gray-50"
+                        class="flex items-center justify-between p-4 hover:bg-surface-secondary"
                     >
                         <div class="flex items-center gap-3">
                             <span class="text-xl">📁</span>
@@ -55,7 +55,7 @@ const logout = () => {
                     </Link>
                     <Link
                         :href="route('recurring.index')"
-                        class="flex items-center justify-between p-4 hover:bg-gray-50"
+                        class="flex items-center justify-between p-4 hover:bg-surface-secondary"
                     >
                         <div class="flex items-center gap-3">
                             <span class="text-xl">🔄</span>
@@ -68,7 +68,7 @@ const logout = () => {
                     </Link>
                     <Link
                         :href="route('payees.index')"
-                        class="flex items-center justify-between p-4 hover:bg-gray-50"
+                        class="flex items-center justify-between p-4 hover:bg-surface-secondary"
                     >
                         <div class="flex items-center gap-3">
                             <span class="text-xl">👥</span>
@@ -79,9 +79,10 @@ const logout = () => {
                             <span>›</span>
                         </div>
                     </Link>
+                    <!-- Export Data - hidden for now
                     <Link
                         :href="route('export.index')"
-                        class="flex items-center justify-between p-4 hover:bg-gray-50"
+                        class="flex items-center justify-between p-4 hover:bg-surface-secondary"
                     >
                         <div class="flex items-center gap-3">
                             <span class="text-xl">📤</span>
@@ -89,9 +90,10 @@ const logout = () => {
                         </div>
                         <span class="text-subtle">›</span>
                     </Link>
+                    -->
                     <Link
                         :href="route('sharing.index')"
-                        class="flex items-center justify-between p-4 hover:bg-gray-50"
+                        class="flex items-center justify-between p-4 hover:bg-surface-secondary"
                     >
                         <div class="flex items-center gap-3">
                             <span class="text-xl">🔗</span>
@@ -109,7 +111,7 @@ const logout = () => {
                 class="block bg-primary/10 border border-primary/20 rounded-card p-4 hover:bg-primary/20 transition-colors"
             >
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-semibold">
+                    <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-inverse font-semibold">
                         {{ pendingInviteCount }}
                     </div>
                     <div>
@@ -126,10 +128,10 @@ const logout = () => {
                 <h2 class="text-sm font-semibold text-subtle uppercase tracking-wide px-1 mb-2">
                     Account
                 </h2>
-                <div class="bg-surface rounded-card divide-y divide-gray-100">
+                <div class="bg-surface rounded-card divide-y divide-border">
                     <Link
                         :href="route('profile.edit')"
-                        class="flex items-center justify-between p-4 hover:bg-gray-50"
+                        class="flex items-center justify-between p-4 hover:bg-surface-secondary"
                     >
                         <div class="flex items-center gap-3">
                             <span class="text-xl">👤</span>
@@ -142,7 +144,7 @@ const logout = () => {
                     </Link>
                     <button
                         @click="logout"
-                        class="w-full flex items-center gap-3 p-4 hover:bg-gray-50 text-left"
+                        class="w-full flex items-center gap-3 p-4 hover:bg-surface-secondary text-left"
                     >
                         <span class="text-xl">🚪</span>
                         <span class="text-expense">Sign Out</span>

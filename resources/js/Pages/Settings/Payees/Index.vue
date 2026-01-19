@@ -5,7 +5,7 @@ import { ref, computed } from 'vue';
 import TextField from '@/Components/Form/TextField.vue';
 import PickerField from '@/Components/Form/PickerField.vue';
 import Button from '@/Components/Base/Button.vue';
-import BottomSheet from '@/Components/Base/BottomSheet.vue';
+import Modal from '@/Components/Base/Modal.vue';
 
 const props = defineProps({
     payees: Array,
@@ -132,7 +132,7 @@ const getCategoryName = (categoryId) => {
                 <div
                     v-for="payee in filteredPayees"
                     :key="payee.id"
-                    class="flex items-center justify-between px-4 py-3 border-b border-gray-100 last:border-b-0"
+                    class="flex items-center justify-between px-4 py-3 border-b border-border last:border-b-0"
                 >
                     <div class="flex-1 min-w-0">
                         <div class="font-medium text-body">{{ payee.name }}</div>
@@ -143,25 +143,12 @@ const getCategoryName = (categoryId) => {
                             </span>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <button
-                            @click="openEditModal(payee)"
-                            class="p-2 text-subtle hover:text-primary hover:bg-gray-100 rounded-full transition-colors"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                        </button>
-                        <button
-                            v-if="payee.transaction_count === 0"
-                            @click="openDeleteConfirm(payee)"
-                            class="p-2 text-subtle hover:text-expense hover:bg-red-50 rounded-full transition-colors"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                        </button>
-                    </div>
+                    <button
+                        @click="openEditModal(payee)"
+                        class="p-2 text-subtle hover:text-primary"
+                    >
+                        <span class="text-lg">›</span>
+                    </button>
                 </div>
             </div>
 
@@ -177,7 +164,7 @@ const getCategoryName = (categoryId) => {
             </div>
 
             <!-- Info Card -->
-            <div class="bg-blue-50 border border-blue-200 rounded-card p-4 text-sm text-blue-800">
+            <div class="bg-secondary/10 border border-secondary/20 rounded-card p-4 text-sm text-secondary">
                 <p>
                     <strong>Tip:</strong> Setting a default category for a payee will auto-fill the category when you select that payee in a new transaction.
                 </p>
@@ -185,9 +172,9 @@ const getCategoryName = (categoryId) => {
         </div>
 
         <!-- Edit Modal -->
-        <BottomSheet :show="showEditModal" title="Edit Payee" @close="closeEditModal">
+        <Modal :show="showEditModal" title="Edit Payee" @close="closeEditModal">
             <form @submit.prevent="savePayee">
-                <div class="bg-white mx-3 rounded-xl overflow-hidden">
+                <div class="bg-surface mx-3 rounded-xl overflow-hidden">
                     <TextField
                         v-model="editForm.name"
                         label="Name"
@@ -205,6 +192,17 @@ const getCategoryName = (categoryId) => {
                         :border-bottom="false"
                     />
                 </div>
+
+                <!-- Delete Button (only if no transactions) -->
+                <div v-if="editingPayee?.transaction_count === 0" class="mx-3 mt-4">
+                    <button
+                        type="button"
+                        @click="openDeleteConfirm(editingPayee); showEditModal = false;"
+                        class="w-full py-3 text-expense font-medium text-sm"
+                    >
+                        Delete Payee
+                    </button>
+                </div>
             </form>
 
             <template #footer>
@@ -217,7 +215,7 @@ const getCategoryName = (categoryId) => {
                     Save Changes
                 </Button>
             </template>
-        </BottomSheet>
+        </Modal>
 
         <!-- Delete Confirmation Modal -->
         <Teleport to="body">
@@ -234,7 +232,7 @@ const getCategoryName = (categoryId) => {
                     class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
                     @click.self="showDeleteConfirm = false"
                 >
-                    <div class="bg-white rounded-2xl p-6 max-w-sm w-full space-y-4">
+                    <div class="bg-surface rounded-2xl p-6 max-w-sm w-full space-y-4">
                         <h3 class="text-lg font-semibold text-body">Delete Payee?</h3>
                         <p class="text-subtle">
                             Delete "{{ deletingPayee?.name }}"? This action cannot be undone.

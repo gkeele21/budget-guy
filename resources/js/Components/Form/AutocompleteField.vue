@@ -93,7 +93,7 @@ const selectItem = (item) => {
                 :disabled="disabled"
                 :class="[
                     'flex-1 bg-transparent focus:outline-none text-sm font-medium text-right min-w-0',
-                    modelValue ? 'text-primary' : 'text-gray-400',
+                    modelValue ? 'text-body' : 'text-subtle',
                     disabled ? 'opacity-50' : '',
                 ]"
             />
@@ -102,14 +102,14 @@ const selectItem = (item) => {
         <!-- Suggestions dropdown -->
         <div
             v-if="showSuggestions"
-            class="absolute left-0 right-0 top-full bg-white rounded-b-xl shadow-lg z-10 border-t border-gray-100 overflow-hidden"
+            class="absolute left-0 right-0 top-full bg-surface rounded-b-xl shadow-lg z-10 border-t border-border overflow-hidden"
         >
             <button
                 v-for="(item, index) in filteredSuggestions"
                 :key="getKey(item, index)"
                 type="button"
                 @click="selectItem(item)"
-                class="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm text-body border-b border-gray-50 last:border-b-0"
+                class="w-full text-left px-4 py-3 hover:bg-surface-secondary text-sm text-body border-b border-border last:border-b-0"
             >
                 {{ getLabel(item) }}
             </button>

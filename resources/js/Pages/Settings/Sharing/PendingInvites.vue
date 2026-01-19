@@ -59,13 +59,13 @@ const declineInvite = (token) => {
                     <div class="flex gap-3">
                         <button
                             @click="declineInvite(invite.token)"
-                            class="flex-1 py-3 bg-gray-100 text-body rounded-card font-medium hover:bg-gray-200 transition-colors"
+                            class="flex-1 py-3 bg-surface-secondary text-body rounded-card font-medium hover:bg-border transition-colors"
                         >
                             Decline
                         </button>
                         <button
                             @click="acceptInvite(invite.token)"
-                            class="flex-1 py-3 bg-primary text-white rounded-card font-medium hover:bg-primary/90 transition-colors"
+                            class="flex-1 py-3 bg-primary text-body rounded-card font-medium hover:bg-primary/90 transition-colors"
                         >
                             Join Budget
                         </button>

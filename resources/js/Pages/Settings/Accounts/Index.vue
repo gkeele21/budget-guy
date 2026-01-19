@@ -5,7 +5,7 @@ import { ref } from 'vue';
 import TextField from '@/Components/Form/TextField.vue';
 import AmountField from '@/Components/Form/AmountField.vue';
 import Button from '@/Components/Base/Button.vue';
-import BottomSheet from '@/Components/Base/BottomSheet.vue';
+import Modal from '@/Components/Base/Modal.vue';
 
 const props = defineProps({
     accounts: Array,
@@ -73,12 +73,12 @@ const closeModal = () => {
 
         <div class="p-4 space-y-4">
             <!-- Account List -->
-            <div class="bg-surface rounded-card divide-y divide-gray-100">
+            <div class="bg-surface rounded-card divide-y divide-border">
                 <Link
                     v-for="account in accounts"
                     :key="account.id"
                     :href="route('accounts.edit', account.id)"
-                    class="flex items-center justify-between p-4 hover:bg-gray-50"
+                    class="flex items-center justify-between p-4 hover:bg-surface-secondary"
                     :class="{ 'opacity-50': account.is_closed }"
                 >
                     <div class="flex items-center gap-3">
@@ -102,19 +102,20 @@ const closeModal = () => {
             </div>
 
             <!-- Add Account Button -->
-            <button
+            <Button
+                variant="outline"
+                full-width
                 @click="showAddModal = true"
-                class="w-full py-4 border-2 border-dashed border-primary text-primary rounded-card font-medium hover:bg-primary-bg transition-colors"
             >
                 + Add Account
-            </button>
+            </Button>
         </div>
 
         <!-- Add Account Modal -->
-        <BottomSheet :show="showAddModal" title="Add Account" @close="closeModal">
+        <Modal :show="showAddModal" title="Add Account" @close="closeModal">
             <form @submit.prevent="submit">
                 <!-- Account Name -->
-                <div class="bg-white mx-3 rounded-xl overflow-hidden">
+                <div class="bg-surface mx-3 rounded-xl overflow-hidden">
                     <TextField
                         v-model="form.name"
                         label="Account Name"
@@ -137,10 +138,10 @@ const closeModal = () => {
                             type="button"
                             @click="form.type = type.value"
                             :class="[
-                                'flex flex-col items-center p-3 rounded-xl border-2 transition-colors bg-white',
+                                'flex flex-col items-center p-3 rounded-xl border-2 transition-colors bg-surface',
                                 form.type === type.value
                                     ? 'border-primary bg-primary/10'
-                                    : 'border-gray-200'
+                                    : 'border-border'
                             ]"
                         >
                             <span class="text-2xl mb-1">{{ type.icon }}</span>
@@ -155,7 +156,7 @@ const closeModal = () => {
                 </div>
 
                 <!-- Starting Balance -->
-                <div class="bg-white mx-3 mt-3 rounded-xl overflow-hidden">
+                <div class="bg-surface mx-3 mt-3 rounded-xl overflow-hidden">
                     <AmountField
                         v-model="form.starting_balance"
                         label="Starting Balance"
@@ -176,6 +177,6 @@ const closeModal = () => {
                     </Button>
                 </div>
             </template>
-        </BottomSheet>
+        </Modal>
     </AppLayout>
 </template>

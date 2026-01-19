@@ -65,9 +65,9 @@ const templates = [
 <template>
     <Head title="Setup" />
 
-    <div class="min-h-screen bg-gray-50 flex flex-col">
+    <div class="min-h-screen bg-surface-secondary flex flex-col">
         <!-- Progress Bar -->
-        <div class="bg-white border-b border-gray-100 px-6 py-4">
+        <div class="bg-surface border-b border-border px-6 py-4">
             <div class="max-w-md mx-auto">
                 <div class="flex items-center justify-between mb-2">
                     <span class="text-sm font-medium text-body">Step {{ currentStep }} of {{ totalSteps }}</span>
@@ -80,7 +80,7 @@ const templates = [
                         Skip setup
                     </Link>
                 </div>
-                <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div class="h-2 bg-border rounded-full overflow-hidden">
                     <div
                         class="h-full bg-primary transition-all duration-300"
                         :style="{ width: `${(currentStep / totalSteps) * 100}%` }"
@@ -104,7 +104,7 @@ const templates = [
                         </p>
                     </div>
 
-                    <div class="bg-white rounded-card overflow-hidden">
+                    <div class="bg-surface rounded-card overflow-hidden">
                         <TextField
                             v-model="form.budget_name"
                             label="Budget Name"
@@ -130,7 +130,7 @@ const templates = [
 
                     <div class="space-y-4">
                         <!-- Account Name & Balance -->
-                        <div class="bg-white rounded-card overflow-hidden">
+                        <div class="bg-surface rounded-card overflow-hidden">
                             <TextField
                                 v-model="form.account_name"
                                 label="Account Name"
@@ -157,10 +157,10 @@ const templates = [
                                     :key="type.value"
                                     type="button"
                                     @click="form.account_type = type.value"
-                                    class="flex flex-col items-center p-3 rounded-xl border-2 transition-colors bg-white"
+                                    class="flex flex-col items-center p-3 rounded-xl border-2 transition-colors bg-surface"
                                     :class="form.account_type === type.value
                                         ? 'border-primary bg-primary/10'
-                                        : 'border-gray-200'"
+                                        : 'border-border'"
                                 >
                                     <span class="text-2xl mb-1">{{ type.icon }}</span>
                                     <span
@@ -182,7 +182,7 @@ const templates = [
                 <!-- Step 3: Category Template -->
                 <div v-if="currentStep === 3" class="space-y-6">
                     <div class="text-center">
-                        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <div class="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                             <span class="text-2xl">📋</span>
                         </div>
                         <h2 class="text-2xl font-bold text-body mb-2">Choose your categories</h2>
@@ -197,10 +197,10 @@ const templates = [
                             :key="template.value"
                             type="button"
                             @click="form.use_template = template.value"
-                            class="w-full text-left p-4 border-2 rounded-card transition-colors bg-white"
+                            class="w-full text-left p-4 border-2 rounded-card transition-colors bg-surface"
                             :class="form.use_template === template.value
                                 ? 'border-primary bg-primary/5'
-                                : 'border-gray-200 hover:border-gray-300'"
+                                : 'border-border hover:border-border-dark'"
                         >
                             <div class="flex items-center justify-between mb-1">
                                 <span class="font-semibold text-body">{{ template.label }}</span>
@@ -208,7 +208,7 @@ const templates = [
                                     v-if="form.use_template === template.value"
                                     class="w-5 h-5 bg-primary rounded-full flex items-center justify-center"
                                 >
-                                    <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <svg class="w-3 h-3 text-inverse" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
                                     </svg>
                                 </div>
@@ -221,7 +221,7 @@ const templates = [
         </div>
 
         <!-- Bottom Navigation -->
-        <div class="bg-white border-t border-gray-100 px-6 py-4">
+        <div class="bg-surface border-t border-border px-6 py-4">
             <div class="max-w-md mx-auto flex gap-3">
                 <Button
                     v-if="currentStep > 1"
