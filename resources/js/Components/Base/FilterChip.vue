@@ -19,10 +19,10 @@ const handleClick = () => {
         @click="handleClick"
         :disabled="disabled"
         :class="[
-            'px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors',
+            'px-3 py-2 text-sm whitespace-nowrap transition-all border-b-2 -mb-px',
             active
-                ? 'bg-primary text-inverse'
-                : 'bg-surface-tertiary text-subtle',
+                ? 'text-primary border-primary font-semibold'
+                : 'text-subtle border-transparent font-medium hover:text-muted',
             disabled ? 'opacity-50 cursor-not-allowed' : '',
         ]"
     >

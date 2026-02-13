@@ -79,7 +79,7 @@ const getSaveButtonVariant = () => {
 <template>
     <Head title="New Recurring" />
 
-    <div class="min-h-screen bg-surface-secondary flex flex-col">
+    <div class="min-h-screen bg-bg flex flex-col">
         <!-- Header with Cancel / Title / Save -->
         <div class="bg-surface border-b border-border px-4 py-3 safe-area-top">
             <div class="flex items-center justify-between">

@@ -71,7 +71,7 @@ const submit = () => {
                 <Link
                     v-if="canResetPassword"
                     :href="route('password.request')"
-                    class="text-sm text-secondary font-medium hover:text-secondary/80 transition-colors"
+                    class="text-sm text-primary font-medium hover:text-primary/80 transition-colors"
                 >
                     Forgot password?
                 </Link>
@@ -81,7 +81,7 @@ const submit = () => {
             <button
                 type="submit"
                 :disabled="form.processing"
-                class="w-full py-4 bg-gradient-to-r from-primary to-primary-light text-body rounded-xl font-semibold text-center shadow-[0_8px_16px_-4px_rgba(126,217,87,0.4)] hover:shadow-[0_10px_20px_-4px_rgba(126,217,87,0.5)] transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
+                class="w-full py-4 bg-primary text-white rounded-xl font-semibold text-center disabled:opacity-50 disabled:cursor-not-allowed"
             >
                 <span v-if="form.processing">Signing in...</span>
                 <span v-else>Sign In</span>
@@ -92,7 +92,7 @@ const submit = () => {
                 Don't have an account?
                 <Link
                     :href="route('register')"
-                    class="text-secondary font-semibold hover:text-secondary/80 transition-colors"
+                    class="text-primary font-semibold hover:text-primary/80 transition-colors"
                 >
                     Sign up
                 </Link>

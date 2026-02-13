@@ -1,10 +1,116 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Custom form input styling - remove default borders/outlines */
+@layer base {
+    /*
+     * BudgetGuy Theme System (adapted from PropOff)
+     *
+     * Colors are defined as RGB triplets (e.g., "87 208 37") so they work with
+     * Tailwind's opacity modifiers: bg-primary/50, text-primary/80, etc.
+     *
+     * Usage in Tailwind: rgb(var(--color-primary) / <alpha-value>)
+     */
+
+    :root {
+        /* ========================================
+         * Dark Mode Base Colors
+         * ======================================== */
+
+        /* Backgrounds - 5-layer surface hierarchy */
+        --color-bg: 74 74 74;              /* #4a4a4a - page background (slate) */
+        --color-surface: 31 31 31;         /* #1f1f1f - cards, panels */
+        --color-surface-elevated: 38 38 38; /* #262626 - elevated content */
+        --color-surface-overlay: 51 51 51;  /* #333333 - hover states on surfaces */
+        --color-surface-inset: 15 15 15;   /* #0f0f0f - inputs, recessed areas */
+        --color-surface-header: 23 23 23;  /* #171717 - headers, nav bars */
+
+        /* Text */
+        --color-text: 245 245 245;         /* #f5f5f5 - primary text */
+        --color-text-muted: 163 163 163;   /* #a3a3a3 - secondary text */
+        --color-text-subtle: 115 115 115;  /* #737373 - disabled, hints */
+
+        /* Inverse text (for use on light/colored backgrounds) */
+        --color-text-inverse: 255 255 255; /* #ffffff */
+
+        /* Borders */
+        --color-border: 64 64 64;          /* #404040 - default borders */
+        --color-border-strong: 82 82 82;   /* #525252 - emphasized borders */
+
+        /* ========================================
+         * Semantic Colors (consistent across themes)
+         * ======================================== */
+        --color-success: 87 208 37;        /* #57d025 - income, positive */
+        --color-warning: 244 118 18;       /* #f47612 - caution states */
+        --color-danger: 239 68 68;         /* #ef4444 - expense, errors */
+        --color-info: 59 130 246;          /* #3b82f6 - transfer, informational */
+
+        /* ========================================
+         * Theme-Adaptive Primary Color
+         * Default: Green (overridden by accent-* classes)
+         * ======================================== */
+        --color-primary: 87 208 37;        /* #57d025 */
+        --color-primary-hover: 77 184 32;
+
+        /* iOS safe areas */
+        --safe-area-inset-top: env(safe-area-inset-top, 0px);
+        --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+        --safe-area-inset-left: env(safe-area-inset-left, 0px);
+        --safe-area-inset-right: env(safe-area-inset-right, 0px);
+    }
+
+    html {
+        background-color: rgb(var(--color-bg));
+        color: rgb(var(--color-text));
+        scroll-behavior: smooth;
+    }
+
+    body {
+        background-color: rgb(var(--color-bg));
+    }
+}
+
+
+/* ========================================
+ * Accent Color Themes
+ * Apply to <body> via useTheme composable
+ * ======================================== */
+
+.accent-green {
+    --color-primary: 87 208 37;        /* #57d025 */
+    --color-primary-hover: 77 184 32;
+}
+
+.accent-blue {
+    --color-primary: 59 130 246;       /* #3b82f6 */
+    --color-primary-hover: 37 99 235;  /* #2563eb */
+}
+
+.accent-orange {
+    --color-primary: 244 118 18;       /* #f47612 */
+    --color-primary-hover: 234 88 12;  /* #ea580c */
+}
+
+/* ========================================
+ * Background Mode Variants
+ * Apply to <body> via useTheme composable
+ * ======================================== */
+
+.bg-mode-slate {
+    /* Default - no overrides needed, uses :root values */
+}
+
+.bg-mode-cream {
+    --color-bg: 245 243 239;           /* #f5f3ef - warm off-white */
+}
+
+
+/* ========================================
+ * Form Resets
+ * ======================================== */
+
 input[type="date"],
 input[type="number"],
 input[type="text"],
@@ -38,19 +144,6 @@ button, input, select, textarea {
 /* Override for toggle switches */
 button.toggle-switch {
     min-height: auto;
-}
-
-/* Smooth scrolling */
-html {
-    scroll-behavior: smooth;
-}
-
-/* iOS Safe Area Support */
-:root {
-    --safe-area-inset-top: env(safe-area-inset-top, 0px);
-    --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
-    --safe-area-inset-left: env(safe-area-inset-left, 0px);
-    --safe-area-inset-right: env(safe-area-inset-right, 0px);
 }
 
 /* Mobile-first responsive max-width */

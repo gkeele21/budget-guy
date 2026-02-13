@@ -119,7 +119,7 @@ const isSelected = (option) => {
                 v-if="actionOption"
                 type="button"
                 @click="selectAction"
-                class="w-full px-4 py-3 text-left text-sm text-secondary font-medium hover:bg-surface-secondary"
+                class="w-full px-4 py-3 text-left text-sm text-secondary font-medium hover:bg-surface-overlay"
             >
                 {{ actionOption.label }}
             </button>
@@ -129,7 +129,7 @@ const isSelected = (option) => {
             <!-- Grouped options -->
             <template v-if="grouped">
                 <div v-for="group in options" :key="group[groupLabelKey] || group.name">
-                    <div class="px-4 py-2 text-xs font-semibold text-subtle uppercase tracking-wide bg-surface-secondary">
+                    <div class="px-4 py-2 text-xs font-semibold text-subtle uppercase tracking-wide bg-surface-header">
                         {{ group[groupLabelKey] || group.name }}
                     </div>
                     <button
@@ -137,7 +137,7 @@ const isSelected = (option) => {
                         :key="getOptionValue(item)"
                         type="button"
                         @click="selectOption(getOptionValue(item))"
-                        class="w-full px-4 py-3 text-left text-sm hover:bg-surface-secondary flex items-center justify-between"
+                        class="w-full px-4 py-3 text-left text-sm hover:bg-surface-overlay flex items-center justify-between"
                         :class="isSelected(item) ? 'text-secondary font-medium' : 'text-body'"
                     >
                         <span>{{ getOptionLabel(item) }}</span>
@@ -155,7 +155,7 @@ const isSelected = (option) => {
                     :key="getOptionValue(option)"
                     type="button"
                     @click="selectOption(getOptionValue(option))"
-                    class="w-full px-4 py-3 text-left text-sm hover:bg-surface-secondary flex items-center justify-between"
+                    class="w-full px-4 py-3 text-left text-sm hover:bg-surface-overlay flex items-center justify-between"
                     :class="isSelected(option) ? 'text-secondary font-medium' : 'text-body'"
                 >
                     <span>{{ getOptionLabel(option) }}</span>

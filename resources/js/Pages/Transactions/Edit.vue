@@ -141,7 +141,7 @@ const getSaveButtonVariant = () => {
 <template>
     <Head title="Edit Transaction" />
 
-    <div class="min-h-screen bg-surface-secondary flex flex-col">
+    <div class="min-h-screen bg-bg flex flex-col">
         <!-- Header -->
         <div class="bg-surface border-b border-border px-4 py-3 safe-area-top">
             <div class="flex items-center justify-between">

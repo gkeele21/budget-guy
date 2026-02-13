@@ -225,7 +225,7 @@ const tempDisplayValue = computed(() => {
     <BottomSheet :show="isOpen" :title="label" @close="closePicker">
         <div class="relative">
             <!-- Selection highlight bar -->
-            <div class="absolute inset-x-4 top-1/2 -translate-y-1/2 h-11 bg-surface-secondary rounded-lg pointer-events-none z-0" />
+            <div class="absolute inset-x-4 top-1/2 -translate-y-1/2 h-11 bg-surface-overlay rounded-lg pointer-events-none z-0" />
 
             <!-- Wheels container -->
             <div class="flex relative z-10" style="height: 220px;">

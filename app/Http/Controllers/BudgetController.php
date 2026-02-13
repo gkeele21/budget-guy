@@ -159,29 +159,48 @@ class BudgetController extends Controller
         $totalSpent = $categoryGroups->sum(fn($g) => $g['categories']->sum('spent'));
         $totalAvailable = $totalBudgeted - $totalSpent;
 
-        // Calculate "To Budget" = (starting balances + all income - all expenses) - all budgeted amounts (all time)
-        // This gives us the true "available to assign" amount
+        // Calculate "Ready to Assign" with month-aware breakdown
+        $monthStart = $month . '-01';
+        $monthEnd = date('Y-m-t', strtotime($monthStart));
 
         // Sum of all account starting balances
         $totalStartingBalances = $budget->accounts()->sum('starting_balance');
 
-        // All income ever
-        $totalIncome = $budget->transactions()
+        // Category IDs for budgeted queries
+        $budgetCategoryIds = $budget->categoryGroups()
+            ->with('categories')
+            ->get()
+            ->pluck('categories')
+            ->flatten()
+            ->pluck('id')
+            ->toArray();
+
+        // Prior months: starting balances + income - budgeted
+        // Expenses don't affect Ready to Assign — they come out of category envelopes
+        $priorIncome = $budget->transactions()
             ->where('type', 'income')
+            ->where('date', '<', $monthStart)
             ->sum('amount');
 
-        // All expenses ever (stored as negative, so we sum them)
-        $totalExpenses = $budget->transactions()
-            ->where('type', 'expense')
-            ->sum('amount'); // This is negative
+        $priorBudgeted = MonthlyBudget::whereIn('category_id', $budgetCategoryIds)
+            ->where('month', '<', $month)
+            ->sum('budgeted_amount');
 
-        // All budgeted amounts ever (across all months)
-        $allTimeBudgeted = MonthlyBudget::whereHas('category.group', function ($q) use ($budget) {
-            $q->where('budget_id', $budget->id);
-        })->sum('budgeted_amount');
+        $carriedForward = $totalStartingBalances + $priorIncome - $priorBudgeted;
 
-        // Available to budget = what you have - what you've assigned to envelopes
-        $toBudget = $totalStartingBalances + $totalIncome + $totalExpenses - $allTimeBudgeted;
+        // This month's income
+        $thisMonthIncome = $budget->transactions()
+            ->where('type', 'income')
+            ->whereBetween('date', [$monthStart, $monthEnd])
+            ->sum('amount');
+
+        // This month's budgeted (already have as $totalBudgeted)
+
+        // Is this the first month? (no prior income or budgets)
+        $hasPriorActivity = $priorIncome != 0 || $priorBudgeted != 0;
+
+        // Ready to assign = carried forward + this month's income - this month's budgeted
+        $toBudget = $carriedForward + $thisMonthIncome - $totalBudgeted;
 
         return Inertia::render('Budget/Index', [
             'month' => $month,
@@ -191,6 +210,9 @@ class BudgetController extends Controller
                 'budgeted' => (float) $totalBudgeted,
                 'spent' => (float) $totalSpent,
                 'available' => (float) $totalAvailable,
+                'carriedForward' => (float) $carriedForward,
+                'thisMonthIncome' => (float) $thisMonthIncome,
+                'isFirstMonth' => !$hasPriorActivity,
             ],
             'defaultMonthlyIncome' => (float) ($budget->default_monthly_income ?? 0),
         ]);

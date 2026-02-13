@@ -109,7 +109,7 @@ const getCategoryName = (categoryId) => {
                     v-model="searchQuery"
                     type="text"
                     placeholder="Search payees..."
-                    class="w-full px-4 py-3 pl-10 bg-surface rounded-card text-body placeholder-subtle focus:outline-none focus:ring-2 focus:ring-primary"
+                    class="w-full px-4 py-3 pl-10 bg-surface rounded-card text-body placeholder-subtle focus:outline-none"
                 />
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -123,7 +123,7 @@ const getCategoryName = (categoryId) => {
             </div>
 
             <!-- Payee Count -->
-            <div class="text-sm text-subtle px-1">
+            <div class="text-sm font-semibold text-warning uppercase tracking-wide px-1">
                 {{ filteredPayees.length }} payee{{ filteredPayees.length !== 1 ? 's' : '' }}
             </div>
 

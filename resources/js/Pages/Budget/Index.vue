@@ -27,6 +27,7 @@ let moveToastTimeout = null;
 
 // Context menu state
 const showContextMenu = ref(false);
+const showBreakdown = ref(false);
 
 // Confirmation modal state
 const confirmModal = ref({ show: false, title: '', message: '', action: null });
@@ -109,6 +110,12 @@ const formatMonth = (monthStr) => {
     const date = new Date(year, month - 1, 1); // month is 0-indexed
     return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 };
+
+const shortMonthName = computed(() => {
+    const [year, month] = props.month.split('-');
+    const date = new Date(year, month - 1, 1);
+    return date.toLocaleDateString('en-US', { month: 'short' });
+});
 
 const previousMonth = computed(() => {
     const [year, month] = props.month.split('-').map(Number);
@@ -420,8 +427,8 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                     class="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-lg shadow-lg text-sm"
                     :class="{
                         'bg-primary text-body': toast.type === 'success',
-                        'bg-secondary text-inverse': toast.type === 'info',
-                        'bg-expense text-inverse': toast.type === 'error',
+                        'bg-info text-white': toast.type === 'info',
+                        'bg-danger text-white': toast.type === 'error',
                     }"
                 >
                     {{ toast.message }}
@@ -440,7 +447,7 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                 >
                     <div
                         v-if="moveToast.show"
-                        class="fixed bottom-24 left-4 right-4 z-50 bg-body text-inverse rounded-card px-4 py-3 shadow-lg"
+                        class="fixed bottom-24 left-4 right-4 z-50 bg-surface-header text-body rounded-card px-4 py-3 shadow-lg"
                     >
                         <div class="flex items-center gap-2">
                             <span class="text-income">✓</span>
@@ -454,10 +461,10 @@ const showMoveToast = (amount, from, to, remaining = null) => {
             </Teleport>
 
             <!-- Month Selector -->
-            <div class="flex items-center justify-between bg-surface rounded-card p-3">
+            <div class="flex items-center justify-between bg-surface rounded-card px-3 py-2">
                 <button
                     @click="navigateMonth(previousMonth)"
-                    class="p-2 hover:bg-surface-secondary rounded-full"
+                    class="p-2 hover:bg-surface-overlay rounded-full"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -466,7 +473,7 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                 <span class="font-semibold text-body">{{ formatMonth(month) }}</span>
                 <button
                     @click="navigateMonth(nextMonth)"
-                    class="p-2 hover:bg-surface-secondary rounded-full"
+                    class="p-2 hover:bg-surface-overlay rounded-full"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -476,13 +483,13 @@ const showMoveToast = (amount, from, to, remaining = null) => {
 
             <!-- Summary Stats -->
             <div class="grid grid-cols-2 gap-2">
-                <div class="bg-surface rounded-card p-3 text-center">
+                <div class="bg-surface rounded-card px-3 py-2 text-center">
                     <div class="text-xs text-subtle uppercase">Budgeted</div>
                     <div class="font-semibold text-body">
                         {{ formatCurrency(summary.budgeted) }}
                     </div>
                 </div>
-                <div class="bg-surface rounded-card p-3 text-center">
+                <div class="bg-surface rounded-card px-3 py-2 text-center">
                     <div class="text-xs text-subtle uppercase">Spent</div>
                     <div class="font-semibold text-expense">
                         {{ formatCurrency(summary.spent) }}
@@ -492,11 +499,47 @@ const showMoveToast = (amount, from, to, remaining = null) => {
 
             <!-- Ready to Assign -->
             <div
-                class="rounded-card p-4 flex items-center justify-between relative"
+                class="rounded-card px-4 py-2 flex items-center justify-between relative"
                 :class="summary.toBudget >= 0 ? 'bg-primary' : 'bg-expense'"
             >
-                <div class="text-xs uppercase tracking-wider text-inverse/90">
+                <button
+                    @click="showBreakdown = !showBreakdown"
+                    class="flex items-center gap-1.5 text-xs uppercase tracking-wider text-inverse/90"
+                >
                     Ready to Assign
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </button>
+                <!-- Breakdown popover -->
+                <div
+                    v-if="showBreakdown"
+                    class="fixed inset-0 z-40"
+                    @click="showBreakdown = false"
+                ></div>
+                <div
+                    v-if="showBreakdown"
+                    class="absolute left-3 top-12 z-50 bg-surface rounded-card shadow-lg border border-border p-4 min-w-[260px]"
+                >
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between gap-4">
+                            <span class="text-muted">{{ summary.isFirstMonth ? 'Starting balance' : 'Carried forward' }}</span>
+                            <span class="font-medium text-body">{{ formatCurrency(summary.carriedForward ?? 0) }}</span>
+                        </div>
+                        <div class="flex justify-between gap-4">
+                            <span class="text-muted">+ {{ shortMonthName }} income</span>
+                            <span class="font-medium text-income">{{ formatCurrency(summary.thisMonthIncome ?? 0) }}</span>
+                        </div>
+                        <div class="flex justify-between gap-4">
+                            <span class="text-muted">− {{ shortMonthName }} assigned</span>
+                            <span class="font-medium text-body">{{ formatCurrency(summary.budgeted ?? 0) }}</span>
+                        </div>
+                        <div class="border-t border-border my-1"></div>
+                        <div class="flex justify-between gap-4 font-semibold">
+                            <span class="text-body">Ready to Assign</span>
+                            <span :class="summary.toBudget >= 0 ? 'text-income' : 'text-expense'">{{ formatCurrency(summary.toBudget) }}</span>
+                        </div>
+                    </div>
                 </div>
                 <div class="flex items-center gap-3">
                     <div class="text-2xl font-semibold text-inverse">
@@ -519,11 +562,11 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                     ></div>
                     <div
                         v-if="showContextMenu"
-                        class="absolute right-4 top-14 z-50 bg-surface rounded-card shadow-lg border border-border py-1 min-w-[220px]"
+                        class="absolute right-4 top-14 z-50 bg-surface rounded-card shadow-lg border border-body py-1 min-w-[220px]"
                     >
                         <button
                             @click="initiateApplyDefaults"
-                            class="w-full text-left px-4 py-3 hover:bg-surface-secondary transition-colors flex items-start gap-3"
+                            class="w-full text-left px-4 py-3 hover:bg-surface-overlay transition-colors flex items-start gap-3"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-secondary flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -536,7 +579,7 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                         <div class="border-t border-border"></div>
                         <button
                             @click="initiaCopyLastMonth"
-                            class="w-full text-left px-4 py-3 hover:bg-surface-secondary transition-colors flex items-start gap-3"
+                            class="w-full text-left px-4 py-3 hover:bg-surface-overlay transition-colors flex items-start gap-3"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-income flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -549,7 +592,7 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                         <div class="border-t border-border"></div>
                         <button
                             @click="initiateApplyProjections"
-                            class="w-full text-left px-4 py-3 hover:bg-surface-secondary transition-colors flex items-start gap-3"
+                            class="w-full text-left px-4 py-3 hover:bg-surface-overlay transition-colors flex items-start gap-3"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary-hover flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -568,13 +611,13 @@ const showMoveToast = (amount, from, to, remaining = null) => {
 
             <!-- Category Groups -->
             <div v-for="group in categoryGroups" :key="group.id" class="space-y-2">
-                <h2 class="text-sm font-semibold text-subtle uppercase tracking-wide px-1">
+                <h2 class="text-sm font-semibold text-warning uppercase tracking-wide px-1">
                     {{ group.name }}
                 </h2>
 
-                <div class="bg-surface rounded-card overflow-hidden">
+                <div class="bg-surface rounded-card overflow-hidden tabular-nums">
                     <!-- Column Headers -->
-                    <div class="grid grid-cols-12 gap-1 px-3 py-2 bg-surface-secondary text-xs text-subtle uppercase border-b border-border">
+                    <div class="grid grid-cols-12 gap-1 px-3 py-2 bg-surface-header text-xs text-subtle uppercase border-b border-border">
                         <div class="col-span-4">Category</div>
                         <div class="col-span-3 text-right">Budget</div>
                         <div class="col-span-2 text-right">Spent</div>
@@ -599,7 +642,7 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                             </a>
 
                             <!-- Budgeted (Editable) -->
-                            <div class="col-span-3">
+                            <div class="col-span-3 text-right">
                                 <input
                                     v-if="editingField === category.id"
                                     :value="editingValue ? '$' + editingValue : '$'"
@@ -617,7 +660,7 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                                         'w-full px-1 py-1 text-right text-sm rounded cursor-text transition-colors',
                                         editedAmounts[category.id]
                                             ? 'border-2 border-income bg-primary-bg'
-                                            : 'border border-transparent hover:bg-surface-secondary'
+                                            : 'border border-transparent hover:bg-surface-overlay'
                                     ]"
                                 >
                                     ${{ formatNumber(budgetAmounts[category.id]) }}
@@ -660,13 +703,13 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                     </div>
 
                     <!-- Group Totals Row -->
-                    <div class="grid grid-cols-12 gap-1 px-3 py-2 bg-surface-secondary text-xs font-semibold border-t border-border">
-                        <div class="col-span-4 text-subtle uppercase">Total</div>
-                        <div class="col-span-3 text-right text-body">
-                            {{ formatNumber(getGroupTotals(group).budgeted) }}
+                    <div class="grid grid-cols-12 gap-1 px-3 py-2 bg-info/30 text-sm font-semibold border-t-2 border-info/40">
+                        <div class="col-span-4 text-info uppercase">Total</div>
+                        <div class="col-span-3 text-right text-body px-1">
+                            ${{ formatNumber(getGroupTotals(group).budgeted) }}
                         </div>
                         <div class="col-span-2 text-right text-subtle">
-                            {{ formatNumber(getGroupTotals(group).spent) }}
+                            ${{ formatNumber(getGroupTotals(group).spent) }}
                         </div>
                         <div
                             class="col-span-3 text-right"
@@ -726,7 +769,7 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                                     </h3>
                                     <button
                                         @click="showMoveMoneyModal = false"
-                                        class="p-2 hover:bg-surface-secondary rounded-full"
+                                        class="p-2 hover:bg-surface-overlay rounded-full"
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -759,7 +802,7 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                                         'flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors',
                                         isSourceSelected(category.id)
                                             ? 'bg-primary-bg border-2 border-primary'
-                                            : 'bg-surface-secondary hover:bg-border'
+                                            : 'bg-surface-overlay hover:bg-border-strong'
                                     ]"
                                 >
                                     <div class="flex items-center gap-2">
@@ -798,7 +841,7 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                                 </button>
                                 <button
                                     @click="showMoveMoneyModal = false"
-                                    class="w-full py-3 bg-surface-secondary text-body rounded-card font-medium hover:bg-border transition-colors"
+                                    class="w-full py-3 bg-surface-overlay text-body rounded-card font-medium hover:bg-border transition-colors"
                                 >
                                     Cancel
                                 </button>
@@ -830,7 +873,7 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                         <div class="flex gap-3">
                             <button
                                 @click="cancelConfirm"
-                                class="flex-1 py-3 bg-surface-secondary text-body rounded-card font-medium hover:bg-border transition-colors"
+                                class="flex-1 py-3 bg-surface-overlay text-body rounded-card font-medium hover:bg-border transition-colors"
                             >
                                 Cancel
                             </button>

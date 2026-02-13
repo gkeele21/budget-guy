@@ -251,8 +251,8 @@ const showToast = (message, type = 'success') => {
                     class="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-lg shadow-lg text-sm"
                     :class="{
                         'bg-primary text-body': toast.type === 'success',
-                        'bg-secondary text-inverse': toast.type === 'info',
-                        'bg-expense text-inverse': toast.type === 'error',
+                        'bg-info text-white': toast.type === 'info',
+                        'bg-danger text-white': toast.type === 'error',
                     }"
                 >
                     {{ toast.message }}
@@ -260,8 +260,9 @@ const showToast = (message, type = 'success') => {
             </Transition>
 
             <!-- Projection Header (Sticky) -->
-            <div class="sticky top-0 z-10 bg-gradient-to-r from-secondary/5 to-secondary/5 border border-secondary/20 rounded-card p-4 space-y-3">
-                <div class="flex items-center justify-between">
+            <div class="sticky top-0 z-10 bg-surface rounded-card">
+                <!-- Top Row: Title + Income + Menu -->
+                <div class="flex items-center justify-between px-4 py-3 border-b border-border">
                     <div class="flex items-center gap-2">
                         <h3 class="font-semibold text-body">Plan Your Budget</h3>
                         <button @click="toggleInfo" class="text-subtle hover:text-body">
@@ -270,71 +271,82 @@ const showToast = (message, type = 'success') => {
                             </svg>
                         </button>
                     </div>
-                    <div class="relative">
-                        <button
-                            @click="toggleMenu"
-                            class="p-1 rounded hover:bg-secondary/10"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-subtle" viewBox="0 0 20 20" fill="currentColor">
-                                <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                            </svg>
-                        </button>
-                        <!-- Backdrop to close menu -->
-                        <div v-if="menuOpen" class="fixed inset-0 z-20" @click="closeMenu"></div>
-                        <!-- Dropdown -->
-                        <Transition
-                            enter-active-class="transition ease-out duration-100"
-                            enter-from-class="transform opacity-0 scale-95"
-                            enter-to-class="transform opacity-100 scale-100"
-                            leave-active-class="transition ease-in duration-75"
-                            leave-from-class="transform opacity-100 scale-100"
-                            leave-to-class="transform opacity-0 scale-95"
-                        >
-                            <div v-if="menuOpen" class="absolute right-0 mt-1 w-72 bg-surface rounded-card shadow-xl border border-border z-30 py-1">
-                                <button
-                                    @click="menuCopyDefaults"
-                                    class="w-full text-left px-4 py-3 hover:bg-surface-secondary transition-colors flex items-start gap-3"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-secondary flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                                    </svg>
-                                    <div>
-                                        <div class="text-sm text-body">Copy Defaults to Projections</div>
-                                        <div class="text-xs text-subtle mt-0.5">Fill projections with your category default amounts</div>
-                                    </div>
-                                </button>
-                                <div class="border-t border-border"></div>
-                                <button
-                                    @click="menuApplyProjections"
-                                    class="w-full text-left px-4 py-3 hover:bg-surface-secondary transition-colors flex items-start gap-3"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-income flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                    <div>
-                                        <div class="text-sm text-body">Apply Projections to {{ currentMonthLabel }} Budget</div>
-                                        <div class="text-xs text-subtle mt-0.5">Apply these projections to your monthly budget</div>
-                                    </div>
-                                </button>
-                                <div class="border-t border-border"></div>
-                                <button
-                                    @click="menuClearProjections"
-                                    class="w-full text-left px-4 py-3 hover:bg-surface-secondary transition-colors flex items-start gap-3"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-expense flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                    <div>
-                                        <div class="text-sm text-expense">Clear All Projections</div>
-                                        <div class="text-xs text-subtle mt-0.5">Reset all projected amounts to zero</div>
-                                    </div>
-                                </button>
-                            </div>
-                        </Transition>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-subtle uppercase">Income</span>
+                        <input
+                            :value="getIncomeDisplay()"
+                            @focus="onIncomeFocus"
+                            @blur="onIncomeBlur"
+                            type="text"
+                            inputmode="decimal"
+                            class="w-28 px-2 py-1 text-right font-semibold text-income text-sm bg-surface-header border border-border rounded focus:border-primary focus:outline-none"
+                        />
+                        <div class="relative">
+                            <button
+                                @click="toggleMenu"
+                                class="p-1 rounded hover:bg-surface-overlay"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-body" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                                </svg>
+                            </button>
+                            <!-- Backdrop to close menu -->
+                            <div v-if="menuOpen" class="fixed inset-0 z-20" @click="closeMenu"></div>
+                            <!-- Dropdown -->
+                            <Transition
+                                enter-active-class="transition ease-out duration-100"
+                                enter-from-class="transform opacity-0 scale-95"
+                                enter-to-class="transform opacity-100 scale-100"
+                                leave-active-class="transition ease-in duration-75"
+                                leave-from-class="transform opacity-100 scale-100"
+                                leave-to-class="transform opacity-0 scale-95"
+                            >
+                                <div v-if="menuOpen" class="absolute right-0 mt-1 w-72 bg-surface rounded-card shadow-xl border border-body z-30 py-1">
+                                    <button
+                                        @click="menuCopyDefaults"
+                                        class="w-full text-left px-4 py-3 hover:bg-surface-overlay transition-colors flex items-start gap-3"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-secondary flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                                        </svg>
+                                        <div>
+                                            <div class="text-sm text-body">Copy Defaults to Projections</div>
+                                            <div class="text-xs text-subtle mt-0.5">Fill projections with your category default amounts</div>
+                                        </div>
+                                    </button>
+                                    <div class="border-t border-border"></div>
+                                    <button
+                                        @click="menuApplyProjections"
+                                        class="w-full text-left px-4 py-3 hover:bg-surface-overlay transition-colors flex items-start gap-3"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-income flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        <div>
+                                            <div class="text-sm text-body">Apply Projections to {{ currentMonthLabel }} Budget</div>
+                                            <div class="text-xs text-subtle mt-0.5">Apply these projections to your monthly budget</div>
+                                        </div>
+                                    </button>
+                                    <div class="border-t border-border"></div>
+                                    <button
+                                        @click="menuClearProjections"
+                                        class="w-full text-left px-4 py-3 hover:bg-surface-overlay transition-colors flex items-start gap-3"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-expense flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                        <div>
+                                            <div class="text-sm text-expense">Clear All Projections</div>
+                                            <div class="text-xs text-subtle mt-0.5">Reset all projected amounts to zero</div>
+                                        </div>
+                                    </button>
+                                </div>
+                            </Transition>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Info panel (full-width, collapsible) -->
+                <!-- Info panel (collapsible, inside card) -->
                 <Transition
                     enter-active-class="transition ease-out duration-150"
                     enter-from-class="opacity-0 -translate-y-1"
@@ -343,7 +355,7 @@ const showToast = (message, type = 'success') => {
                     leave-from-class="opacity-100 translate-y-0"
                     leave-to-class="opacity-0 -translate-y-1"
                 >
-                    <div v-if="infoOpen" class="bg-surface border border-border rounded-lg p-3 text-sm text-subtle space-y-1">
+                    <div v-if="infoOpen" class="px-4 py-3 border-b border-border text-sm text-subtle space-y-1">
                         <p>Set your expected income and adjust projected amounts for each category.</p>
                         <p>Changes save automatically.</p>
                         <p>Tap the <strong class="text-body">three-dot menu</strong> to copy defaults, apply projections to your budget, or clear all.</p>
@@ -351,28 +363,18 @@ const showToast = (message, type = 'success') => {
                     </div>
                 </Transition>
 
-                <div class="grid grid-cols-3 gap-3 text-center">
-                    <div>
-                        <div class="text-xs text-subtle uppercase">Expected Income</div>
-                        <input
-                            :value="getIncomeDisplay()"
-                            @focus="onIncomeFocus"
-                            @blur="onIncomeBlur"
-                            type="text"
-                            inputmode="decimal"
-                            class="w-full mt-1 px-2 py-1 text-center font-semibold text-income bg-surface border border-border rounded focus:border-primary focus:outline-none"
-                        />
-                    </div>
+                <!-- Bottom Row: Two stats -->
+                <div class="grid grid-cols-2 gap-4 px-4 py-2 text-center">
                     <div>
                         <div class="text-xs text-subtle uppercase">Total Projected</div>
-                        <div class="mt-1 py-1 font-semibold text-body">
+                        <div class="font-semibold text-body text-base">
                             {{ formatCurrency(totalProjected) }}
                         </div>
                     </div>
                     <div>
                         <div class="text-xs text-subtle uppercase">Left to Allocate</div>
                         <div
-                            class="mt-1 py-1 font-semibold"
+                            class="font-semibold text-base"
                             :class="leftToAllocate >= 0 ? 'text-income' : 'text-expense'"
                         >
                             {{ formatCurrency(leftToAllocate) }}
@@ -383,11 +385,11 @@ const showToast = (message, type = 'success') => {
 
             <!-- Category Groups -->
             <div v-for="group in categoryGroups" :key="group.id" class="space-y-2">
-                <h2 class="text-sm font-semibold text-subtle uppercase tracking-wide px-1">
+                <h2 class="text-sm font-semibold text-warning uppercase tracking-wide px-1">
                     {{ group.name }}
                 </h2>
 
-                <div class="bg-surface rounded-card overflow-hidden">
+                <div class="bg-surface rounded-card overflow-hidden tabular-nums">
                     <!-- Column Headers -->
                     <div class="grid grid-cols-12 gap-2 px-3 py-2 bg-secondary/10 text-xs text-subtle uppercase border-b border-secondary/10">
                         <div class="col-span-5">Category</div>
@@ -453,7 +455,7 @@ const showToast = (message, type = 'success') => {
                         <div class="flex gap-3 justify-end">
                             <button
                                 @click="cancelConfirm"
-                                class="px-4 py-2 text-sm font-medium text-body bg-surface-secondary rounded-card hover:bg-border"
+                                class="px-4 py-2 text-sm font-medium text-body bg-surface-overlay rounded-card hover:bg-border-strong"
                             >
                                 Cancel
                             </button>

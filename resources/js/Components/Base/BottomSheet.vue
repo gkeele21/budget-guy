@@ -65,7 +65,7 @@ onUnmounted(() => {
                     >
                         <!-- Handle -->
                         <div class="flex justify-center pt-3 pb-1">
-                            <div class="w-10 h-1 bg-border-dark rounded-full" />
+                            <div class="w-10 h-1 bg-border-strong rounded-full" />
                         </div>
 
                         <!-- Header -->

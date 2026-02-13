@@ -12,18 +12,19 @@ const props = defineProps({
     fullWidth: { type: Boolean, default: false },
 });
 
-const baseClasses = 'inline-flex items-center justify-center font-semibold rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
+const baseClasses = 'inline-flex items-center justify-center font-semibold rounded-xl transition-all focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed';
 
 const variantClasses = {
-    primary: 'bg-primary text-body hover:bg-primary-hover focus:ring-primary',
-    secondary: 'bg-secondary text-inverse hover:bg-secondary-hover focus:ring-secondary',
-    danger: 'bg-danger text-inverse hover:bg-danger/80 focus:ring-danger',
-    ghost: 'bg-transparent text-secondary hover:bg-surface-secondary focus:ring-secondary',
-    outline: 'bg-transparent text-secondary border-2 border-secondary hover:bg-secondary/10 focus:ring-secondary',
+    primary: 'bg-primary text-white hover:bg-white hover:text-primary border-2 border-transparent hover:border-primary',
+    secondary: 'bg-info text-white hover:bg-white hover:text-info border-2 border-transparent hover:border-info',
+    danger: 'bg-danger text-white hover:bg-white hover:text-danger border-2 border-transparent hover:border-danger',
+    ghost: 'bg-transparent text-muted hover:bg-surface-overlay border-2 border-transparent',
+    outline: 'bg-transparent text-primary border-2 border-primary hover:bg-primary hover:text-white',
+    muted: 'bg-surface-inset hover:bg-surface-header text-body border-2 border-border hover:border-border-strong',
     // Transaction type variants
-    income: 'bg-income text-inverse hover:bg-income-hover focus:ring-income',
-    expense: 'bg-expense text-inverse hover:bg-expense-hover focus:ring-expense',
-    transfer: 'bg-transfer text-inverse hover:bg-transfer-hover focus:ring-transfer',
+    income: 'bg-success text-white hover:bg-white hover:text-success border-2 border-transparent hover:border-success',
+    expense: 'bg-danger text-white hover:bg-white hover:text-danger border-2 border-transparent hover:border-danger',
+    transfer: 'bg-info text-white hover:bg-white hover:text-info border-2 border-transparent hover:border-info',
 };
 
 const sizeClasses = {

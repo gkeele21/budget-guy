@@ -109,7 +109,7 @@ const selectItem = (item) => {
                 :key="getKey(item, index)"
                 type="button"
                 @click="selectItem(item)"
-                class="w-full text-left px-4 py-3 hover:bg-surface-secondary text-sm text-body border-b border-border last:border-b-0"
+                class="w-full text-left px-4 py-3 hover:bg-surface-overlay text-sm text-body border-b border-border last:border-b-0"
             >
                 {{ getLabel(item) }}
             </button>

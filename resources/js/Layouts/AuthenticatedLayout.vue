@@ -8,9 +8,9 @@ const showingNavigationDropdown = ref(false);
 
 <template>
     <div>
-        <div class="min-h-screen bg-surface-secondary">
+        <div class="min-h-screen bg-bg">
             <nav
-                class="border-b border-border bg-surface"
+                class="border-b border-border bg-surface-header"
             >
                 <!-- Primary Navigation Menu -->
                 <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -46,7 +46,7 @@ const showingNavigationDropdown = ref(false);
                                         <span class="inline-flex rounded-md">
                                             <button
                                                 type="button"
-                                                class="inline-flex items-center rounded-md border border-transparent bg-surface px-3 py-2 text-sm font-medium leading-4 text-subtle transition duration-150 ease-in-out hover:text-body focus:outline-none"
+                                                class="inline-flex items-center rounded-md border border-transparent bg-surface-header px-3 py-2 text-sm font-medium leading-4 text-subtle transition duration-150 ease-in-out hover:text-body focus:outline-none"
                                             >
                                                 {{ $page.props.auth.user.name }}
 
@@ -91,7 +91,7 @@ const showingNavigationDropdown = ref(false);
                                     showingNavigationDropdown =
                                         !showingNavigationDropdown
                                 "
-                                class="inline-flex items-center justify-center rounded-md p-2 text-subtle transition duration-150 ease-in-out hover:bg-surface-secondary hover:text-subtle focus:bg-surface-secondary focus:text-subtle focus:outline-none"
+                                class="inline-flex items-center justify-center rounded-md p-2 text-subtle transition duration-150 ease-in-out hover:bg-surface-overlay hover:text-subtle focus:bg-surface-overlay focus:text-subtle focus:outline-none"
                             >
                                 <svg
                                     class="h-6 w-6"
@@ -177,7 +177,7 @@ const showingNavigationDropdown = ref(false);
 
             <!-- Page Heading -->
             <header
-                class="bg-surface shadow"
+                class="bg-surface-header shadow"
                 v-if="$slots.header"
             >
                 <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">

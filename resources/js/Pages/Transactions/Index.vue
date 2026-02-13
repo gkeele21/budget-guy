@@ -312,7 +312,7 @@ const formatNextDate = (dateStr, frequency) => {
             >
                 <div
                     v-if="toast.show"
-                    class="fixed bottom-24 left-4 right-4 z-50 bg-body text-inverse rounded-card px-4 py-3 shadow-lg flex items-center justify-between"
+                    class="fixed bottom-24 left-4 right-4 z-50 bg-surface-header text-body rounded-card px-4 py-3 shadow-lg flex items-center justify-between"
                 >
                     <div class="flex items-center gap-2">
                         <span class="text-income">✓</span>
@@ -356,7 +356,7 @@ const formatNextDate = (dateStr, frequency) => {
                             v-model="localSearchQuery"
                             type="text"
                             placeholder="Search payee, memo, amount..."
-                            class="w-full px-4 py-3 pl-10 bg-surface rounded-card text-body placeholder-subtle focus:outline-none focus:ring-2 focus:ring-primary"
+                            class="w-full px-4 py-3 pl-10 bg-surface rounded-card text-body placeholder-subtle focus:outline-none"
                         />
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -370,7 +370,7 @@ const formatNextDate = (dateStr, frequency) => {
                         <button
                             v-if="localSearchQuery"
                             @click="localSearchQuery = ''"
-                            class="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-surface-secondary rounded-full"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-surface-overlay rounded-full"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-subtle" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -420,41 +420,15 @@ const formatNextDate = (dateStr, frequency) => {
                         <!-- Cleared Status -->
                         <div class="px-4 py-3 border-t border-border">
                             <label class="block text-xs text-subtle mb-2">Status</label>
-                            <div class="flex gap-2">
-                                <button
-                                    @click="localClearedFilter = 'all'"
-                                    :class="[
-                                        'px-3 py-1.5 rounded-full text-sm font-medium transition-colors',
-                                        localClearedFilter === 'all'
-                                            ? 'bg-primary text-body'
-                                            : 'bg-surface-secondary text-subtle'
-                                    ]"
-                                >
-                                    All
-                                </button>
-                                <button
-                                    @click="localClearedFilter = 'cleared'"
-                                    :class="[
-                                        'px-3 py-1.5 rounded-full text-sm font-medium transition-colors',
-                                        localClearedFilter === 'cleared'
-                                            ? 'bg-primary text-body'
-                                            : 'bg-surface-secondary text-subtle'
-                                    ]"
-                                >
-                                    Cleared
-                                </button>
-                                <button
-                                    @click="localClearedFilter = 'uncleared'"
-                                    :class="[
-                                        'px-3 py-1.5 rounded-full text-sm font-medium transition-colors',
-                                        localClearedFilter === 'uncleared'
-                                            ? 'bg-primary text-body'
-                                            : 'bg-surface-secondary text-subtle'
-                                    ]"
-                                >
-                                    Uncleared
-                                </button>
-                            </div>
+                            <SegmentedControl
+                                v-model="localClearedFilter"
+                                :options="[
+                                    { value: 'all', label: 'All' },
+                                    { value: 'cleared', label: 'Cleared' },
+                                    { value: 'uncleared', label: 'Uncleared' },
+                                ]"
+                                size="sm"
+                            />
                         </div>
 
                         <!-- Filter Actions -->
@@ -468,7 +442,7 @@ const formatNextDate = (dateStr, frequency) => {
                             <button
                                 v-if="hasActiveFilters"
                                 @click="clearFilters"
-                                class="px-4 py-2.5 text-subtle text-sm font-medium hover:bg-surface-secondary rounded-xl"
+                                class="px-4 py-2.5 text-subtle text-sm font-medium hover:bg-surface-overlay rounded-xl"
                             >
                                 Clear
                             </button>
@@ -483,21 +457,24 @@ const formatNextDate = (dateStr, frequency) => {
                 </div>
 
                 <!-- Account Filter -->
-                <div class="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4">
-                    <FilterChip
-                        :active="!currentAccountId"
-                        @click="filterByAccount(null)"
-                    >
-                        All Accounts
-                    </FilterChip>
-                    <FilterChip
-                        v-for="account in accounts"
-                        :key="account.id"
-                        :active="currentAccountId === account.id"
-                        @click="filterByAccount(account.id)"
-                    >
-                        {{ account.name }}
-                    </FilterChip>
+                <div class="-mx-4 px-4 relative">
+                    <div class="absolute bottom-0 left-0 right-0 h-px bg-border"></div>
+                    <div class="flex gap-4 overflow-x-auto overflow-y-hidden relative">
+                        <FilterChip
+                            :active="!currentAccountId"
+                            @click="filterByAccount(null)"
+                        >
+                            All Accounts
+                        </FilterChip>
+                        <FilterChip
+                            v-for="account in accounts"
+                            :key="account.id"
+                            :active="currentAccountId === account.id"
+                            @click="filterByAccount(account.id)"
+                        >
+                            {{ account.name }}
+                        </FilterChip>
+                    </div>
                 </div>
 
                 <!-- Results Count (when searching or filtering) -->
@@ -508,7 +485,7 @@ const formatNextDate = (dateStr, frequency) => {
 
                 <!-- Transactions by Date -->
                 <div v-for="(dayTransactions, date) in transactions" :key="date" class="space-y-2">
-                    <h2 class="text-sm font-semibold text-subtle px-1">
+                    <h2 class="text-sm font-semibold text-warning px-1">
                         {{ formatDate(date) }}
                     </h2>
 
@@ -522,7 +499,12 @@ const formatNextDate = (dateStr, frequency) => {
                         >
                             <Link
                                 :href="route('transactions.edit', transaction.id)"
-                                class="block bg-surface rounded-card p-3 shadow-sm"
+                                class="block bg-surface rounded-card p-3 shadow-sm border-l-4"
+                                :class="{
+                                    'border-expense': transaction.type === 'expense',
+                                    'border-income': transaction.type === 'income',
+                                    'border-transfer': transaction.type === 'transfer',
+                                }"
                             >
                                 <div class="flex items-start justify-between">
                                     <!-- Left side: Payee + Category/Splits -->
@@ -607,7 +589,7 @@ const formatNextDate = (dateStr, frequency) => {
             <template v-else>
                 <template v-if="groupedRecurring.length > 0">
                     <div v-for="group in groupedRecurring" :key="group.frequency" class="space-y-2">
-                        <h2 class="text-sm font-semibold text-subtle uppercase tracking-wide px-1">
+                        <h2 class="text-sm font-semibold text-warning uppercase tracking-wide px-1">
                             {{ group.label }}
                         </h2>
                         <div class="space-y-1.5">
@@ -615,8 +597,11 @@ const formatNextDate = (dateStr, frequency) => {
                                 v-for="item in group.items"
                                 :key="item.id"
                                 :href="route('recurring.edit', item.id)"
-                                class="block bg-surface rounded-card p-3 shadow-sm"
-                                :class="{ 'opacity-50': !item.is_active }"
+                                class="block bg-surface rounded-card p-3 shadow-sm border-l-4"
+                                :class="[
+                                    item.type === 'expense' ? 'border-expense' : item.type === 'income' ? 'border-income' : 'border-transfer',
+                                    { 'opacity-50': !item.is_active },
+                                ]"
                             >
                                 <div class="flex items-start justify-between">
                                     <div class="min-w-0 flex-1">

@@ -22,10 +22,10 @@ const toggle = () => {
     >
         <div
             class="relative w-8 h-[18px] rounded-full transition-colors"
-            :class="modelValue ? 'bg-primary' : 'bg-border'"
+            :class="modelValue ? 'bg-primary' : 'bg-surface-overlay'"
         >
             <div
-                class="absolute top-[2px] left-[2px] w-[14px] h-[14px] bg-white rounded-full shadow transition-transform"
+                class="absolute top-[2px] left-[2px] w-[14px] h-[14px] bg-inverse rounded-full shadow transition-transform"
                 :class="{ 'translate-x-[14px]': modelValue }"
             ></div>
         </div>

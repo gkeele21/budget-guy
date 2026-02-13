@@ -17,7 +17,7 @@ const submit = () => {
 <template>
     <Head title="Create Budget" />
 
-    <div class="min-h-screen bg-surface-secondary flex items-center justify-center p-4">
+    <div class="min-h-screen bg-bg flex items-center justify-center p-4">
         <div class="w-full max-w-md">
             <div class="text-center mb-6">
                 <div class="text-5xl mb-3">💰</div>

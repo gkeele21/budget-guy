@@ -55,7 +55,7 @@ const selectOption = (option) => {
 
 // Color classes for different transaction types
 const colorClasses = {
-    primary: 'bg-primary text-body',
+    primary: 'bg-surface text-body shadow-sm',
     expense: 'bg-expense text-inverse',
     income: 'bg-income text-inverse',
     transfer: 'bg-transfer text-inverse',
@@ -64,7 +64,7 @@ const colorClasses = {
 </script>
 
 <template>
-    <div class="flex bg-surface-secondary rounded-lg p-1">
+    <div class="flex bg-surface-overlay rounded-lg p-1">
         <button
             v-for="option in options"
             :key="getOptionValue(option)"

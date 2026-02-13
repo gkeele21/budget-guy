@@ -11,13 +11,13 @@ defineProps({
 </script>
 
 <template>
-    <div class="min-h-screen bg-body flex flex-col">
+    <div class="min-h-screen bg-bg flex flex-col">
         <!-- Dark Header -->
-        <div class="bg-body px-6 pt-10 pb-20 text-center">
+        <div class="bg-bg px-6 pt-10 pb-20 text-center">
             <Link href="/">
                 <ApplicationLogo size="lg" />
             </Link>
-            <h1 class="text-2xl font-bold text-inverse mt-3">{{ title }}</h1>
+            <h1 class="text-2xl font-bold text-body mt-3">{{ title }}</h1>
         </div>
 
         <!-- White Curved Section -->

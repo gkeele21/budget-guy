@@ -50,7 +50,7 @@ const hasUncleared = computed(() => {
     <Link
         :href="route('transactions.index', { account: account.id })"
         :class="[
-            'flex items-start justify-between p-4 bg-surface rounded-card hover:bg-surface-secondary transition-colors',
+            'flex items-start justify-between p-4 bg-surface rounded-card hover:bg-surface-overlay transition-colors',
             'border-l-4',
             getAccountBorderColor(account.type)
         ]"

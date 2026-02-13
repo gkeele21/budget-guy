@@ -12,78 +12,81 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['IBM Plex Sans', ...defaultTheme.fontFamily.sans],
+                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },
             colors: {
                 // ===========================================
-                // PRIMARY (Brand Green)
+                // THEME-AWARE PRIMARY (adapts via CSS vars)
                 // ===========================================
                 'primary': {
-                    DEFAULT: '#7ED957',
-                    light: '#8bd93e',
-                    bg: '#edfce0',
-                    hover: '#6bc94a',
+                    DEFAULT: 'rgb(var(--color-primary) / <alpha-value>)',
+                    hover: 'rgb(var(--color-primary-hover) / <alpha-value>)',
                 },
 
                 // ===========================================
-                // SECONDARY (Brand Blue)
+                // SEMANTIC COLORS
                 // ===========================================
-                'secondary': {
-                    DEFAULT: '#2196F3',
-                    hover: '#1976D2',
-                },
+                'success': 'rgb(var(--color-success) / <alpha-value>)',
+                'warning': 'rgb(var(--color-warning) / <alpha-value>)',
+                'danger': 'rgb(var(--color-danger) / <alpha-value>)',
+                'info': 'rgb(var(--color-info) / <alpha-value>)',
 
                 // ===========================================
-                // FINANCIAL SEMANTICS
+                // FINANCIAL SEMANTICS (mapped to semantic vars)
                 // ===========================================
                 'income': {
-                    DEFAULT: '#2E7D32',
-                    hover: '#256b29',
+                    DEFAULT: 'rgb(var(--color-success) / <alpha-value>)',
                 },
                 'expense': {
-                    DEFAULT: '#E5533D',
-                    hover: '#d04a35',
+                    DEFAULT: 'rgb(var(--color-danger) / <alpha-value>)',
                 },
                 'transfer': {
-                    DEFAULT: '#2196F3',
-                    hover: '#1976D2',
+                    DEFAULT: 'rgb(var(--color-info) / <alpha-value>)',
+                },
+
+                // Backward compat: secondary → info
+                'secondary': {
+                    DEFAULT: 'rgb(var(--color-info) / <alpha-value>)',
                 },
 
                 // ===========================================
-                // FEEDBACK (aliases to financial colors)
+                // SURFACE HIERARCHY (5-layer dark surfaces)
                 // ===========================================
-                'success': {
-                    DEFAULT: '#2E7D32',
-                    hover: '#256b29',
-                },
-                'danger': {
-                    DEFAULT: '#E5533D',
-                    hover: '#d04a35',
-                },
-
-                // ===========================================
-                // SURFACES
-                // ===========================================
+                'bg': 'rgb(var(--color-bg) / <alpha-value>)',
                 'surface': {
-                    DEFAULT: '#ffffff',
-                    secondary: '#f5f5f5',
-                    tertiary: '#f0f0f0',
-                },
-
-                // ===========================================
-                // BORDERS
-                // ===========================================
-                'border': {
-                    DEFAULT: '#e5e7eb',
-                    dark: '#d1d5db',
+                    DEFAULT: 'rgb(var(--color-surface) / <alpha-value>)',
+                    elevated: 'rgb(var(--color-surface-elevated) / <alpha-value>)',
+                    overlay: 'rgb(var(--color-surface-overlay) / <alpha-value>)',
+                    inset: 'rgb(var(--color-surface-inset) / <alpha-value>)',
+                    header: 'rgb(var(--color-surface-header) / <alpha-value>)',
+                    // Backward compat aliases
+                    secondary: 'rgb(var(--color-surface-elevated) / <alpha-value>)',
+                    tertiary: 'rgb(var(--color-surface-overlay) / <alpha-value>)',
                 },
 
                 // ===========================================
                 // TEXT
                 // ===========================================
-                'body': '#1F2933',
-                'subtle': '#888888',
-                'inverse': '#ffffff',
+                'body': 'rgb(var(--color-text) / <alpha-value>)',
+                'muted': 'rgb(var(--color-text-muted) / <alpha-value>)',
+                'subtle': 'rgb(var(--color-text-subtle) / <alpha-value>)',
+                'inverse': 'rgb(var(--color-text-inverse) / <alpha-value>)',
+
+                // ===========================================
+                // BORDERS
+                // ===========================================
+                'border': {
+                    DEFAULT: 'rgb(var(--color-border) / <alpha-value>)',
+                    strong: 'rgb(var(--color-border-strong) / <alpha-value>)',
+                    // Backward compat
+                    dark: 'rgb(var(--color-border-strong) / <alpha-value>)',
+                },
+
+                // ===========================================
+                // STATIC COLORS (don't change with theme)
+                // ===========================================
+                'white': '#ffffff',
+                'black': '#171717',
             },
             borderRadius: {
                 'card': '12px',

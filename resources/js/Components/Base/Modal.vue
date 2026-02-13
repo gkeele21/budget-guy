@@ -55,12 +55,12 @@ onUnmounted(() => {
                     :class="['md:shadow-xl', 'md:mx-4']"
                 >
                     <!-- Header -->
-                    <div class="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0">
+                    <div class="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0 bg-surface-header">
                         <h2 class="text-lg font-semibold text-body">{{ title }}</h2>
                         <button
                             type="button"
                             @click="close"
-                            class="w-8 h-8 flex items-center justify-center rounded-full text-subtle hover:bg-surface-secondary transition-colors"
+                            class="w-8 h-8 flex items-center justify-center rounded-full text-subtle hover:bg-surface-overlay transition-colors"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />

@@ -48,7 +48,7 @@ const getAvatarColor = (name) => {
         'bg-secondary',   // Brand Blue
         'bg-income',      // Income Green
         'bg-expense',     // Expense Red
-        'bg-body',        // Charcoal
+        'bg-surface-overlay', // Dark gray
     ];
     const index = name.charCodeAt(0) % colors.length;
     return colors[index];
@@ -119,7 +119,7 @@ const getAvatarColor = (name) => {
                         <button
                             v-if="isOwner && !member.is_current_user && member.role !== 'owner'"
                             @click="removeMember(member)"
-                            class="p-2 text-subtle hover:text-expense hover:bg-surface-secondary rounded-full transition-colors"
+                            class="p-2 text-subtle hover:text-expense hover:bg-surface-overlay rounded-full transition-colors"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -142,7 +142,7 @@ const getAvatarColor = (name) => {
                     >
                         <div class="flex items-center gap-3">
                             <!-- Placeholder avatar -->
-                            <div class="w-10 h-10 rounded-full bg-surface-secondary flex items-center justify-center text-subtle">
+                            <div class="w-10 h-10 rounded-full bg-surface-overlay flex items-center justify-center text-subtle">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                 </svg>
@@ -171,7 +171,7 @@ const getAvatarColor = (name) => {
                 <div v-if="!showInviteForm" class="bg-surface rounded-card">
                     <button
                         @click="showInviteForm = true"
-                        class="w-full flex items-center gap-3 p-4 text-primary hover:bg-surface-secondary transition-colors"
+                        class="w-full flex items-center gap-3 p-4 text-primary hover:bg-surface-overlay transition-colors"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -202,7 +202,7 @@ const getAvatarColor = (name) => {
                         <button
                             type="button"
                             @click="showInviteForm = false; inviteForm.reset();"
-                            class="flex-1 py-3 bg-surface-secondary text-body rounded-card font-medium hover:bg-surface-secondary transition-colors"
+                            class="flex-1 py-3 bg-surface-overlay text-body rounded-card font-medium hover:bg-surface-overlay transition-colors"
                         >
                             Cancel
                         </button>

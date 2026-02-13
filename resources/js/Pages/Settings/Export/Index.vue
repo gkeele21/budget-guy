@@ -95,7 +95,7 @@ const formatDateForInput = (dateStr) => {
                     <label
                         v-for="option in formatOptions"
                         :key="option.value"
-                        class="flex items-center justify-between p-4 cursor-pointer hover:bg-surface-secondary"
+                        class="flex items-center justify-between p-4 cursor-pointer hover:bg-surface-overlay"
                     >
                         <div>
                             <div class="text-body font-medium">{{ option.label }}</div>
@@ -120,7 +120,7 @@ const formatDateForInput = (dateStr) => {
                     <label
                         v-for="option in typeOptions"
                         :key="option.value"
-                        class="flex items-center justify-between p-4 cursor-pointer hover:bg-surface-secondary"
+                        class="flex items-center justify-between p-4 cursor-pointer hover:bg-surface-overlay"
                     >
                         <div>
                             <div class="text-body font-medium">{{ option.label }}</div>

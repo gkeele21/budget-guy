@@ -200,7 +200,7 @@ const isGroupCollapsed = (groupId) => {
         <div class="p-4 space-y-4">
             <!-- Add Group Button -->
             <Button
-                variant="primary"
+                variant="outline"
                 full-width
                 @click="showAddGroupModal = true"
             >
@@ -243,7 +243,7 @@ const isGroupCollapsed = (groupId) => {
                             <!-- Group name - clickable to edit -->
                             <button
                                 @click="openEditGroup(group)"
-                                class="text-sm font-semibold text-subtle uppercase tracking-wide hover:text-body"
+                                class="text-sm font-semibold text-warning uppercase tracking-wide hover:text-body"
                             >
                                 {{ group.name }}
                             </button>
@@ -281,7 +281,7 @@ const isGroupCollapsed = (groupId) => {
                                                 </div>
                                                 <button
                                                     @click="openEditCategory(category, group.id)"
-                                                    class="flex-1 flex items-center justify-between py-4 pr-4 hover:bg-surface-secondary text-left"
+                                                    class="flex-1 flex items-center justify-between py-4 pr-4 hover:bg-surface-overlay text-left"
                                                 >
                                                     <div class="flex items-center gap-3">
                                                         <span class="text-xl">{{ category.icon || '📁' }}</span>
@@ -376,7 +376,7 @@ const isGroupCollapsed = (groupId) => {
                                     'w-9 h-9 flex items-center justify-center text-xl rounded-lg transition-colors',
                                     categoryForm.icon === emoji
                                         ? 'bg-primary/20 ring-2 ring-primary'
-                                        : 'bg-surface-secondary hover:bg-border'
+                                        : 'bg-surface-overlay hover:bg-border-strong'
                                 ]"
                             >
                                 {{ emoji }}
@@ -444,7 +444,7 @@ const isGroupCollapsed = (groupId) => {
                                     'w-9 h-9 flex items-center justify-center text-xl rounded-lg transition-colors',
                                     editForm.icon === emoji
                                         ? 'bg-primary/20 ring-2 ring-primary'
-                                        : 'bg-surface-secondary hover:bg-border'
+                                        : 'bg-surface-overlay hover:bg-border-strong'
                                 ]"
                             >
                                 {{ emoji }}

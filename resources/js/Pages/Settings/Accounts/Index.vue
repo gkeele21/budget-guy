@@ -1,7 +1,7 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, Link, useForm, router } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import TextField from '@/Components/Form/TextField.vue';
 import AmountField from '@/Components/Form/AmountField.vue';
 import Button from '@/Components/Base/Button.vue';
@@ -14,6 +14,13 @@ const props = defineProps({
 
 const showAddModal = ref(false);
 const orderedAccounts = ref([...props.accounts]);
+
+onMounted(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('add')) {
+        showAddModal.value = true;
+    }
+});
 
 watch(() => props.accounts, (newAccounts) => {
     orderedAccounts.value = [...newAccounts];
@@ -109,7 +116,7 @@ const closeModal = () => {
                             </div>
                             <Link
                                 :href="route('accounts.edit', account.id)"
-                                class="flex items-center justify-between flex-1 py-4 pr-4 hover:bg-surface-secondary"
+                                class="flex items-center justify-between flex-1 py-4 pr-4 hover:bg-surface-overlay"
                             >
                                 <div class="flex items-center gap-3">
                                     <span class="text-2xl">{{ getAccountIcon(account.type) }}</span>
@@ -147,18 +154,6 @@ const closeModal = () => {
         <!-- Add Account Modal -->
         <Modal :show="showAddModal" title="Add Account" @close="closeModal">
             <form @submit.prevent="submit">
-                <!-- Account Name -->
-                <div class="bg-surface mx-3 rounded-xl overflow-hidden">
-                    <TextField
-                        v-model="form.name"
-                        label="Account Name"
-                        placeholder="e.g., Main Checking"
-                        variant="subtle"
-                        :border-bottom="false"
-                        required
-                    />
-                </div>
-
                 <!-- Account Type -->
                 <div class="mx-3 mt-3">
                     <div class="text-xs font-semibold text-subtle uppercase tracking-wide mb-2 px-1">
@@ -188,8 +183,15 @@ const closeModal = () => {
                     </div>
                 </div>
 
-                <!-- Starting Balance -->
-                <div class="bg-surface mx-3 mt-3 rounded-xl overflow-hidden">
+                <!-- Fields Card -->
+                <div class="mx-3 mt-3 bg-surface rounded-xl overflow-hidden">
+                    <TextField
+                        v-model="form.name"
+                        label="Account Name"
+                        placeholder="e.g., Main Checking"
+                        variant="subtle"
+                        required
+                    />
                     <AmountField
                         v-model="form.starting_balance"
                         label="Starting Balance"

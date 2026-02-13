@@ -11,9 +11,9 @@ const isActive = (path) => {
 </script>
 
 <template>
-    <div class="h-screen bg-surface-secondary flex flex-col overflow-hidden">
+    <div class="h-screen bg-bg flex flex-col overflow-hidden">
         <!-- Header -->
-        <header class="bg-body text-inverse px-4 py-3 flex items-center justify-between flex-shrink-0" style="padding-top: max(0.75rem, var(--safe-area-inset-top))">
+        <header class="bg-surface-header text-body px-4 py-3 flex items-center justify-between flex-shrink-0" style="padding-top: max(0.75rem, var(--safe-area-inset-top))">
             <div class="flex items-center gap-3">
                 <slot name="header-left" />
                 <img src="/images/logo.png" alt="Budget Guy" class="h-8 w-8 rounded" />
@@ -40,7 +40,7 @@ const isActive = (path) => {
         </main>
 
         <!-- Bottom Navigation -->
-        <nav class="bg-surface border-t border-border px-4 py-2 flex-shrink-0" style="padding-bottom: max(0.5rem, var(--safe-area-inset-bottom))">
+        <nav class="bg-surface-header border-t border-border px-4 py-2 flex-shrink-0" style="padding-bottom: max(0.5rem, var(--safe-area-inset-bottom))">
             <div class="flex justify-around items-center max-w-md mx-auto">
                 <Link
                     :href="route('budget.index')"

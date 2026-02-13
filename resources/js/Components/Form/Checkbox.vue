@@ -32,7 +32,7 @@ const proxyChecked = computed({
             v-model="proxyChecked"
             class="sr-only peer"
         />
-        <div class="w-4 h-4 border border-border rounded bg-surface peer-checked:bg-primary peer-checked:border-primary peer-focus:ring-2 peer-focus:ring-primary/50 flex items-center justify-center">
+        <div class="w-4 h-4 border border-border rounded bg-surface-inset peer-checked:bg-primary peer-checked:border-primary peer-focus:shadow-[0_0_0_2px_rgb(var(--color-primary)),0_0_8px_rgb(var(--color-primary)/0.4)] flex items-center justify-center">
             <svg
                 v-if="proxyChecked"
                 class="w-3 h-3 text-body"

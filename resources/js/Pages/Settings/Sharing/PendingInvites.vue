@@ -59,7 +59,7 @@ const declineInvite = (token) => {
                     <div class="flex gap-3">
                         <button
                             @click="declineInvite(invite.token)"
-                            class="flex-1 py-3 bg-surface-secondary text-body rounded-card font-medium hover:bg-border transition-colors"
+                            class="flex-1 py-3 bg-surface-overlay text-body rounded-card font-medium hover:bg-border-strong transition-colors"
                         >
                             Decline
                         </button>

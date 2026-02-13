@@ -44,10 +44,10 @@ const toggle = () => {
                 </span>
                 <div
                     class="relative w-10 h-6 rounded-full transition-colors"
-                    :class="modelValue ? 'bg-income' : 'bg-border-dark'"
+                    :class="modelValue ? 'bg-primary' : 'bg-surface-overlay'"
                 >
                     <div
-                        class="absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform"
+                        class="absolute top-1 w-4 h-4 bg-inverse rounded-full shadow transition-transform"
                         :class="modelValue ? 'translate-x-5' : 'translate-x-1'"
                     />
                 </div>

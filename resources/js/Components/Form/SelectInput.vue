@@ -64,8 +64,8 @@ const selectClasses = computed(() => {
     // Default variant
     return [
         base,
-        'px-4 py-2.5 bg-surface border border-border rounded-xl shadow-sm text-body',
-        'focus:border-secondary focus:ring-2 focus:ring-secondary/20',
+        'px-4 py-2.5 bg-surface-inset border border-border rounded-xl shadow-sm text-body',
+        'focus:outline-none',
         !hasValue.value && 'text-subtle',
     ];
 });

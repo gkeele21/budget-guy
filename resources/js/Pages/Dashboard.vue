@@ -37,7 +37,7 @@ const accountTypeOrder = ['cash', 'checking', 'savings', 'credit_card'];
             <!-- Accounts by Type -->
             <div v-for="type in accountTypeOrder" :key="type">
                 <div v-if="accounts[type] && accounts[type].length > 0" class="space-y-2">
-                    <h2 class="text-sm font-semibold text-subtle uppercase tracking-wide px-1">
+                    <h2 class="text-sm font-semibold text-warning uppercase tracking-wide px-1">
                         {{ accountTypeLabels[type] }}
                     </h2>
                     <div class="space-y-2">
@@ -64,7 +64,7 @@ const accountTypeOrder = ['cash', 'checking', 'savings', 'credit_card'];
         </div>
 
         <template v-if="Object.keys(accounts).length > 0" #fab>
-            <FAB :href="route('transactions.create')" />
+            <FAB :href="route('settings.accounts', { add: 1 })" />
         </template>
     </AppLayout>
 </template>

@@ -107,7 +107,7 @@ const closeDeleteModal = () => {
                             id="name"
                             v-model="profileForm.name"
                             type="text"
-                            class="w-full px-4 py-3 bg-surface-secondary rounded-lg border-0 text-body focus:ring-2 focus:ring-primary"
+                            class="w-full px-4 py-3 bg-surface-inset rounded-lg border-0 text-body focus:outline-none"
                             required
                         />
                         <p v-if="profileForm.errors.name" class="text-danger text-sm mt-1">{{ profileForm.errors.name }}</p>
@@ -119,7 +119,7 @@ const closeDeleteModal = () => {
                             id="email"
                             v-model="profileForm.email"
                             type="email"
-                            class="w-full px-4 py-3 bg-surface-secondary rounded-lg border-0 text-body focus:ring-2 focus:ring-primary"
+                            class="w-full px-4 py-3 bg-surface-inset rounded-lg border-0 text-body focus:outline-none"
                             required
                         />
                         <p v-if="profileForm.errors.email" class="text-danger text-sm mt-1">{{ profileForm.errors.email }}</p>
@@ -158,7 +158,7 @@ const closeDeleteModal = () => {
                             id="current_password"
                             v-model="passwordForm.current_password"
                             type="password"
-                            class="w-full px-4 py-3 bg-surface-secondary rounded-lg border-0 text-body focus:ring-2 focus:ring-primary"
+                            class="w-full px-4 py-3 bg-surface-inset rounded-lg border-0 text-body focus:outline-none"
                             autocomplete="current-password"
                         />
                         <p v-if="passwordForm.errors.current_password" class="text-danger text-sm mt-1">{{ passwordForm.errors.current_password }}</p>
@@ -170,7 +170,7 @@ const closeDeleteModal = () => {
                             id="password"
                             v-model="passwordForm.password"
                             type="password"
-                            class="w-full px-4 py-3 bg-surface-secondary rounded-lg border-0 text-body focus:ring-2 focus:ring-primary"
+                            class="w-full px-4 py-3 bg-surface-inset rounded-lg border-0 text-body focus:outline-none"
                             autocomplete="new-password"
                         />
                         <p v-if="passwordForm.errors.password" class="text-danger text-sm mt-1">{{ passwordForm.errors.password }}</p>
@@ -182,7 +182,7 @@ const closeDeleteModal = () => {
                             id="password_confirmation"
                             v-model="passwordForm.password_confirmation"
                             type="password"
-                            class="w-full px-4 py-3 bg-surface-secondary rounded-lg border-0 text-body focus:ring-2 focus:ring-primary"
+                            class="w-full px-4 py-3 bg-surface-inset rounded-lg border-0 text-body focus:outline-none"
                             autocomplete="new-password"
                         />
                         <p v-if="passwordForm.errors.password_confirmation" class="text-danger text-sm mt-1">{{ passwordForm.errors.password_confirmation }}</p>
@@ -238,7 +238,7 @@ const closeDeleteModal = () => {
                                 v-model="deleteForm.password"
                                 type="password"
                                 placeholder="Password"
-                                class="w-full px-4 py-3 bg-surface-secondary rounded-lg border-0 text-body focus:ring-2 focus:ring-danger"
+                                class="w-full px-4 py-3 bg-surface-inset rounded-lg border-0 text-body focus:outline-none"
                                 @keyup.enter="deleteAccount"
                             />
                             <p v-if="deleteForm.errors.password" class="text-danger text-sm mt-1">{{ deleteForm.errors.password }}</p>

@@ -65,7 +65,7 @@ const templates = [
 <template>
     <Head title="Setup" />
 
-    <div class="min-h-screen bg-surface-secondary flex flex-col">
+    <div class="min-h-screen bg-bg flex flex-col">
         <!-- Progress Bar -->
         <div class="bg-surface border-b border-border px-6 py-4">
             <div class="max-w-md mx-auto">
