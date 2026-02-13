@@ -33,7 +33,7 @@ const toggle = () => {
         >
             <!-- Dot variant (like wireframe: ● Cleared / ○ Not yet) -->
             <template v-if="variant === 'dot'">
-                <span v-if="modelValue" class="text-income">● {{ onLabel }}</span>
+                <span v-if="modelValue" class="text-primary">● {{ onLabel }}</span>
                 <span v-else class="text-subtle">○ {{ offLabel }}</span>
             </template>
 
@@ -55,7 +55,7 @@ const toggle = () => {
 
             <!-- Text-only variant -->
             <template v-else>
-                <span :class="modelValue ? 'text-income' : 'text-subtle'">
+                <span :class="modelValue ? 'text-primary' : 'text-subtle'">
                     {{ modelValue ? onLabel : offLabel }}
                 </span>
             </template>

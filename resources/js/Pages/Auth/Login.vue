@@ -29,8 +29,8 @@ const submit = () => {
     <GuestLayout title="Welcome back">
         <Head title="Log in" />
 
-        <div v-if="status" class="mb-4 p-3 bg-income/10 border border-income/20 rounded-xl">
-            <p class="text-sm text-income text-center">{{ status }}</p>
+        <div v-if="status" class="mb-4 p-3 bg-success/10 border border-success/20 rounded-xl">
+            <p class="text-sm text-success text-center">{{ status }}</p>
         </div>
 
         <form @submit.prevent="submit">

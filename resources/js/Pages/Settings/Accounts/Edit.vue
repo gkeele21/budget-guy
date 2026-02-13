@@ -128,7 +128,7 @@ const deleteAccount = () => {
             <button
                 type="button"
                 @click="showDeleteConfirm = true"
-                class="w-full py-4 text-expense font-medium"
+                class="w-full py-4 text-danger font-medium"
             >
                 Delete Account
             </button>

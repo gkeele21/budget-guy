@@ -95,7 +95,7 @@ const getSaveButtonVariant = () => {
                     :disabled="form.processing"
                     :class="[
                         'font-semibold',
-                        form.type === 'expense' ? 'text-expense' : 'text-income'
+                        form.type === 'expense' ? 'text-danger' : 'text-success'
                     ]"
                 >
                     Save

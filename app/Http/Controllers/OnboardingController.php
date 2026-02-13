@@ -41,6 +41,7 @@ class OnboardingController extends Controller
 
         $validated = $request->validate([
             'budget_name' => 'required|string|max:255',
+            'start_month' => 'nullable|string|date_format:Y-m',
             'account_name' => 'nullable|string|max:255',
             'account_type' => 'nullable|in:checking,savings,credit_card,cash',
             'account_balance' => 'nullable|numeric',
@@ -52,6 +53,7 @@ class OnboardingController extends Controller
             $budget = Budget::create([
                 'name' => $validated['budget_name'],
                 'owner_id' => $user->id,
+                'start_month' => $validated['start_month'] ?? now()->format('Y-m'),
             ]);
 
             // Add user as owner

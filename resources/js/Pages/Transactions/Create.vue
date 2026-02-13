@@ -175,8 +175,8 @@ const getSaveButtonVariant = () => {
                     :disabled="form.processing"
                     :class="[
                         'font-semibold',
-                        form.type === 'expense' ? 'text-expense' :
-                        form.type === 'income' ? 'text-income' : 'text-transfer'
+                        form.type === 'expense' ? 'text-danger' :
+                        form.type === 'income' ? 'text-success' : 'text-info'
                     ]"
                 >
                     Save
@@ -330,7 +330,7 @@ const getSaveButtonVariant = () => {
                             />
                         </div>
                         <div class="flex items-center gap-2 ml-3">
-                            <span :class="['text-sm font-medium', item.amount ? 'text-expense' : 'text-subtle']">$</span>
+                            <span :class="['text-sm font-medium', item.amount ? 'text-danger' : 'text-subtle']">$</span>
                             <input
                                 v-model="item.amount"
                                 type="text"
@@ -338,14 +338,14 @@ const getSaveButtonVariant = () => {
                                 placeholder="0.00"
                                 :class="[
                                     'w-20 bg-transparent text-sm font-medium text-right focus:outline-none',
-                                    item.amount ? 'text-expense' : 'text-subtle'
+                                    item.amount ? 'text-danger' : 'text-subtle'
                                 ]"
                             />
                         </div>
                         <button
                             type="button"
                             @click="removeSplitItem(index)"
-                            class="ml-2 p-1 text-border-dark hover:text-expense transition-colors"
+                            class="ml-2 p-1 text-border-strong hover:text-danger transition-colors"
                             :class="{ 'opacity-30 pointer-events-none': splitItems.length <= 1 }"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -371,9 +371,9 @@ const getSaveButtonVariant = () => {
                     <span
                         class="font-semibold"
                         :class="{
-                            'text-expense': remainingAmount > 0.01,
-                            'text-income': isSplitBalanced,
-                            'text-expense': remainingAmount < -0.01,
+                            'text-danger': remainingAmount > 0.01,
+                            'text-success': isSplitBalanced,
+                            'text-danger': remainingAmount < -0.01,
                         }"
                     >
                         {{ formatCurrency(remainingAmount) }}
@@ -383,9 +383,9 @@ const getSaveButtonVariant = () => {
                     <div
                         class="h-full transition-all duration-300"
                         :class="{
-                            'bg-expense': remainingAmount > 0.01,
-                            'bg-income': isSplitBalanced,
-                            'bg-expense': remainingAmount < -0.01,
+                            'bg-danger': remainingAmount > 0.01,
+                            'bg-success': isSplitBalanced,
+                            'bg-danger': remainingAmount < -0.01,
                         }"
                         :style="{ width: `${Math.min(100, (totalSplitAmount / (parseFloat(form.amount) || 1)) * 100)}%` }"
                     ></div>

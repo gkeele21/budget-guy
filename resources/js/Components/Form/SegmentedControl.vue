@@ -56,9 +56,9 @@ const selectOption = (option) => {
 // Color classes for different transaction types
 const colorClasses = {
     primary: 'bg-surface text-body shadow-sm',
-    expense: 'bg-expense text-inverse',
-    income: 'bg-income text-inverse',
-    transfer: 'bg-transfer text-inverse',
+    expense: 'bg-danger text-inverse',
+    income: 'bg-success text-inverse',
+    transfer: 'bg-info text-inverse',
     secondary: 'bg-secondary text-inverse',
 };
 </script>

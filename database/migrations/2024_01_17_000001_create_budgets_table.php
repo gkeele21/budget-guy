@@ -13,6 +13,7 @@ return new class extends Migration
             $table->string('name');
             $table->foreignId('owner_id')->constrained('users')->onDelete('cascade');
             $table->decimal('default_monthly_income', 12, 2)->nullable();
+            $table->string('start_month', 7)->nullable();
             $table->timestamps();
         });
     }

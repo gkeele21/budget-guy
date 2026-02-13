@@ -56,6 +56,43 @@ class BudgetController extends Controller
         return $result;
     }
 
+    public function edit()
+    {
+        $budget = Auth::user()->currentBudget;
+
+        if (!$budget) {
+            return redirect()->route('budgets.create');
+        }
+
+        return Inertia::render('Budgets/Edit', [
+            'budget' => [
+                'id' => $budget->id,
+                'name' => $budget->name,
+                'start_month' => $budget->start_month,
+                'default_monthly_income' => (float) ($budget->default_monthly_income ?? 0),
+            ],
+        ]);
+    }
+
+    public function updateBudget(Request $request)
+    {
+        $budget = Auth::user()->currentBudget;
+
+        if (!$budget) {
+            return redirect()->route('budgets.create');
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'start_month' => 'nullable|string|date_format:Y-m',
+            'default_monthly_income' => 'nullable|numeric|min:0',
+        ]);
+
+        $budget->update($validated);
+
+        return redirect()->route('settings.index');
+    }
+
     public function create()
     {
         return Inertia::render('Budgets/Create');
@@ -202,6 +239,13 @@ class BudgetController extends Controller
         // Ready to assign = carried forward + this month's income - this month's budgeted
         $toBudget = $carriedForward + $thisMonthIncome - $totalBudgeted;
 
+        // Earliest month: user-set start month, or fallback to first account creation
+        $earliestMonth = $budget->start_month;
+        if (!$earliestMonth) {
+            $firstAccount = $budget->accounts()->orderBy('created_at')->first();
+            $earliestMonth = $firstAccount ? $firstAccount->created_at->format('Y-m') : $month;
+        }
+
         return Inertia::render('Budget/Index', [
             'month' => $month,
             'categoryGroups' => $categoryGroups,
@@ -214,7 +258,7 @@ class BudgetController extends Controller
                 'thisMonthIncome' => (float) $thisMonthIncome,
                 'isFirstMonth' => !$hasPriorActivity,
             ],
-            'defaultMonthlyIncome' => (float) ($budget->default_monthly_income ?? 0),
+            'earliestMonth' => $earliestMonth,
         ]);
     }
 

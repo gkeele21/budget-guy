@@ -143,9 +143,9 @@ const toggleCleared = (transaction) => {
 };
 
 const getAmountColor = (type) => {
-    if (type === 'expense') return 'text-expense';
-    if (type === 'income') return 'text-income';
-    return 'text-transfer';
+    if (type === 'expense') return 'text-danger';
+    if (type === 'income') return 'text-success';
+    return 'text-info';
 };
 
 const transactionCount = computed(() => {
@@ -287,7 +287,7 @@ const formatNextDate = (dateStr, frequency) => {
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                 </svg>
-                <span v-if="hasActiveFilters" class="absolute top-1 right-1 w-2 h-2 bg-income rounded-full"></span>
+                <span v-if="hasActiveFilters" class="absolute top-1 right-1 w-2 h-2 bg-success rounded-full"></span>
             </button>
             <button
                 @click="toggleSearch"
@@ -315,7 +315,7 @@ const formatNextDate = (dateStr, frequency) => {
                     class="fixed bottom-24 left-4 right-4 z-50 bg-surface-header text-body rounded-card px-4 py-3 shadow-lg flex items-center justify-between"
                 >
                     <div class="flex items-center gap-2">
-                        <span class="text-income">✓</span>
+                        <span class="text-success">✓</span>
                         <span>{{ toast.payee }} {{ toast.message }}</span>
                     </div>
                     <button
@@ -501,9 +501,9 @@ const formatNextDate = (dateStr, frequency) => {
                                 :href="route('transactions.edit', transaction.id)"
                                 class="block bg-surface rounded-card p-3 shadow-sm border-l-4"
                                 :class="{
-                                    'border-expense': transaction.type === 'expense',
-                                    'border-income': transaction.type === 'income',
-                                    'border-transfer': transaction.type === 'transfer',
+                                    'border-danger': transaction.type === 'expense',
+                                    'border-success': transaction.type === 'income',
+                                    'border-info': transaction.type === 'transfer',
                                 }"
                             >
                                 <div class="flex items-start justify-between">
@@ -512,7 +512,7 @@ const formatNextDate = (dateStr, frequency) => {
                                         <div class="flex items-center gap-1.5">
                                             <span class="font-medium text-body truncate">
                                                 <template v-if="transaction.type === 'transfer'">
-                                                    <span class="text-transfer">↔</span>
+                                                    <span class="text-info">↔</span>
                                                     {{ transaction.payee }}
                                                 </template>
                                                 <template v-else>{{ transaction.payee }}</template>
@@ -549,7 +549,7 @@ const formatNextDate = (dateStr, frequency) => {
                                         >
                                             <div
                                                 v-if="transaction.cleared"
-                                                class="w-2 h-2 rounded-full bg-income"
+                                                class="w-2 h-2 rounded-full bg-success"
                                             ></div>
                                             <div
                                                 v-else
@@ -599,7 +599,7 @@ const formatNextDate = (dateStr, frequency) => {
                                 :href="route('recurring.edit', item.id)"
                                 class="block bg-surface rounded-card p-3 shadow-sm border-l-4"
                                 :class="[
-                                    item.type === 'expense' ? 'border-expense' : item.type === 'income' ? 'border-income' : 'border-transfer',
+                                    item.type === 'expense' ? 'border-danger' : item.type === 'income' ? 'border-success' : 'border-info',
                                     { 'opacity-50': !item.is_active },
                                 ]"
                             >
@@ -616,7 +616,7 @@ const formatNextDate = (dateStr, frequency) => {
                                     <div class="flex-shrink-0 ml-3 text-right">
                                         <div
                                             class="font-medium"
-                                            :class="item.type === 'expense' ? 'text-expense' : 'text-income'"
+                                            :class="item.type === 'expense' ? 'text-danger' : 'text-success'"
                                         >
                                             {{ formatCurrency(Math.abs(item.amount)) }}
                                         </div>

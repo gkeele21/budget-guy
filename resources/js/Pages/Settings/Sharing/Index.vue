@@ -46,8 +46,8 @@ const getAvatarColor = (name) => {
     const colors = [
         'bg-primary',     // Brand Green
         'bg-secondary',   // Brand Blue
-        'bg-income',      // Income Green
-        'bg-expense',     // Expense Red
+        'bg-success',      // Income Green
+        'bg-danger',     // Expense Red
         'bg-surface-overlay', // Dark gray
     ];
     const index = name.charCodeAt(0) % colors.length;
@@ -119,7 +119,7 @@ const getAvatarColor = (name) => {
                         <button
                             v-if="isOwner && !member.is_current_user && member.role !== 'owner'"
                             @click="removeMember(member)"
-                            class="p-2 text-subtle hover:text-expense hover:bg-surface-overlay rounded-full transition-colors"
+                            class="p-2 text-subtle hover:text-danger hover:bg-surface-overlay rounded-full transition-colors"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -154,7 +154,7 @@ const getAvatarColor = (name) => {
                         </div>
                         <button
                             @click="cancelInvite(invite.id)"
-                            class="text-sm text-subtle hover:text-expense transition-colors"
+                            class="text-sm text-subtle hover:text-danger transition-colors"
                         >
                             Cancel
                         </button>
@@ -191,9 +191,9 @@ const getAvatarColor = (name) => {
                             type="email"
                             placeholder="Enter email address"
                             class="w-full px-4 py-3 border border-border rounded-lg focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
-                            :class="{ 'border-expense': inviteForm.errors.email }"
+                            :class="{ 'border-danger': inviteForm.errors.email }"
                         />
-                        <p v-if="inviteForm.errors.email" class="mt-1 text-sm text-expense">
+                        <p v-if="inviteForm.errors.email" class="mt-1 text-sm text-danger">
                             {{ inviteForm.errors.email }}
                         </p>
                     </div>

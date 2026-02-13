@@ -8,7 +8,7 @@ const props = defineProps({
     month: String,
     categoryGroups: Array,
     summary: Object,
-    defaultMonthlyIncome: Number,
+    earliestMonth: String,
 });
 
 // Track budget amounts reactively for each category
@@ -122,6 +122,10 @@ const previousMonth = computed(() => {
     const date = new Date(year, month - 1, 1); // month is 0-indexed
     date.setMonth(date.getMonth() - 1);
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+});
+
+const canGoBack = computed(() => {
+    return !props.earliestMonth || props.month > props.earliestMonth;
 });
 
 const nextMonth = computed(() => {
@@ -450,7 +454,7 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                         class="fixed bottom-24 left-4 right-4 z-50 bg-surface-header text-body rounded-card px-4 py-3 shadow-lg"
                     >
                         <div class="flex items-center gap-2">
-                            <span class="text-income">✓</span>
+                            <span class="text-success">✓</span>
                             <span>Moved {{ moveToast.amount }} from {{ moveToast.from }} to {{ moveToast.to }}</span>
                         </div>
                         <div v-if="moveToast.remaining" class="text-subtle text-sm mt-1 ml-6">
@@ -464,7 +468,11 @@ const showMoveToast = (amount, from, to, remaining = null) => {
             <div class="flex items-center justify-between bg-surface rounded-card px-3 py-2">
                 <button
                     @click="navigateMonth(previousMonth)"
-                    class="p-2 hover:bg-surface-overlay rounded-full"
+                    :disabled="!canGoBack"
+                    :class="[
+                        'p-2 rounded-full',
+                        canGoBack ? 'hover:bg-surface-overlay' : 'opacity-30 cursor-not-allowed'
+                    ]"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -491,7 +499,7 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                 </div>
                 <div class="bg-surface rounded-card px-3 py-2 text-center">
                     <div class="text-xs text-subtle uppercase">Spent</div>
-                    <div class="font-semibold text-expense">
+                    <div class="font-semibold text-danger">
                         {{ formatCurrency(summary.spent) }}
                     </div>
                 </div>
@@ -500,7 +508,7 @@ const showMoveToast = (amount, from, to, remaining = null) => {
             <!-- Ready to Assign -->
             <div
                 class="rounded-card px-4 py-2 flex items-center justify-between relative"
-                :class="summary.toBudget >= 0 ? 'bg-primary' : 'bg-expense'"
+                :class="summary.toBudget >= 0 ? 'bg-primary' : 'bg-danger'"
             >
                 <button
                     @click="showBreakdown = !showBreakdown"
@@ -519,16 +527,16 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                 ></div>
                 <div
                     v-if="showBreakdown"
-                    class="absolute left-3 top-12 z-50 bg-surface rounded-card shadow-lg border border-border p-4 min-w-[260px]"
+                    class="absolute left-3 top-12 z-50 bg-surface rounded-card shadow-lg border border-border p-4 min-w-[300px]"
                 >
                     <div class="space-y-2 text-sm">
                         <div class="flex justify-between gap-4">
-                            <span class="text-muted">{{ summary.isFirstMonth ? 'Starting balance' : 'Carried forward' }}</span>
+                            <span class="text-muted">{{ summary.isFirstMonth ? 'Starting account balances' : 'Carried forward' }}</span>
                             <span class="font-medium text-body">{{ formatCurrency(summary.carriedForward ?? 0) }}</span>
                         </div>
                         <div class="flex justify-between gap-4">
                             <span class="text-muted">+ {{ shortMonthName }} income</span>
-                            <span class="font-medium text-income">{{ formatCurrency(summary.thisMonthIncome ?? 0) }}</span>
+                            <span class="font-medium text-success">{{ formatCurrency(summary.thisMonthIncome ?? 0) }}</span>
                         </div>
                         <div class="flex justify-between gap-4">
                             <span class="text-muted">− {{ shortMonthName }} assigned</span>
@@ -537,7 +545,7 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                         <div class="border-t border-border my-1"></div>
                         <div class="flex justify-between gap-4 font-semibold">
                             <span class="text-body">Ready to Assign</span>
-                            <span :class="summary.toBudget >= 0 ? 'text-income' : 'text-expense'">{{ formatCurrency(summary.toBudget) }}</span>
+                            <span :class="summary.toBudget >= 0 ? 'text-success' : 'text-danger'">{{ formatCurrency(summary.toBudget) }}</span>
                         </div>
                     </div>
                 </div>
@@ -581,7 +589,7 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                             @click="initiaCopyLastMonth"
                             class="w-full text-left px-4 py-3 hover:bg-surface-overlay transition-colors flex items-start gap-3"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-income flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-success flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
                             <div>
@@ -659,7 +667,7 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                                     :class="[
                                         'w-full px-1 py-1 text-right text-sm rounded cursor-text transition-colors',
                                         editedAmounts[category.id]
-                                            ? 'border-2 border-income bg-primary-bg'
+                                            ? 'border-2 border-success bg-primary-bg'
                                             : 'border border-transparent hover:bg-surface-overlay'
                                     ]"
                                 >
@@ -676,7 +684,7 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                             <div
                                 class="col-span-3 text-right text-sm font-semibold"
                                 :class="[
-                                    isOverspent(getAvailable(category)) ? 'text-expense cursor-pointer hover:underline' : 'text-income',
+                                    isOverspent(getAvailable(category)) ? 'text-danger cursor-pointer hover:underline' : 'text-success',
                                 ]"
                                 @click="isOverspent(getAvailable(category)) && openMoveMoneyModal(category)"
                             >
@@ -713,7 +721,7 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                         </div>
                         <div
                             class="col-span-3 text-right"
-                            :class="getGroupTotals(group).available >= 0 ? 'text-income' : 'text-expense'"
+                            :class="getGroupTotals(group).available >= 0 ? 'text-success' : 'text-danger'"
                         >
                             {{ formatCurrency(getGroupTotals(group).available) }}
                         </div>
@@ -776,7 +784,7 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                                         </svg>
                                     </button>
                                 </div>
-                                <p class="text-sm text-expense mt-1">
+                                <p class="text-sm text-danger mt-1">
                                     Over by {{ formatCurrency(moveMoneyTarget?.overspentBy || 0) }}
                                 </p>
                                 <!-- Progress indicator -->
@@ -784,7 +792,7 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                                     <div class="flex justify-between text-sm">
                                         <span class="text-body">Selected: {{ formatCurrency(totalSelectedAmount) }}</span>
                                         <span v-if="remainingNeeded > 0" class="text-subtle">Need: {{ formatCurrency(remainingNeeded) }}</span>
-                                        <span v-else class="text-income font-medium">✓ Covered</span>
+                                        <span v-else class="text-success font-medium">✓ Covered</span>
                                     </div>
                                 </div>
                                 <p v-else class="text-xs text-subtle mt-2">
@@ -813,7 +821,7 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                                         </div>
                                     </div>
                                     <div class="text-right">
-                                        <div class="text-sm font-semibold text-income">
+                                        <div class="text-sm font-semibold text-success">
                                             {{ formatCurrency(category.available) }}
                                         </div>
                                         <div v-if="isSourceSelected(category.id)" class="text-xs text-primary font-medium">

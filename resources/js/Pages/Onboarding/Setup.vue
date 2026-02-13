@@ -8,13 +8,28 @@ import Button from '@/Components/Base/Button.vue';
 const currentStep = ref(1);
 const totalSteps = 3;
 
+const currentMonth = new Date().toISOString().slice(0, 7); // "2026-02"
+
 const form = useForm({
     budget_name: '',
+    start_month: currentMonth,
     account_name: '',
     account_type: 'checking',
     account_balance: '',
     use_template: 'basic',
 });
+
+const formatMonthLabel = (monthStr) => {
+    const [year, month] = monthStr.split('-');
+    const date = new Date(year, month - 1, 1);
+    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+};
+
+const adjustStartMonth = (delta) => {
+    const [year, month] = form.start_month.split('-').map(Number);
+    const d = new Date(year, month - 1 + delta, 1);
+    form.start_month = d.toISOString().slice(0, 7);
+};
 
 const canProceedStep1 = computed(() => form.budget_name.length > 0);
 const canProceedStep2 = computed(() => true); // Account is optional
@@ -114,12 +129,33 @@ const templates = [
                             :error="form.errors.budget_name"
                         />
                     </div>
+
+                    <!-- Start Month -->
+                    <div>
+                        <div class="text-xs font-semibold text-subtle uppercase tracking-wide mb-2 px-1">
+                            Start Month
+                        </div>
+                        <div class="bg-surface rounded-card p-4 flex items-center justify-between">
+                            <button type="button" @click="adjustStartMonth(-1)" class="p-2 rounded-full hover:bg-surface-overlay">
+                                <svg class="w-5 h-5 text-body" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                                </svg>
+                            </button>
+                            <span class="font-medium text-body">{{ formatMonthLabel(form.start_month) }}</span>
+                            <button type="button" @click="adjustStartMonth(1)" class="p-2 rounded-full hover:bg-surface-overlay">
+                                <svg class="w-5 h-5 text-body" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                        </div>
+                        <p class="text-xs text-subtle mt-1 px-1">When should your budget history begin?</p>
+                    </div>
                 </div>
 
                 <!-- Step 2: First Account -->
                 <div v-if="currentStep === 2" class="space-y-6">
                     <div class="text-center">
-                        <div class="w-16 h-16 bg-income/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                             <span class="text-2xl">🏦</span>
                         </div>
                         <h2 class="text-2xl font-bold text-body mb-2">Add your first account</h2>
@@ -200,7 +236,7 @@ const templates = [
                             class="w-full text-left p-4 border-2 rounded-card transition-colors bg-surface"
                             :class="form.use_template === template.value
                                 ? 'border-primary bg-primary/5'
-                                : 'border-border hover:border-border-dark'"
+                                : 'border-border hover:border-border-strong'"
                         >
                             <div class="flex items-center justify-between mb-1">
                                 <span class="font-semibold text-body">{{ template.label }}</span>

@@ -32,19 +32,8 @@ export default {
                 'info': 'rgb(var(--color-info) / <alpha-value>)',
 
                 // ===========================================
-                // FINANCIAL SEMANTICS (mapped to semantic vars)
+                // SECONDARY (Brand Blue, maps to info)
                 // ===========================================
-                'income': {
-                    DEFAULT: 'rgb(var(--color-success) / <alpha-value>)',
-                },
-                'expense': {
-                    DEFAULT: 'rgb(var(--color-danger) / <alpha-value>)',
-                },
-                'transfer': {
-                    DEFAULT: 'rgb(var(--color-info) / <alpha-value>)',
-                },
-
-                // Backward compat: secondary → info
                 'secondary': {
                     DEFAULT: 'rgb(var(--color-info) / <alpha-value>)',
                 },
@@ -59,9 +48,6 @@ export default {
                     overlay: 'rgb(var(--color-surface-overlay) / <alpha-value>)',
                     inset: 'rgb(var(--color-surface-inset) / <alpha-value>)',
                     header: 'rgb(var(--color-surface-header) / <alpha-value>)',
-                    // Backward compat aliases
-                    secondary: 'rgb(var(--color-surface-elevated) / <alpha-value>)',
-                    tertiary: 'rgb(var(--color-surface-overlay) / <alpha-value>)',
                 },
 
                 // ===========================================
@@ -78,8 +64,6 @@ export default {
                 'border': {
                     DEFAULT: 'rgb(var(--color-border) / <alpha-value>)',
                     strong: 'rgb(var(--color-border-strong) / <alpha-value>)',
-                    // Backward compat
-                    dark: 'rgb(var(--color-border-strong) / <alpha-value>)',
                 },
 
                 // ===========================================

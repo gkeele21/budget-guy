@@ -84,7 +84,7 @@ const form = useForm({
 
                 <div
                     v-show="status === 'verification-link-sent'"
-                    class="mt-2 text-sm font-medium text-income"
+                    class="mt-2 text-sm font-medium text-success"
                 >
                     A new verification link has been sent to your email address.
                 </div>

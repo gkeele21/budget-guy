@@ -42,6 +42,18 @@ const logout = () => {
                 </h2>
                 <div class="bg-surface rounded-card divide-y divide-border">
                     <Link
+                        :href="route('budgets.edit')"
+                        class="flex items-center justify-between p-4 hover:bg-surface-overlay"
+                    >
+                        <div class="flex items-center gap-3">
+                            <span class="text-xl">💰</span>
+                            <div>
+                                <div class="text-body">{{ budgetName }}</div>
+                            </div>
+                        </div>
+                        <span class="text-subtle">›</span>
+                    </Link>
+                    <Link
                         :href="route('settings.accounts')"
                         class="flex items-center justify-between p-4 hover:bg-surface-overlay"
                     >
@@ -206,15 +218,11 @@ const logout = () => {
                         class="w-full flex items-center gap-3 p-4 hover:bg-surface-overlay text-left"
                     >
                         <span class="text-xl">🚪</span>
-                        <span class="text-expense">Sign Out</span>
+                        <span class="text-danger">Sign Out</span>
                     </button>
                 </div>
             </div>
 
-            <!-- Current Budget Info -->
-            <div class="text-center text-subtle text-sm py-4">
-                <p>Current Budget: <span class="font-medium text-body">{{ budgetName }}</span></p>
-            </div>
         </div>
     </AppLayout>
 </template>

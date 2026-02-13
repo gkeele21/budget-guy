@@ -198,7 +198,7 @@ const getCategoryName = (categoryId) => {
                     <button
                         type="button"
                         @click="openDeleteConfirm(editingPayee); showEditModal = false;"
-                        class="w-full py-3 text-expense font-medium text-sm"
+                        class="w-full py-3 text-danger font-medium text-sm"
                     >
                         Delete Payee
                     </button>

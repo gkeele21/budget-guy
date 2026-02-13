@@ -35,9 +35,9 @@ const colorClass = computed(() => {
     }
     // Color by transaction type
     switch (props.transactionType) {
-        case 'income': return 'text-income';
-        case 'transfer': return 'text-transfer';
-        default: return 'text-expense';
+        case 'income': return 'text-success';
+        case 'transfer': return 'text-info';
+        default: return 'text-danger';
     }
 });
 

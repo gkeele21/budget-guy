@@ -59,8 +59,8 @@ const groupedTransactions = computed(() => {
 });
 
 const getAmountColor = (amount, type) => {
-    if (type === 'transfer') return 'text-transfer';
-    return amount < 0 ? 'text-expense' : 'text-income';
+    if (type === 'transfer') return 'text-info';
+    return amount < 0 ? 'text-danger' : 'text-success';
 };
 
 const toggleCleared = (transaction) => {
@@ -102,7 +102,7 @@ const isOverspent = props.category.available < 0;
                     </div>
                     <div>
                         <div class="text-xs text-subtle uppercase">Spent</div>
-                        <div class="font-semibold text-expense">
+                        <div class="font-semibold text-danger">
                             {{ formatCurrency(Math.abs(category.spent)) }}
                         </div>
                     </div>
@@ -110,7 +110,7 @@ const isOverspent = props.category.available < 0;
                         <div class="text-xs text-subtle uppercase">Available</div>
                         <div
                             class="font-semibold"
-                            :class="isOverspent ? 'text-expense' : 'text-income'"
+                            :class="isOverspent ? 'text-danger' : 'text-success'"
                         >
                             {{ formatCurrency(category.available) }}
                         </div>
@@ -158,7 +158,7 @@ const isOverspent = props.category.available < 0;
                                 >
                                     <div
                                         v-if="transaction.cleared"
-                                        class="w-2 h-2 rounded-full bg-income"
+                                        class="w-2 h-2 rounded-full bg-success"
                                     ></div>
                                     <div
                                         v-else

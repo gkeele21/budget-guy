@@ -121,7 +121,7 @@ const toggleActive = (id) => {
                                 <div class="flex-shrink-0 ml-3 text-right">
                                     <div
                                         class="font-medium"
-                                        :class="item.type === 'expense' ? 'text-expense' : 'text-income'"
+                                        :class="item.type === 'expense' ? 'text-danger' : 'text-success'"
                                     >
                                         {{ formatCurrency(item.amount) }}
                                     </div>

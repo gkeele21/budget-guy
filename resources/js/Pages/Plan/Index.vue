@@ -279,7 +279,7 @@ const showToast = (message, type = 'success') => {
                             @blur="onIncomeBlur"
                             type="text"
                             inputmode="decimal"
-                            class="w-28 px-2 py-1 text-right font-semibold text-income text-sm bg-surface-header border border-border rounded focus:border-primary focus:outline-none"
+                            class="w-28 px-2 py-1 text-right font-semibold text-success text-sm bg-surface-header border border-border rounded focus:border-primary focus:outline-none"
                         />
                         <div class="relative">
                             <button
@@ -319,7 +319,7 @@ const showToast = (message, type = 'success') => {
                                         @click="menuApplyProjections"
                                         class="w-full text-left px-4 py-3 hover:bg-surface-overlay transition-colors flex items-start gap-3"
                                     >
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-income flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-success flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                         </svg>
                                         <div>
@@ -332,11 +332,11 @@ const showToast = (message, type = 'success') => {
                                         @click="menuClearProjections"
                                         class="w-full text-left px-4 py-3 hover:bg-surface-overlay transition-colors flex items-start gap-3"
                                     >
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-expense flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-danger flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                         </svg>
                                         <div>
-                                            <div class="text-sm text-expense">Clear All Projections</div>
+                                            <div class="text-sm text-danger">Clear All Projections</div>
                                             <div class="text-xs text-subtle mt-0.5">Reset all projected amounts to zero</div>
                                         </div>
                                     </button>
@@ -375,7 +375,7 @@ const showToast = (message, type = 'success') => {
                         <div class="text-xs text-subtle uppercase">Left to Allocate</div>
                         <div
                             class="font-semibold text-base"
-                            :class="leftToAllocate >= 0 ? 'text-income' : 'text-expense'"
+                            :class="leftToAllocate >= 0 ? 'text-success' : 'text-danger'"
                         >
                             {{ formatCurrency(leftToAllocate) }}
                         </div>

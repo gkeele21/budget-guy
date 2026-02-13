@@ -141,7 +141,7 @@ const closeDeleteModal = () => {
                         <Button type="submit" :loading="profileForm.processing">
                             Save
                         </Button>
-                        <span v-if="profileSaved" class="text-sm text-income">Saved!</span>
+                        <span v-if="profileSaved" class="text-sm text-success">Saved!</span>
                     </div>
                 </form>
             </div>
@@ -192,7 +192,7 @@ const closeDeleteModal = () => {
                         <Button type="submit" :loading="passwordForm.processing">
                             Update Password
                         </Button>
-                        <span v-if="passwordSaved" class="text-sm text-income">Updated!</span>
+                        <span v-if="passwordSaved" class="text-sm text-success">Updated!</span>
                     </div>
                 </form>
             </div>

@@ -47,9 +47,9 @@ import ApplicationLogo from '@/Components/Domain/ApplicationLogo.vue';
                 </div>
 
                 <!-- Card 3 - Expense -->
-                <div class="bg-surface rounded-xl p-4 shadow-md border-l-4 border-expense flex items-center gap-4">
-                    <div class="w-11 h-11 bg-expense/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                        <svg class="w-5 h-5 text-expense" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <div class="bg-surface rounded-xl p-4 shadow-md border-l-4 border-danger flex items-center gap-4">
+                    <div class="w-11 h-11 bg-danger/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <svg class="w-5 h-5 text-danger" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                         </svg>
                     </div>

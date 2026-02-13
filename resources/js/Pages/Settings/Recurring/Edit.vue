@@ -93,7 +93,7 @@ const getSaveButtonVariant = () => {
                     :disabled="form.processing"
                     :class="[
                         'font-semibold',
-                        form.type === 'expense' ? 'text-expense' : 'text-income'
+                        form.type === 'expense' ? 'text-danger' : 'text-success'
                     ]"
                 >
                     Save
@@ -194,7 +194,7 @@ const getSaveButtonVariant = () => {
                 <button
                     type="button"
                     @click="showDeleteConfirm = true"
-                    class="w-full py-3 text-expense font-medium text-sm"
+                    class="w-full py-3 text-danger font-medium text-sm"
                 >
                     Delete Recurring
                 </button>

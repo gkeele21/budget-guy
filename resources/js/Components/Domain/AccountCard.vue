@@ -31,8 +31,8 @@ const getAccountBorderColor = (type) => {
     const colors = {
         cash: 'border-l-primary',       // Brand Green
         checking: 'border-l-secondary', // Brand Blue
-        savings: 'border-l-income',     // Income Green
-        credit_card: 'border-l-expense', // Expense Red
+        savings: 'border-l-success',     // Income Green
+        credit_card: 'border-l-danger', // Expense Red
     };
     return colors[type] || 'border-l-secondary';
 };
@@ -48,7 +48,7 @@ const hasUncleared = computed(() => {
 
 <template>
     <Link
-        :href="route('transactions.index', { account: account.id })"
+        :href="route('accounts.edit', account.id)"
         :class="[
             'flex items-start justify-between p-4 bg-surface rounded-card hover:bg-surface-overlay transition-colors',
             'border-l-4',
@@ -59,7 +59,7 @@ const hasUncleared = computed(() => {
             <span class="text-2xl">{{ getAccountIcon(account.type) }}</span>
             <div>
                 <div class="font-medium text-body">{{ account.name }}</div>
-                <div v-if="hasUncleared" class="text-xs text-expense">
+                <div v-if="hasUncleared" class="text-xs text-danger">
                     {{ formatCurrency(unclearedBalance) }} pending
                 </div>
             </div>
@@ -67,7 +67,7 @@ const hasUncleared = computed(() => {
         <div class="text-right">
             <div
                 class="font-semibold"
-                :class="account.balance >= 0 ? 'text-body' : 'text-expense'"
+                :class="account.balance >= 0 ? 'text-body' : 'text-danger'"
             >
                 {{ formatCurrency(account.balance) }}
             </div>

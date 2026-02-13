@@ -101,7 +101,7 @@ defineExpose({ reset: close });
     <div class="relative overflow-hidden rounded-card">
         <!-- Delete action revealed behind -->
         <div
-            class="absolute inset-y-0 right-0 flex items-center justify-center bg-expense"
+            class="absolute inset-y-0 right-0 flex items-center justify-center bg-danger"
             :style="{ width: actionWidth + 'px' }"
             @click.stop="onAction"
         >

@@ -16,6 +16,7 @@ class Budget extends Model
         'name',
         'owner_id',
         'default_monthly_income',
+        'start_month',
     ];
 
     protected function casts(): array

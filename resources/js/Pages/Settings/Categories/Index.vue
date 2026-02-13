@@ -462,7 +462,7 @@ const isGroupCollapsed = (groupId) => {
                     <button
                         type="button"
                         @click="deleteCategory(editForm.id)"
-                        class="w-full py-3 text-expense font-medium text-sm"
+                        class="w-full py-3 text-danger font-medium text-sm"
                     >
                         Delete Category
                     </button>
@@ -499,7 +499,7 @@ const isGroupCollapsed = (groupId) => {
                     <button
                         type="button"
                         @click="deleteGroup(editGroupForm.id)"
-                        class="w-full py-3 text-expense font-medium text-sm"
+                        class="w-full py-3 text-danger font-medium text-sm"
                     >
                         Delete Group
                     </button>
