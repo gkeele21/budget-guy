@@ -392,7 +392,7 @@ const getSaveButtonVariant = () => {
                 <div class="flex justify-between items-center">
                     <span class="text-sm text-subtle">Remaining</span>
                     <span
-                        class="font-mono font-semibold"
+                        class="font-semibold"
                         :class="{
                             'text-expense': remainingAmount > 0.01,
                             'text-income': isSplitBalanced,

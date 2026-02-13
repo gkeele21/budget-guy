@@ -94,7 +94,7 @@ const closeModal = () => {
                         </div>
                     </div>
                     <div class="text-right">
-                        <div class="font-mono font-semibold text-body">
+                        <div class="font-semibold text-body">
                             {{ formatCurrency(account.balance) }}
                         </div>
                     </div>

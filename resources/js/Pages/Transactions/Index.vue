@@ -438,7 +438,7 @@ const activeFilterDescription = computed(() => {
                                 <div v-if="transaction.is_split && transaction.splits" class="mt-0.5 grid grid-cols-[auto_auto] gap-x-1 gap-y-0.5 text-xs text-subtle w-fit">
                                     <template v-for="split in transaction.splits" :key="split.id">
                                         <span>{{ split.category }}:</span>
-                                        <span class="font-mono">{{ formatCurrency(Math.abs(split.amount)) }}</span>
+                                        <span>{{ formatCurrency(Math.abs(split.amount)) }}</span>
                                     </template>
                                 </div>
                                 <!-- Single category -->
@@ -450,7 +450,7 @@ const activeFilterDescription = computed(() => {
                             <!-- Right side: Amount + Account + Cleared dot -->
                             <div class="flex items-start gap-2 flex-shrink-0 ml-3">
                                 <div class="text-right">
-                                    <div :class="['font-mono font-medium', getAmountColor(transaction.type)]">
+                                    <div :class="['font-medium', getAmountColor(transaction.type)]">
                                         {{ formatCurrency(transaction.amount) }}
                                     </div>
                                     <div v-if="!currentAccountId" class="text-xs text-subtle mt-0.5">

@@ -43,6 +43,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/budget/{month}/move-money', [BudgetController::class, 'moveMoney'])->name('budget.move-money');
     Route::post('/budget/{month}/apply-defaults', [BudgetController::class, 'applyDefaults'])->name('budget.apply-defaults');
     Route::post('/budget/{month}/apply-projections', [BudgetController::class, 'applyProjections'])->name('budget.apply-projections');
+    Route::post('/budget/{month}/clear', [BudgetController::class, 'clearBudget'])->name('budget.clear');
     Route::post('/budget/projections', [BudgetController::class, 'saveProjections'])->name('budget.save-projections');
     Route::post('/budget/projections/clear', [BudgetController::class, 'clearProjections'])->name('budget.clear-projections');
     Route::get('/budget/{month}/category/{category}', [BudgetController::class, 'categoryDetail'])->name('budget.category-detail');

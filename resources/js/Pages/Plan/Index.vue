@@ -11,7 +11,7 @@ const props = defineProps({
 
 // Projection state
 const expectedIncome = ref(props.defaultMonthlyIncome || 0);
-const projectionAmounts = reactive({}); // { categoryId: { 1: amount, 2: amount, 3: amount } }
+const projectionAmounts = reactive({}); // { categoryId: amount }
 
 // Toast state
 const toast = ref({ show: false, message: '', type: 'success' });
@@ -19,9 +19,13 @@ const toast = ref({ show: false, message: '', type: 'success' });
 // Initialize projections from props
 props.categoryGroups.forEach(group => {
     group.categories.forEach(category => {
-        projectionAmounts[category.id] = category.projections || {};
+        const proj = category.projections || {};
+        projectionAmounts[category.id] = parseFloat(proj['1']) || 0;
     });
 });
+
+// Current month label for button text (e.g. "Feb", "Mar")
+const currentMonthLabel = new Date().toLocaleString('en-US', { month: 'short' });
 
 const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {
@@ -30,13 +34,11 @@ const formatCurrency = (amount) => {
     }).format(amount);
 };
 
-// Calculate total projected (using projection 1 as primary)
 const totalProjected = computed(() => {
     let total = 0;
     props.categoryGroups.forEach(group => {
         group.categories.forEach(category => {
-            const projections = projectionAmounts[category.id] || {};
-            total += parseFloat(projections['1'] || category.default_amount || 0);
+            total += parseFloat(projectionAmounts[category.id]) || 0;
         });
     });
     return total;
@@ -46,97 +48,178 @@ const leftToAllocate = computed(() => {
     return expectedIncome.value - totalProjected.value;
 });
 
-const getProjectionValue = (categoryId, index) => {
-    return projectionAmounts[categoryId]?.[index] ?? '';
+// --- Auto-save with debounce ---
+let saveTimer = null;
+
+const autoSave = () => {
+    if (saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+        const projectionsData = [];
+        props.categoryGroups.forEach(group => {
+            group.categories.forEach(category => {
+                const amount = projectionAmounts[category.id];
+                if (amount > 0) {
+                    projectionsData.push({
+                        category_id: category.id,
+                        values: { '1': amount },
+                    });
+                }
+            });
+        });
+
+        router.post(route('budget.save-projections'), {
+            projections: projectionsData,
+        }, {
+            preserveScroll: true,
+        });
+    }, 800);
 };
 
-// Get the difference between projection and default
-const getProjectionDifference = (category, index) => {
-    const projValue = parseFloat(projectionAmounts[category.id]?.[index]) || 0;
-    const defaultValue = parseFloat(category.default_amount) || 0;
-
-    if (projValue === 0) return null; // No projection set
-
-    const diff = projValue - defaultValue;
-    if (Math.abs(diff) < 0.01) return null; // No meaningful difference
-
-    return diff;
+// --- Projection input formatting ---
+const getProjectionDisplay = (categoryId) => {
+    return formatCurrency(projectionAmounts[categoryId] || 0);
 };
 
-const setProjectionValue = (categoryId, index, value) => {
-    if (!projectionAmounts[categoryId]) {
-        projectionAmounts[categoryId] = {};
-    }
-    projectionAmounts[categoryId][index] = parseFloat(value) || 0;
+const onProjectionFocus = (event, categoryId) => {
+    const val = projectionAmounts[categoryId];
+    event.target.value = val > 0 ? val.toFixed(2) : '';
 };
 
-const saveProjections = () => {
-    const projectionsData = [];
+const onProjectionBlur = (event, categoryId) => {
+    const raw = parseFloat(event.target.value) || 0;
+    projectionAmounts[categoryId] = raw;
+    event.target.value = raw > 0 ? formatCurrency(raw) : '';
+    autoSave();
+};
+
+// --- Income input formatting ---
+const getIncomeDisplay = () => {
+    return formatCurrency(expectedIncome.value || 0);
+};
+
+const onIncomeFocus = (event) => {
+    event.target.value = expectedIncome.value > 0 ? expectedIncome.value.toFixed(2) : '';
+};
+
+const onIncomeBlur = (event) => {
+    const raw = parseFloat(event.target.value) || 0;
+    expectedIncome.value = raw;
+    event.target.value = raw > 0 ? formatCurrency(raw) : '';
+    autoSave();
+};
+
+// --- Actions ---
+const clearProjections = () => {
+    showConfirm(
+        'Clear All Projections',
+        'This will remove all projected amounts and reset the page. This cannot be undone.',
+        () => {
+            router.post(route('budget.clear-projections'), {}, {
+                preserveScroll: true,
+                onSuccess: () => {
+                    props.categoryGroups.forEach(group => {
+                        group.categories.forEach(category => {
+                            projectionAmounts[category.id] = 0;
+                        });
+                    });
+                    showToast('All projections cleared', 'success');
+                },
+            });
+        }
+    );
+};
+
+const applyProjections = () => {
+    showConfirm(
+        `Use as ${currentMonthLabel} Budget`,
+        `This will replace your ${currentMonthLabel} budget amounts with the projected amounts shown here. Any existing budget allocations for ${currentMonthLabel} will be overwritten.`,
+        () => {
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            router.post(route('budget.apply-projections', { month: currentMonth }), {
+                projection_index: 1,
+            }, {
+                preserveScroll: true,
+                onSuccess: () => {
+                    showToast(`${currentMonthLabel} budget updated`, 'success');
+                },
+            });
+        }
+    );
+};
+
+// Confirmation modal state
+const confirmModal = ref({ show: false, title: '', message: '', action: null });
+
+const showConfirm = (title, message, action) => {
+    confirmModal.value = { show: true, title, message, action };
+};
+
+const confirmAction = () => {
+    if (confirmModal.value.action) confirmModal.value.action();
+    confirmModal.value.show = false;
+};
+
+const cancelConfirm = () => {
+    confirmModal.value.show = false;
+};
+
+const doCopyDefaults = () => {
     props.categoryGroups.forEach(group => {
         group.categories.forEach(category => {
-            if (projectionAmounts[category.id] && Object.keys(projectionAmounts[category.id]).length > 0) {
-                projectionsData.push({
-                    category_id: category.id,
-                    values: projectionAmounts[category.id],
-                });
+            if (category.default_amount > 0) {
+                projectionAmounts[category.id] = parseFloat(category.default_amount);
             }
         });
     });
-
-    router.post(route('budget.save-projections'), {
-        projections: projectionsData,
-    }, {
-        preserveScroll: true,
-        onSuccess: () => {
-            showToast('Projections saved', 'success');
-        },
-    });
+    autoSave();
+    showToast('Defaults copied to projections', 'success');
 };
 
-const clearProjections = () => {
-    if (confirm('Clear all projections? This cannot be undone.')) {
-        router.post(route('budget.clear-projections'), {}, {
-            preserveScroll: true,
-            onSuccess: () => {
-                // Clear local state
-                props.categoryGroups.forEach(group => {
-                    group.categories.forEach(category => {
-                        projectionAmounts[category.id] = {};
-                    });
-                });
-                showToast('All projections cleared', 'success');
-            },
-        });
+const copyDefaults = () => {
+    const hasExisting = totalProjected.value > 0;
+    if (hasExisting) {
+        showConfirm(
+            'Copy Default Amounts',
+            'This will fill all projected amounts with your category defaults. Any existing projections will be overwritten.',
+            doCopyDefaults
+        );
+    } else {
+        doCopyDefaults();
     }
 };
 
-const applyProjections = (projectionIndex) => {
-    const currentMonth = new Date().toISOString().slice(0, 7);
-    router.post(route('budget.apply-projections', { month: currentMonth }), {
-        projection_index: projectionIndex,
-    }, {
-        preserveScroll: true,
-        onSuccess: () => {
-            showToast(`Applied projection ${projectionIndex} to current month's budget`, 'success');
-        },
-    });
+// Info tooltip
+const infoOpen = ref(false);
+
+const toggleInfo = () => {
+    infoOpen.value = !infoOpen.value;
 };
 
-// Check if any projections exist locally
-const hasAnyProjections = computed(() => {
-    for (const group of props.categoryGroups) {
-        for (const category of group.categories) {
-            const projections = projectionAmounts[category.id];
-            if (projections && Object.keys(projections).length > 0) {
-                // Check if any projection has a non-zero value
-                for (const key of Object.keys(projections)) {
-                    if (projections[key] > 0) return true;
-                }
-            }
-        }
-    }
-    return false;
-});
+// Context menu
+const menuOpen = ref(false);
+
+const toggleMenu = () => {
+    menuOpen.value = !menuOpen.value;
+};
+
+const closeMenu = () => {
+    menuOpen.value = false;
+};
+
+const menuCopyDefaults = () => {
+    closeMenu();
+    copyDefaults();
+};
+
+const menuApplyProjections = () => {
+    closeMenu();
+    applyProjections();
+};
+
+const menuClearProjections = () => {
+    closeMenu();
+    clearProjections();
+};
 
 // Toast helper
 const showToast = (message, type = 'success') => {
@@ -179,57 +262,122 @@ const showToast = (message, type = 'success') => {
             <!-- Projection Header (Sticky) -->
             <div class="sticky top-0 z-10 bg-gradient-to-r from-secondary/5 to-secondary/5 border border-secondary/20 rounded-card p-4 space-y-3">
                 <div class="flex items-center justify-between">
-                    <h3 class="font-semibold text-body">Plan Your Budget</h3>
-                    <div class="flex gap-2">
-                        <button
-                            @click="saveProjections"
-                            class="px-3 py-1 bg-primary text-body rounded text-sm font-medium hover:bg-primary/90"
-                        >
-                            Save
-                        </button>
-                        <button
-                            @click="clearProjections"
-                            class="px-3 py-1 bg-surface-secondary text-body rounded text-sm font-medium hover:bg-border"
-                        >
-                            Clear All
+                    <div class="flex items-center gap-2">
+                        <h3 class="font-semibold text-body">Plan Your Budget</h3>
+                        <button @click="toggleInfo" class="text-subtle hover:text-body">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                            </svg>
                         </button>
                     </div>
+                    <div class="relative">
+                        <button
+                            @click="toggleMenu"
+                            class="p-1 rounded hover:bg-secondary/10"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-subtle" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                            </svg>
+                        </button>
+                        <!-- Backdrop to close menu -->
+                        <div v-if="menuOpen" class="fixed inset-0 z-20" @click="closeMenu"></div>
+                        <!-- Dropdown -->
+                        <Transition
+                            enter-active-class="transition ease-out duration-100"
+                            enter-from-class="transform opacity-0 scale-95"
+                            enter-to-class="transform opacity-100 scale-100"
+                            leave-active-class="transition ease-in duration-75"
+                            leave-from-class="transform opacity-100 scale-100"
+                            leave-to-class="transform opacity-0 scale-95"
+                        >
+                            <div v-if="menuOpen" class="absolute right-0 mt-1 w-72 bg-surface rounded-card shadow-xl border border-border z-30 py-1">
+                                <button
+                                    @click="menuCopyDefaults"
+                                    class="w-full text-left px-4 py-3 hover:bg-surface-secondary transition-colors flex items-start gap-3"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-secondary flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                                    </svg>
+                                    <div>
+                                        <div class="text-sm text-body">Copy Defaults to Projections</div>
+                                        <div class="text-xs text-subtle mt-0.5">Fill projections with your category default amounts</div>
+                                    </div>
+                                </button>
+                                <div class="border-t border-border"></div>
+                                <button
+                                    @click="menuApplyProjections"
+                                    class="w-full text-left px-4 py-3 hover:bg-surface-secondary transition-colors flex items-start gap-3"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-income flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    <div>
+                                        <div class="text-sm text-body">Apply Projections to {{ currentMonthLabel }} Budget</div>
+                                        <div class="text-xs text-subtle mt-0.5">Apply these projections to your monthly budget</div>
+                                    </div>
+                                </button>
+                                <div class="border-t border-border"></div>
+                                <button
+                                    @click="menuClearProjections"
+                                    class="w-full text-left px-4 py-3 hover:bg-surface-secondary transition-colors flex items-start gap-3"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-expense flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                    <div>
+                                        <div class="text-sm text-expense">Clear All Projections</div>
+                                        <div class="text-xs text-subtle mt-0.5">Reset all projected amounts to zero</div>
+                                    </div>
+                                </button>
+                            </div>
+                        </Transition>
+                    </div>
                 </div>
+
+                <!-- Info panel (full-width, collapsible) -->
+                <Transition
+                    enter-active-class="transition ease-out duration-150"
+                    enter-from-class="opacity-0 -translate-y-1"
+                    enter-to-class="opacity-100 translate-y-0"
+                    leave-active-class="transition ease-in duration-100"
+                    leave-from-class="opacity-100 translate-y-0"
+                    leave-to-class="opacity-0 -translate-y-1"
+                >
+                    <div v-if="infoOpen" class="bg-surface border border-border rounded-lg p-3 text-sm text-subtle space-y-1">
+                        <p>Set your expected income and adjust projected amounts for each category.</p>
+                        <p>Changes save automatically.</p>
+                        <p>Tap the <strong class="text-body">three-dot menu</strong> to copy defaults, apply projections to your budget, or clear all.</p>
+                        <button @click="infoOpen = false" class="text-xs text-subtle hover:text-body underline mt-1">Dismiss</button>
+                    </div>
+                </Transition>
 
                 <div class="grid grid-cols-3 gap-3 text-center">
                     <div>
                         <div class="text-xs text-subtle uppercase">Expected Income</div>
                         <input
-                            v-model.number="expectedIncome"
-                            type="number"
-                            step="0.01"
-                            class="w-full mt-1 px-2 py-1 text-center font-mono font-semibold text-income bg-surface border border-border rounded focus:border-primary focus:outline-none"
+                            :value="getIncomeDisplay()"
+                            @focus="onIncomeFocus"
+                            @blur="onIncomeBlur"
+                            type="text"
+                            inputmode="decimal"
+                            class="w-full mt-1 px-2 py-1 text-center font-semibold text-income bg-surface border border-border rounded focus:border-primary focus:outline-none"
                         />
                     </div>
                     <div>
                         <div class="text-xs text-subtle uppercase">Total Projected</div>
-                        <div class="mt-1 py-1 font-mono font-semibold text-body">
+                        <div class="mt-1 py-1 font-semibold text-body">
                             {{ formatCurrency(totalProjected) }}
                         </div>
                     </div>
                     <div>
                         <div class="text-xs text-subtle uppercase">Left to Allocate</div>
                         <div
-                            class="mt-1 py-1 font-mono font-semibold"
+                            class="mt-1 py-1 font-semibold"
                             :class="leftToAllocate >= 0 ? 'text-income' : 'text-expense'"
                         >
                             {{ formatCurrency(leftToAllocate) }}
                         </div>
                     </div>
-                </div>
-
-                <div v-if="hasAnyProjections" class="flex gap-2 justify-center pt-2">
-                    <button
-                        @click="applyProjections(1)"
-                        class="px-4 py-2 bg-primary text-body rounded-card text-sm font-medium hover:bg-primary/90"
-                    >
-                        Apply to Current Month
-                    </button>
                 </div>
             </div>
 
@@ -242,11 +390,9 @@ const showToast = (message, type = 'success') => {
                 <div class="bg-surface rounded-card overflow-hidden">
                     <!-- Column Headers -->
                     <div class="grid grid-cols-12 gap-2 px-3 py-2 bg-secondary/10 text-xs text-subtle uppercase border-b border-secondary/10">
-                        <div class="col-span-4">Category</div>
-                        <div class="col-span-2 text-right">Default</div>
-                        <div class="col-span-2 text-right">Proj 1</div>
-                        <div class="col-span-2 text-right">Proj 2</div>
-                        <div class="col-span-2 text-right">Proj 3</div>
+                        <div class="col-span-5">Category</div>
+                        <div class="col-span-3 text-right">Default</div>
+                        <div class="col-span-4 text-right">Projected</div>
                     </div>
 
                     <!-- Category Rows -->
@@ -255,75 +401,24 @@ const showToast = (message, type = 'success') => {
                         :key="category.id"
                         class="grid grid-cols-12 gap-2 px-3 py-3 items-center border-b border-secondary/10 last:border-b-0"
                     >
-                        <!-- Category Name -->
-                        <div class="col-span-4 flex items-center gap-2 min-w-0">
+                        <div class="col-span-5 flex items-center gap-2 min-w-0">
                             <span v-if="category.icon" class="flex-shrink-0">{{ category.icon }}</span>
                             <span class="font-medium text-body truncate">{{ category.name }}</span>
                         </div>
 
-                        <!-- Default Amount (read-only) -->
-                        <div class="col-span-2 text-right font-mono text-sm text-subtle">
+                        <div class="col-span-3 text-right text-sm text-subtle">
                             {{ category.default_amount ? formatCurrency(category.default_amount) : '-' }}
                         </div>
 
-                        <!-- Projection 1 -->
-                        <div class="col-span-2">
+                        <div class="col-span-4">
                             <input
-                                :value="getProjectionValue(category.id, '1')"
-                                @input="setProjectionValue(category.id, '1', $event.target.value)"
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                placeholder="-"
-                                class="w-full px-1 py-1 text-right text-sm font-mono bg-surface border border-border rounded focus:border-primary focus:outline-none"
+                                :value="getProjectionDisplay(category.id)"
+                                @focus="onProjectionFocus($event, category.id)"
+                                @blur="onProjectionBlur($event, category.id)"
+                                type="text"
+                                inputmode="decimal"
+                                class="w-full px-2 py-1 text-right text-sm bg-surface border border-border rounded focus:border-primary focus:outline-none"
                             />
-                            <div
-                                v-if="getProjectionDifference(category, '1') !== null"
-                                class="text-[10px] text-right font-mono mt-0.5"
-                                :class="getProjectionDifference(category, '1') > 0 ? 'text-income' : 'text-expense'"
-                            >
-                                {{ getProjectionDifference(category, '1') > 0 ? '+' : '' }}${{ getProjectionDifference(category, '1').toFixed(0) }}
-                            </div>
-                        </div>
-
-                        <!-- Projection 2 -->
-                        <div class="col-span-2">
-                            <input
-                                :value="getProjectionValue(category.id, '2')"
-                                @input="setProjectionValue(category.id, '2', $event.target.value)"
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                placeholder="-"
-                                class="w-full px-1 py-1 text-right text-sm font-mono bg-surface border border-border rounded focus:border-primary focus:outline-none"
-                            />
-                            <div
-                                v-if="getProjectionDifference(category, '2') !== null"
-                                class="text-[10px] text-right font-mono mt-0.5"
-                                :class="getProjectionDifference(category, '2') > 0 ? 'text-income' : 'text-expense'"
-                            >
-                                {{ getProjectionDifference(category, '2') > 0 ? '+' : '' }}${{ getProjectionDifference(category, '2').toFixed(0) }}
-                            </div>
-                        </div>
-
-                        <!-- Projection 3 -->
-                        <div class="col-span-2">
-                            <input
-                                :value="getProjectionValue(category.id, '3')"
-                                @input="setProjectionValue(category.id, '3', $event.target.value)"
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                placeholder="-"
-                                class="w-full px-1 py-1 text-right text-sm font-mono bg-surface border border-border rounded focus:border-primary focus:outline-none"
-                            />
-                            <div
-                                v-if="getProjectionDifference(category, '3') !== null"
-                                class="text-[10px] text-right font-mono mt-0.5"
-                                :class="getProjectionDifference(category, '3') > 0 ? 'text-income' : 'text-expense'"
-                            >
-                                {{ getProjectionDifference(category, '3') > 0 ? '+' : '' }}${{ getProjectionDifference(category, '3').toFixed(0) }}
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -341,17 +436,37 @@ const showToast = (message, type = 'success') => {
                 </p>
             </div>
 
-            <!-- Help Text -->
-            <div class="bg-secondary/10 border border-secondary/20 rounded-card p-4 text-sm text-body">
-                <h4 class="font-semibold mb-2">How to use projections</h4>
-                <ul class="list-disc list-inside space-y-1 text-subtle">
-                    <li>Set your expected monthly income at the top</li>
-                    <li>Enter projected amounts for each category (Proj 1 is your primary plan)</li>
-                    <li>Use Proj 2 and Proj 3 for alternative scenarios</li>
-                    <li>Click "Save" to save your projections</li>
-                    <li>Click "Apply to Current Month" to use Projection 1 in your budget</li>
-                </ul>
-            </div>
+            <!-- Confirmation Modal -->
+            <Transition
+                enter-active-class="transition ease-out duration-200"
+                enter-from-class="opacity-0"
+                enter-to-class="opacity-100"
+                leave-active-class="transition ease-in duration-150"
+                leave-from-class="opacity-100"
+                leave-to-class="opacity-0"
+            >
+                <div v-if="confirmModal.show" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div class="absolute inset-0 bg-black/50" @click="cancelConfirm"></div>
+                    <div class="relative bg-surface rounded-card p-6 max-w-sm w-full shadow-xl space-y-4">
+                        <h3 class="font-semibold text-body text-lg">{{ confirmModal.title }}</h3>
+                        <p class="text-sm text-subtle">{{ confirmModal.message }}</p>
+                        <div class="flex gap-3 justify-end">
+                            <button
+                                @click="cancelConfirm"
+                                class="px-4 py-2 text-sm font-medium text-body bg-surface-secondary rounded-card hover:bg-border"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                @click="confirmAction"
+                                class="px-4 py-2 text-sm font-medium text-body bg-primary rounded-card hover:bg-primary/90"
+                            >
+                                Confirm
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
         </div>
     </AppLayout>
 </template>

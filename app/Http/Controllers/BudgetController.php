@@ -450,6 +450,33 @@ class BudgetController extends Controller
     }
 
     /**
+     * Clear all budget amounts for a given month.
+     */
+    public function clearBudget(Request $request, string $month)
+    {
+        $user = Auth::user();
+        $budget = $user->currentBudget;
+
+        if (!$budget) {
+            abort(404);
+        }
+
+        $categoryIds = $budget->categoryGroups()
+            ->with('categories')
+            ->get()
+            ->pluck('categories')
+            ->flatten()
+            ->pluck('id')
+            ->toArray();
+
+        MonthlyBudget::whereIn('category_id', $categoryIds)
+            ->where('month', $month)
+            ->update(['budgeted_amount' => 0]);
+
+        return back()->with('success', 'Budget cleared for ' . date('F Y', strtotime($month . '-01')));
+    }
+
+    /**
      * Show category detail with transactions for a specific month.
      */
     public function categoryDetail(Request $request, string $month, int $category)

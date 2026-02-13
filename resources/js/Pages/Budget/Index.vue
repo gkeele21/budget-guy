@@ -1,6 +1,6 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
-import Button from '@/Components/Base/Button.vue';
+import Toggle from '@/Components/Base/Toggle.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { ref, computed, reactive, nextTick, watch } from 'vue';
 
@@ -25,8 +25,25 @@ const toast = ref({ show: false, message: '', type: 'success' });
 const moveToast = ref({ show: false, amount: '', from: '', to: '', remaining: null });
 let moveToastTimeout = null;
 
-// Copy last month confirmation modal
-const showCopyConfirm = ref(false);
+// Context menu state
+const showContextMenu = ref(false);
+
+// Confirmation modal state
+const confirmModal = ref({ show: false, title: '', message: '', action: null });
+
+const showConfirm = (title, message, action) => {
+    showContextMenu.value = false;
+    confirmModal.value = { show: true, title, message, action };
+};
+
+const executeConfirm = () => {
+    if (confirmModal.value.action) confirmModal.value.action();
+    confirmModal.value.show = false;
+};
+
+const cancelConfirm = () => {
+    confirmModal.value.show = false;
+};
 
 // Track edited amounts (for green border visual feedback)
 const editedAmounts = reactive({});
@@ -178,15 +195,19 @@ const hasExistingBudgetAmounts = computed(() => {
 
 // Copy last month's budget - check for existing amounts first
 const initiaCopyLastMonth = () => {
+    showContextMenu.value = false;
     if (hasExistingBudgetAmounts.value) {
-        showCopyConfirm.value = true;
+        showConfirm(
+            'Copy Last Month\'s Budget',
+            'This will overwrite your current budget amounts with last month\'s values.',
+            doCopyLastMonth
+        );
     } else {
         doCopyLastMonth();
     }
 };
 
 const doCopyLastMonth = () => {
-    showCopyConfirm.value = false;
     router.post(route('budget.copy-last-month', { month: props.month }), {}, {
         preserveScroll: true,
         onSuccess: () => {
@@ -304,63 +325,50 @@ const executeMoveMoney = async () => {
     showMoveToast(formatCurrency(totalMoved), sourceNames, targetName);
 };
 
-// Projection picker modal state
-const showProjectionPicker = ref(false);
-
-// Get which projection indices have values (1, 2, or 3)
-const availableProjections = computed(() => {
-    const found = new Set();
-    for (const group of props.categoryGroups) {
-        for (const category of group.categories) {
-            if (category.projections) {
-                for (const key of Object.keys(category.projections)) {
-                    if (category.projections[key] > 0) {
-                        found.add(key);
-                    }
-                }
-            }
-        }
-    }
-    return Array.from(found).sort();
-});
-
-// Check if any projections exist
-const hasProjections = computed(() => {
-    return availableProjections.value.length > 0;
-});
-
-// Handle quick fill button click
-const handleQuickFill = () => {
-    if (hasProjections.value) {
-        // If only one projection exists, apply it directly
-        if (availableProjections.value.length === 1) {
-            applyProjections(parseInt(availableProjections.value[0]));
-        } else {
-            // Multiple projections - show picker
-            showProjectionPicker.value = true;
-        }
+// Apply default amounts to budget
+const initiateApplyDefaults = () => {
+    showContextMenu.value = false;
+    if (hasExistingBudgetAmounts.value) {
+        showConfirm(
+            'Apply Default Amounts',
+            'This will overwrite your current budget amounts with the default amount set on each category.',
+            doApplyDefaults
+        );
     } else {
-        // No projections - copy last month
-        initiaCopyLastMonth();
+        doApplyDefaults();
     }
 };
 
-const applyProjections = (projectionIndex) => {
-    showProjectionPicker.value = false;
+const doApplyDefaults = () => {
+    router.post(route('budget.apply-defaults', { month: props.month }), {}, {
+        preserveScroll: true,
+        onSuccess: () => {
+            showToast('Applied default amounts to budget', 'success');
+        },
+    });
+};
 
-    // Check if overwriting existing amounts
+// Apply projections to budget
+const initiateApplyProjections = () => {
+    showContextMenu.value = false;
     if (hasExistingBudgetAmounts.value) {
-        if (!confirm('This will overwrite existing budget amounts. Continue?')) {
-            return;
-        }
+        showConfirm(
+            'Apply Projections',
+            'This will overwrite your current budget amounts with your projected amounts.',
+            doApplyProjections
+        );
+    } else {
+        doApplyProjections();
     }
+};
 
+const doApplyProjections = () => {
     router.post(route('budget.apply-projections', { month: props.month }), {
-        projection_index: projectionIndex,
+        projection_index: 1,
     }, {
         preserveScroll: true,
         onSuccess: () => {
-            showToast(`Applied Projection ${projectionIndex} to budget`, 'success');
+            showToast('Applied projections to budget', 'success');
         },
     });
 };
@@ -466,46 +474,17 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                 </button>
             </div>
 
-            <!-- Options Row: Toggle + Quick Fill -->
-            <div class="flex items-center justify-between">
-                <!-- Show Details Toggle -->
-                <div
-                    @click="showDetails = !showDetails"
-                    class="flex items-center gap-2 cursor-pointer select-none"
-                >
-                    <div
-                        class="relative w-8 h-[18px] rounded-full transition-colors"
-                        :class="showDetails ? 'bg-primary' : 'bg-border'"
-                    >
-                        <div
-                            class="absolute top-[2px] left-[2px] w-[14px] h-[14px] bg-white rounded-full shadow transition-transform"
-                            :class="{ 'translate-x-[14px]': showDetails }"
-                        ></div>
-                    </div>
-                    <span class="text-xs text-subtle">Show defaults & averages</span>
-                </div>
-
-                <!-- Quick Fill Button -->
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    @click="handleQuickFill"
-                >
-                    {{ hasProjections ? 'Apply Projections' : 'Copy Last Month' }}
-                </Button>
-            </div>
-
             <!-- Summary Stats -->
             <div class="grid grid-cols-2 gap-2">
                 <div class="bg-surface rounded-card p-3 text-center">
                     <div class="text-xs text-subtle uppercase">Budgeted</div>
-                    <div class="font-mono font-semibold text-body">
+                    <div class="font-semibold text-body">
                         {{ formatCurrency(summary.budgeted) }}
                     </div>
                 </div>
                 <div class="bg-surface rounded-card p-3 text-center">
                     <div class="text-xs text-subtle uppercase">Spent</div>
-                    <div class="font-mono font-semibold text-expense">
+                    <div class="font-semibold text-expense">
                         {{ formatCurrency(summary.spent) }}
                     </div>
                 </div>
@@ -513,16 +492,79 @@ const showMoveToast = (amount, from, to, remaining = null) => {
 
             <!-- Ready to Assign -->
             <div
-                class="rounded-card p-4 flex items-center justify-between"
+                class="rounded-card p-4 flex items-center justify-between relative"
                 :class="summary.toBudget >= 0 ? 'bg-primary' : 'bg-expense'"
             >
                 <div class="text-xs uppercase tracking-wider text-inverse/90">
                     Ready to Assign
                 </div>
-                <div class="font-mono text-2xl font-semibold text-inverse">
-                    {{ formatCurrency(summary.toBudget) }}
+                <div class="flex items-center gap-3">
+                    <div class="text-2xl font-semibold text-inverse">
+                        {{ formatCurrency(summary.toBudget) }}
+                    </div>
+                    <!-- 3-dot menu -->
+                    <button
+                        @click="showContextMenu = !showContextMenu"
+                        class="p-1 rounded-full hover:bg-white/20 transition-colors"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-inverse" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                        </svg>
+                    </button>
+                    <!-- Dropdown menu -->
+                    <div
+                        v-if="showContextMenu"
+                        class="fixed inset-0 z-40"
+                        @click="showContextMenu = false"
+                    ></div>
+                    <div
+                        v-if="showContextMenu"
+                        class="absolute right-4 top-14 z-50 bg-surface rounded-card shadow-lg border border-border py-1 min-w-[220px]"
+                    >
+                        <button
+                            @click="initiateApplyDefaults"
+                            class="w-full text-left px-4 py-3 hover:bg-surface-secondary transition-colors flex items-start gap-3"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-secondary flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                            <div>
+                                <div class="text-sm text-body">Apply Category Defaults</div>
+                                <div class="text-xs text-subtle mt-0.5">Sets each category to its saved default amount</div>
+                            </div>
+                        </button>
+                        <div class="border-t border-border"></div>
+                        <button
+                            @click="initiaCopyLastMonth"
+                            class="w-full text-left px-4 py-3 hover:bg-surface-secondary transition-colors flex items-start gap-3"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-income flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <div>
+                                <div class="text-sm text-body">Copy Last Month's Budget</div>
+                                <div class="text-xs text-subtle mt-0.5">Copies all budget amounts from the previous month</div>
+                            </div>
+                        </button>
+                        <div class="border-t border-border"></div>
+                        <button
+                            @click="initiateApplyProjections"
+                            class="w-full text-left px-4 py-3 hover:bg-surface-secondary transition-colors flex items-start gap-3"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary-hover flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                            <div>
+                                <div class="text-sm text-body">Apply Projections</div>
+                                <div class="text-xs text-subtle mt-0.5">Uses amounts from the Plan page</div>
+                            </div>
+                        </button>
+                    </div>
                 </div>
             </div>
+
+            <!-- Show Details Toggle -->
+            <Toggle v-model="showDetails" label="Show defaults & averages" />
 
             <!-- Category Groups -->
             <div v-for="group in categoryGroups" :key="group.id" class="space-y-2">
@@ -728,7 +770,7 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                                         </div>
                                     </div>
                                     <div class="text-right">
-                                        <div class="font-mono text-sm font-semibold text-income">
+                                        <div class="text-sm font-semibold text-income">
                                             {{ formatCurrency(category.available) }}
                                         </div>
                                         <div v-if="isSourceSelected(category.id)" class="text-xs text-primary font-medium">
@@ -767,7 +809,7 @@ const showMoveToast = (amount, from, to, remaining = null) => {
             </Transition>
         </Teleport>
 
-        <!-- Copy Last Month Confirmation Modal -->
+        <!-- Confirmation Modal -->
         <Teleport to="body">
             <Transition
                 enter-active-class="transition ease-out duration-200"
@@ -778,70 +820,27 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                 leave-to-class="opacity-0"
             >
                 <div
-                    v-if="showCopyConfirm"
+                    v-if="confirmModal.show"
                     class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-                    @click.self="showCopyConfirm = false"
+                    @click.self="cancelConfirm"
                 >
                     <div class="w-full max-w-sm bg-surface rounded-2xl p-6 space-y-4">
-                        <h3 class="text-lg font-semibold text-body">Overwrite existing amounts?</h3>
-                        <p class="text-subtle">
-                            This month already has budget amounts. Copying from last month will overwrite them.
-                        </p>
+                        <h3 class="text-lg font-semibold text-body">{{ confirmModal.title }}</h3>
+                        <p class="text-subtle">{{ confirmModal.message }}</p>
                         <div class="flex gap-3">
                             <button
-                                @click="showCopyConfirm = false"
+                                @click="cancelConfirm"
                                 class="flex-1 py-3 bg-surface-secondary text-body rounded-card font-medium hover:bg-border transition-colors"
                             >
                                 Cancel
                             </button>
                             <button
-                                @click="doCopyLastMonth"
+                                @click="executeConfirm"
                                 class="flex-1 py-3 bg-primary text-body rounded-card font-medium hover:bg-primary/90 transition-colors"
                             >
-                                Overwrite
+                                Continue
                             </button>
                         </div>
-                    </div>
-                </div>
-            </Transition>
-        </Teleport>
-
-        <!-- Projection Picker Modal -->
-        <Teleport to="body">
-            <Transition
-                enter-active-class="transition ease-out duration-200"
-                enter-from-class="opacity-0"
-                enter-to-class="opacity-100"
-                leave-active-class="transition ease-in duration-150"
-                leave-from-class="opacity-100"
-                leave-to-class="opacity-0"
-            >
-                <div
-                    v-if="showProjectionPicker"
-                    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-                    @click.self="showProjectionPicker = false"
-                >
-                    <div class="w-full max-w-sm bg-surface rounded-2xl p-6 space-y-4">
-                        <h3 class="text-lg font-semibold text-body">Choose Projection</h3>
-                        <p class="text-subtle text-sm">
-                            Select which projection to apply to this month's budget.
-                        </p>
-                        <div class="space-y-2">
-                            <button
-                                v-for="projIndex in availableProjections"
-                                :key="projIndex"
-                                @click="applyProjections(parseInt(projIndex))"
-                                class="w-full py-3 bg-primary text-body rounded-card font-medium hover:bg-primary/90 transition-colors"
-                            >
-                                Projection {{ projIndex }}
-                            </button>
-                        </div>
-                        <button
-                            @click="showProjectionPicker = false"
-                            class="w-full py-3 bg-surface-secondary text-body rounded-card font-medium hover:bg-border transition-colors"
-                        >
-                            Cancel
-                        </button>
                     </div>
                 </div>
             </Transition>

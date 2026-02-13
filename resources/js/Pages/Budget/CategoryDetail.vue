@@ -96,20 +96,20 @@ const isOverspent = props.category.available < 0;
                 <div class="grid grid-cols-3 gap-4 text-center">
                     <div>
                         <div class="text-xs text-subtle uppercase">Budgeted</div>
-                        <div class="font-mono font-semibold text-body">
+                        <div class="font-semibold text-body">
                             {{ formatCurrency(category.budgeted) }}
                         </div>
                     </div>
                     <div>
                         <div class="text-xs text-subtle uppercase">Spent</div>
-                        <div class="font-mono font-semibold text-expense">
+                        <div class="font-semibold text-expense">
                             {{ formatCurrency(Math.abs(category.spent)) }}
                         </div>
                     </div>
                     <div>
                         <div class="text-xs text-subtle uppercase">Available</div>
                         <div
-                            class="font-mono font-semibold"
+                            class="font-semibold"
                             :class="isOverspent ? 'text-expense' : 'text-income'"
                         >
                             {{ formatCurrency(category.available) }}
@@ -146,7 +146,7 @@ const isOverspent = props.category.available < 0;
                             </div>
                             <div class="flex items-center gap-2 flex-shrink-0 ml-3">
                                 <div
-                                    class="font-mono font-medium"
+                                    class="font-medium"
                                     :class="getAmountColor(transaction.amount, transaction.type)"
                                 >
                                     {{ formatCurrency(Math.abs(transaction.amount)) }}

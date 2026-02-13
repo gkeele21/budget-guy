@@ -66,12 +66,12 @@ const hasUncleared = computed(() => {
         </div>
         <div class="text-right">
             <div
-                class="font-mono font-semibold"
+                class="font-semibold"
                 :class="account.balance >= 0 ? 'text-body' : 'text-expense'"
             >
                 {{ formatCurrency(account.balance) }}
             </div>
-            <div v-if="hasUncleared" class="font-mono text-xs text-subtle">
+            <div v-if="hasUncleared" class="text-xs text-subtle">
                 {{ formatCurrency(account.cleared_balance) }}
             </div>
         </div>
