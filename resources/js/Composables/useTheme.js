@@ -2,6 +2,7 @@ import { ref, watch } from 'vue';
 
 const STORAGE_KEY = 'budgetguy-theme';
 const STORAGE_KEY_BG = 'budgetguy-bg-mode';
+const STORAGE_KEY_ICONS = 'budgetguy-show-category-icons';
 const DEFAULT_THEME = 'green';
 const DEFAULT_BG_MODE = 'slate';
 const VALID_THEMES = ['green', 'blue', 'orange'];
@@ -10,6 +11,7 @@ const VALID_BG_MODES = ['slate', 'cream'];
 // Shared reactive state (singleton pattern)
 const currentTheme = ref(DEFAULT_THEME);
 const currentBgMode = ref(DEFAULT_BG_MODE);
+const showCategoryIcons = ref(true);
 const isInitialized = ref(false);
 
 function applyTheme(theme) {
@@ -48,6 +50,17 @@ function saveBgMode(mode) {
     localStorage.setItem(STORAGE_KEY_BG, mode);
 }
 
+function loadShowCategoryIcons() {
+    if (typeof localStorage === 'undefined') return true;
+    const stored = localStorage.getItem(STORAGE_KEY_ICONS);
+    return stored === null ? true : stored === 'true';
+}
+
+function saveShowCategoryIcons(value) {
+    if (typeof localStorage === 'undefined') return;
+    localStorage.setItem(STORAGE_KEY_ICONS, String(value));
+}
+
 function initializeTheme() {
     if (isInitialized.value) return;
 
@@ -58,6 +71,8 @@ function initializeTheme() {
     const storedBgMode = loadBgMode();
     currentBgMode.value = storedBgMode;
     applyBgMode(storedBgMode);
+
+    showCategoryIcons.value = loadShowCategoryIcons();
 
     isInitialized.value = true;
 }
@@ -96,6 +111,11 @@ export function useTheme() {
         }
     }
 
+    function setShowCategoryIcons(value) {
+        showCategoryIcons.value = value;
+        saveShowCategoryIcons(value);
+    }
+
     return {
         theme: currentTheme,
         setTheme,
@@ -104,6 +124,8 @@ export function useTheme() {
         bgMode: currentBgMode,
         setBgMode,
         bgModes: VALID_BG_MODES,
+        showCategoryIcons,
+        setShowCategoryIcons,
     };
 }
 

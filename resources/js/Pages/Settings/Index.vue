@@ -1,9 +1,10 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
+import Toggle from '@/Components/Base/Toggle.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { useTheme } from '@/Composables/useTheme.js';
 
-const { theme, setTheme, bgMode, setBgMode } = useTheme();
+const { theme, setTheme, bgMode, setBgMode, showCategoryIcons, setShowCategoryIcons } = useTheme();
 
 const accentOptions = [
     { value: 'green', label: 'Green', color: '#57d025' },
@@ -154,42 +155,50 @@ const logout = () => {
                 <h2 class="text-sm font-semibold text-warning uppercase tracking-wide px-1 mb-2">
                     Appearance
                 </h2>
-                <div class="bg-surface rounded-card p-4 space-y-4">
-                    <!-- Accent Color -->
-                    <div>
-                        <label class="text-sm text-subtle mb-2 block">Accent Color</label>
-                        <div class="flex gap-3">
-                            <button
-                                v-for="option in accentOptions"
-                                :key="option.value"
-                                @click="setTheme(option.value)"
-                                class="w-10 h-10 rounded-full border-2 transition-all flex items-center justify-center"
-                                :class="theme === option.value ? 'border-body scale-110' : 'border-transparent'"
-                                :style="{ backgroundColor: option.color }"
-                            >
-                                <svg v-if="theme === option.value" class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                                </svg>
-                            </button>
+                <div class="bg-surface rounded-card p-4">
+                    <div class="flex gap-6">
+                        <!-- Accent Color -->
+                        <div class="flex-1">
+                            <label class="text-sm text-subtle mb-2 block">Accent Color</label>
+                            <div class="flex gap-3">
+                                <button
+                                    v-for="option in accentOptions"
+                                    :key="option.value"
+                                    @click="setTheme(option.value)"
+                                    class="w-10 h-10 rounded-full border-2 transition-all flex items-center justify-center"
+                                    :class="theme === option.value ? 'border-body scale-110' : 'border-transparent'"
+                                    :style="{ backgroundColor: option.color }"
+                                >
+                                    <svg v-if="theme === option.value" class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Background Mode -->
+                        <div>
+                            <label class="text-sm text-subtle mb-2 block">Background</label>
+                            <div class="flex gap-2">
+                                <button
+                                    v-for="option in bgModeOptions"
+                                    :key="option.value"
+                                    @click="setBgMode(option.value)"
+                                    class="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                                    :class="bgMode === option.value
+                                        ? 'bg-primary text-white'
+                                        : 'bg-surface-overlay text-subtle'"
+                                >
+                                    {{ option.label }}
+                                </button>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Background Mode -->
-                    <div>
-                        <label class="text-sm text-subtle mb-2 block">Background</label>
-                        <div class="flex gap-2">
-                            <button
-                                v-for="option in bgModeOptions"
-                                :key="option.value"
-                                @click="setBgMode(option.value)"
-                                class="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                                :class="bgMode === option.value
-                                    ? 'bg-primary text-white'
-                                    : 'bg-surface-overlay text-subtle'"
-                            >
-                                {{ option.label }}
-                            </button>
-                        </div>
+                    <!-- Category Icons Toggle -->
+                    <div class="flex items-center justify-between pt-4 border-t border-border">
+                        <label class="text-sm text-body">Show Category Icons</label>
+                        <Toggle :modelValue="showCategoryIcons" @update:modelValue="setShowCategoryIcons" />
                     </div>
                 </div>
             </div>

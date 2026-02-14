@@ -4,6 +4,9 @@ import FAB from '@/Components/Domain/FAB.vue';
 import FilterChip from '@/Components/Base/FilterChip.vue';
 import SwipeableRow from '@/Components/Base/SwipeableRow.vue';
 import SegmentedControl from '@/Components/Form/SegmentedControl.vue';
+import SearchField from '@/Components/Form/SearchField.vue';
+import DateField from '@/Components/Form/DateField.vue';
+import Button from '@/Components/Base/Button.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref, computed, watch } from 'vue';
 
@@ -350,33 +353,12 @@ const formatNextDate = (dateStr, frequency) => {
                     leave-from-class="transform translate-y-0 opacity-100"
                     leave-to-class="transform -translate-y-2 opacity-0"
                 >
-                    <div v-if="showSearch" class="relative">
-                        <input
-                            ref="searchInputRef"
-                            v-model="localSearchQuery"
-                            type="text"
-                            placeholder="Search payee, memo, amount..."
-                            class="w-full px-4 py-3 pl-10 bg-surface rounded-card text-body placeholder-subtle focus:outline-none"
-                        />
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="h-5 w-5 absolute left-3 top-1/2 -translate-y-1/2 text-subtle"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                        >
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                        <button
-                            v-if="localSearchQuery"
-                            @click="localSearchQuery = ''"
-                            class="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-surface-overlay rounded-full"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-subtle" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                    </div>
+                    <SearchField
+                        v-if="showSearch"
+                        ref="searchInputRef"
+                        v-model="localSearchQuery"
+                        placeholder="Search payee, memo, amount..."
+                    />
                 </Transition>
 
                 <!-- Filters Panel -->
@@ -391,30 +373,21 @@ const formatNextDate = (dateStr, frequency) => {
                     <div v-if="showFilters" class="bg-surface rounded-card overflow-hidden">
                         <!-- Date Range -->
                         <div class="divide-y divide-border">
-                            <div class="flex items-center justify-between px-4 py-3.5">
-                                <span class="text-sm text-subtle">From</span>
-                                <input
-                                    type="date"
-                                    v-model="localStartDate"
-                                    :max="localEndDate || undefined"
-                                    :class="[
-                                        'bg-transparent text-right text-sm font-medium focus:outline-none',
-                                        localStartDate ? 'text-primary' : 'text-subtle'
-                                    ]"
-                                />
-                            </div>
-                            <div class="flex items-center justify-between px-4 py-3.5">
-                                <span class="text-sm text-subtle">To</span>
-                                <input
-                                    type="date"
-                                    v-model="localEndDate"
-                                    :min="localStartDate || undefined"
-                                    :class="[
-                                        'bg-transparent text-right text-sm font-medium focus:outline-none',
-                                        localEndDate ? 'text-primary' : 'text-subtle'
-                                    ]"
-                                />
-                            </div>
+                            <DateField
+                                v-model="localStartDate"
+                                label="From"
+                                :max="localEndDate || undefined"
+                                clearable
+                                @clear="localStartDate = ''"
+                            />
+                            <DateField
+                                v-model="localEndDate"
+                                label="To"
+                                :min="localStartDate || undefined"
+                                :border-bottom="false"
+                                clearable
+                                @clear="localEndDate = ''"
+                            />
                         </div>
 
                         <!-- Cleared Status -->
@@ -433,19 +406,16 @@ const formatNextDate = (dateStr, frequency) => {
 
                         <!-- Filter Actions -->
                         <div class="flex gap-2 px-4 py-3 border-t border-border">
-                            <button
-                                @click="applyFilters"
-                                class="flex-1 py-2.5 bg-primary text-body rounded-xl text-sm font-semibold"
-                            >
+                            <Button @click="applyFilters" full-width>
                                 Apply Filters
-                            </button>
-                            <button
+                            </Button>
+                            <Button
                                 v-if="hasActiveFilters"
+                                variant="ghost"
                                 @click="clearFilters"
-                                class="px-4 py-2.5 text-subtle text-sm font-medium hover:bg-surface-overlay rounded-xl"
                             >
                                 Clear
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </Transition>

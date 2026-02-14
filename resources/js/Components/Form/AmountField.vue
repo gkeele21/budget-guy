@@ -1,24 +1,27 @@
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, nextTick } from 'vue';
 import FormRow from './FormRow.vue';
 
 const props = defineProps({
     modelValue: { type: [String, Number], default: '' },
-    label: { type: String, default: 'Amount' },
+    // When set, renders inside FormRow with this label. When empty, renders a bare inline input.
+    label: { type: String, default: '' },
     transactionType: { type: String, default: 'expense' }, // expense, income, transfer
     placeholder: { type: String, default: '0.00' },
     required: { type: Boolean, default: false },
     disabled: { type: Boolean, default: false },
     error: { type: String, default: '' },
     borderBottom: { type: Boolean, default: true },
-    // When true, uses transaction type colors. When false, uses primary green like other fields.
-    colorByType: { type: Boolean, default: true },
+    // Override color class (e.g. 'text-secondary', 'text-body'). When empty, derives from transactionType.
+    color: { type: String, default: '' },
 });
 
 const emit = defineEmits(['update:modelValue', 'blur']);
 
 // Local input value for display
 const inputValue = ref(formatInitialValue());
+const isEditing = ref(false);
+const inputRef = ref(null);
 
 function formatInitialValue() {
     if (props.modelValue === '' || props.modelValue === null || props.modelValue === undefined) {
@@ -29,17 +32,31 @@ function formatInitialValue() {
 }
 
 const colorClass = computed(() => {
-    // If colorByType is false, use a neutral non-transaction color
-    if (!props.colorByType) {
-        return 'text-secondary';
-    }
-    // Color by transaction type
+    if (props.color) return props.color;
     switch (props.transactionType) {
         case 'income': return 'text-success';
         case 'transfer': return 'text-info';
         default: return 'text-danger';
     }
 });
+
+const displayValue = computed(() => {
+    if (inputValue.value) {
+        return '$' + inputValue.value;
+    }
+    return '';
+});
+
+const startEditing = () => {
+    if (props.disabled) return;
+    isEditing.value = true;
+    nextTick(() => {
+        if (inputRef.value) {
+            inputRef.value.focus();
+            inputRef.value.select();
+        }
+    });
+};
 
 const onInput = (e) => {
     let value = e.target.value;
@@ -71,6 +88,7 @@ const onBlur = (e) => {
             emit('update:modelValue', inputValue.value);
         }
     }
+    isEditing.value = false;
     emit('blur', e);
 };
 
@@ -82,32 +100,69 @@ watch(() => props.modelValue, (newVal) => {
     }
     const num = parseFloat(newVal);
     const formatted = isNaN(num) ? '' : num.toFixed(2);
-    // Only update if different to avoid cursor jumping
-    if (formatted !== inputValue.value && document.activeElement !== document.querySelector(`[data-amount-field="${props.label}"]`)) {
+    // Only update if different and not currently editing
+    if (formatted !== inputValue.value && !isEditing.value) {
         inputValue.value = formatted;
     }
 });
 </script>
 
 <template>
-    <FormRow :label="label" :border-bottom="borderBottom" :error="error">
+    <!-- With label: FormRow wrapped -->
+    <FormRow v-if="label" :label="label" :border-bottom="borderBottom" :error="error">
         <div class="flex items-center justify-end">
             <input
+                v-if="isEditing"
+                ref="inputRef"
                 type="text"
                 inputmode="decimal"
-                :data-amount-field="label"
-                :value="inputValue ? '$' + inputValue : ''"
+                :value="inputValue ? '$' + inputValue : '$'"
                 @input="onInput"
                 @blur="onBlur"
-                :placeholder="'$' + placeholder"
-                :required="required"
-                :disabled="disabled"
+                @keyup.enter="$event.target.blur()"
                 :class="[
                     'bg-transparent focus:outline-none text-base font-medium text-right w-28',
                     colorClass,
-                    disabled ? 'opacity-50' : '',
                 ]"
             />
+            <div
+                v-else
+                @click="startEditing"
+                :class="[
+                    'text-base font-medium text-right cursor-text',
+                    displayValue ? colorClass : 'text-subtle',
+                    disabled ? 'opacity-50' : '',
+                ]"
+            >
+                {{ displayValue || '$' + placeholder }}
+            </div>
         </div>
     </FormRow>
+    <!-- Without label: bare inline, editing -->
+    <input
+        v-else-if="isEditing"
+        ref="inputRef"
+        type="text"
+        inputmode="decimal"
+        :value="inputValue ? '$' + inputValue : '$'"
+        @input="onInput"
+        @blur="onBlur"
+        @keyup.enter="$event.target.blur()"
+        :class="[
+            'bg-transparent focus:outline-none font-semibold text-right text-sm',
+            colorClass,
+        ]"
+    />
+    <!-- Without label: bare inline, display -->
+    <div
+        v-else
+        @click="startEditing"
+        :class="[
+            'font-semibold text-right text-sm cursor-text',
+            displayValue ? colorClass : 'text-subtle',
+            disabled ? 'opacity-50' : '',
+        ]"
+    >
+        {{ displayValue || '$' + placeholder }}
+    </div>
 </template>

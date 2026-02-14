@@ -1,8 +1,13 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
 import Toggle from '@/Components/Base/Toggle.vue';
+import Button from '@/Components/Base/Button.vue';
+import AmountField from '@/Components/Form/AmountField.vue';
 import { Head, router } from '@inertiajs/vue3';
-import { ref, computed, reactive, nextTick, watch } from 'vue';
+import { ref, computed, reactive, watch } from 'vue';
+import { useTheme } from '@/Composables/useTheme.js';
+
+const { showCategoryIcons } = useTheme();
 
 const props = defineProps({
     month: String,
@@ -45,13 +50,6 @@ const executeConfirm = () => {
 const cancelConfirm = () => {
     confirmModal.value.show = false;
 };
-
-// Track edited amounts (for green border visual feedback)
-const editedAmounts = reactive({});
-
-// Track which field is being edited (to show input vs formatted)
-const editingField = ref(null);
-const editingValue = ref('');
 
 // Global toggle for showing category details (default/avg)
 const showDetails = ref(false);
@@ -139,50 +137,20 @@ const navigateMonth = (month) => {
     router.get(route('budget.index', { month }));
 };
 
-const onBudgetInput = (e) => {
-    let value = e.target.value;
-    // Strip $ and any non-numeric chars except decimal
-    value = value.replace(/[^\d.]/g, '');
-    // Ensure only one decimal point
-    const parts = value.split('.');
-    if (parts.length > 2) {
-        value = parts[0] + '.' + parts.slice(1).join('');
-    }
-    // Limit decimal places to 2
-    if (parts.length === 2 && parts[1].length > 2) {
-        value = parts[0] + '.' + parts[1].slice(0, 2);
-    }
-    editingValue.value = value;
-};
-
 const saveAmount = (categoryId) => {
-    editingField.value = null;
-    const amount = parseFloat(editingValue.value) || 0;
-    budgetAmounts[categoryId] = amount;
-    router.put(route('budget.update', { month: props.month }), {
-        budgets: [{ category_id: categoryId, amount: amount }],
-    }, {
-        preserveScroll: true,
-        onSuccess: () => {
-            // Show green border briefly to indicate successful save
-            editedAmounts[categoryId] = true;
-            setTimeout(() => {
-                editedAmounts[categoryId] = false;
-            }, 2000);
-        },
-    });
-};
-
-const startEditing = (categoryId) => {
-    editingField.value = categoryId;
-    editingValue.value = (budgetAmounts[categoryId] || 0).toString();
-    nextTick(() => {
-        const input = document.querySelector(`input[type="text"][inputmode="decimal"]`);
-        if (input) {
-            input.focus();
-            input.select();
-        }
-    });
+    try {
+        const amount = budgetAmounts[categoryId] || 0;
+        router.put(route('budget.update', { month: props.month }), {
+            budgets: [{ category_id: categoryId, amount: amount }],
+        }, {
+            preserveScroll: true,
+            onError: () => {
+                showToast('Failed to save budget amount', 'error');
+            },
+        });
+    } catch {
+        showToast('Failed to save budget amount', 'error');
+    }
 };
 
 const isOverspent = (available) => available < 0;
@@ -416,7 +384,7 @@ const showMoveToast = (amount, from, to, remaining = null) => {
     <AppLayout>
         <template #title>Budget</template>
 
-        <div class="p-4 space-y-4">
+        <div class="px-2 py-3 space-y-3">
             <!-- Toast Notification -->
             <Transition
                 enter-active-class="transition ease-out duration-300"
@@ -625,11 +593,11 @@ const showMoveToast = (amount, from, to, remaining = null) => {
 
                 <div class="bg-surface rounded-card overflow-hidden tabular-nums">
                     <!-- Column Headers -->
-                    <div class="grid grid-cols-12 gap-1 px-3 py-2 bg-surface-header text-xs text-subtle uppercase border-b border-border">
-                        <div class="col-span-4">Category</div>
-                        <div class="col-span-3 text-right">Budget</div>
-                        <div class="col-span-2 text-right">Spent</div>
-                        <div class="col-span-3 text-right">Balance</div>
+                    <div class="grid grid-cols-[1fr_4.5rem_3.5rem_5rem] gap-px px-2 py-2 bg-surface-header text-xs text-subtle uppercase border-b border-border">
+                        <div>Category</div>
+                        <div class="text-right">Budget</div>
+                        <div class="text-right">Spent</div>
+                        <div class="text-right">Available</div>
                     </div>
 
                     <!-- Category Rows -->
@@ -639,50 +607,32 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                         class="border-b border-border last:border-b-0"
                     >
                         <!-- Main Row -->
-                        <div class="grid grid-cols-12 gap-1 px-3 pt-3 pb-1 items-center">
+                        <div class="grid grid-cols-[1fr_4.5rem_3.5rem_5rem] gap-px px-2 pt-3 pb-1 items-center">
                             <!-- Category Name (Clickable) -->
                             <a
                                 :href="route('budget.category-detail', { month: month, category: category.id })"
-                                class="col-span-4 flex items-center gap-1 min-w-0 hover:text-primary transition-colors"
+                                class="flex items-center gap-1 min-w-0 hover:text-primary transition-colors"
                             >
-                                <span v-if="category.icon" class="flex-shrink-0 text-sm">{{ category.icon }}</span>
+                                <span v-if="showCategoryIcons && category.icon" class="flex-shrink-0 text-sm">{{ category.icon }}</span>
                                 <span class="text-sm text-body truncate hover:text-primary">{{ category.name }}</span>
                             </a>
 
                             <!-- Budgeted (Editable) -->
-                            <div class="col-span-3 text-right">
-                                <input
-                                    v-if="editingField === category.id"
-                                    :value="editingValue ? '$' + editingValue : '$'"
-                                    type="text"
-                                    inputmode="decimal"
-                                    class="w-full px-1 py-1 text-right text-base bg-surface rounded border border-primary outline-none"
-                                    @input="onBudgetInput($event)"
-                                    @blur="saveAmount(category.id)"
-                                    @keyup.enter="$event.target.blur()"
-                                />
-                                <div
-                                    v-else
-                                    @click="startEditing(category.id)"
-                                    :class="[
-                                        'w-full px-1 py-1 text-right text-sm rounded cursor-text transition-colors',
-                                        editedAmounts[category.id]
-                                            ? 'border-2 border-success bg-primary-bg'
-                                            : 'border border-transparent hover:bg-surface-overlay'
-                                    ]"
-                                >
-                                    ${{ formatNumber(budgetAmounts[category.id]) }}
-                                </div>
-                            </div>
+                            <AmountField
+                                :modelValue="budgetAmounts[category.id]"
+                                @update:modelValue="(v) => budgetAmounts[category.id] = parseFloat(v) || 0"
+                                @blur="saveAmount(category.id)"
+                                color="text-body"
+                            />
 
                             <!-- Spent -->
-                            <div class="col-span-2 text-right text-sm text-subtle">
+                            <div class="text-right text-sm text-subtle">
                                 ${{ formatNumber(category.spent) }}
                             </div>
 
                             <!-- Balance/Available (Clickable if overspent) -->
                             <div
-                                class="col-span-3 text-right text-sm font-semibold"
+                                class="text-right text-sm font-semibold"
                                 :class="[
                                     isOverspent(getAvailable(category)) ? 'text-danger cursor-pointer hover:underline' : 'text-success',
                                 ]"
@@ -695,10 +645,10 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                         <!-- Detail Row (Default & Avg Spent) -->
                         <div
                             v-if="showDetails && (category.default_amount > 0 || category.avg_spent > 0)"
-                            class="grid grid-cols-12 gap-1 px-3 pb-2 items-center"
+                            class="grid grid-cols-[1fr_4.5rem_3.5rem_5rem] gap-px px-2 pb-2 items-center"
                         >
-                            <div class="col-span-4"></div>
-                            <div class="col-span-8 flex items-center gap-3 text-xs text-subtle">
+                            <div></div>
+                            <div class="col-span-3 flex items-center gap-3 text-xs text-subtle">
                                 <span v-if="category.default_amount > 0">
                                     Default: {{ formatNumber(category.default_amount) }}
                                 </span>
@@ -711,16 +661,16 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                     </div>
 
                     <!-- Group Totals Row -->
-                    <div class="grid grid-cols-12 gap-1 px-3 py-2 bg-info/30 text-sm font-semibold border-t-2 border-info/40">
-                        <div class="col-span-4 text-info uppercase">Total</div>
-                        <div class="col-span-3 text-right text-body px-1">
+                    <div class="grid grid-cols-[1fr_4.5rem_3.5rem_5rem] gap-px px-2 py-2 bg-info/30 text-sm font-semibold border-t-2 border-info/40">
+                        <div class="text-info uppercase">Total</div>
+                        <div class="text-right text-body">
                             ${{ formatNumber(getGroupTotals(group).budgeted) }}
                         </div>
-                        <div class="col-span-2 text-right text-subtle">
+                        <div class="text-right text-subtle">
                             ${{ formatNumber(getGroupTotals(group).spent) }}
                         </div>
                         <div
-                            class="col-span-3 text-right"
+                            class="text-right"
                             :class="getGroupTotals(group).available >= 0 ? 'text-success' : 'text-danger'"
                         >
                             {{ formatCurrency(getGroupTotals(group).available) }}
@@ -844,19 +794,20 @@ const showMoveToast = (amount, from, to, remaining = null) => {
 
                             <!-- Modal Footer -->
                             <div class="p-4 border-t border-border space-y-2">
-                                <button
+                                <Button
                                     v-if="selectedSources.length > 0"
                                     @click="executeMoveMoney"
-                                    class="w-full py-3 bg-primary text-body rounded-card font-medium hover:bg-primary-hover transition-colors"
+                                    full-width
                                 >
                                     Move {{ formatCurrency(totalSelectedAmount) }}
-                                </button>
-                                <button
+                                </Button>
+                                <Button
+                                    variant="muted"
                                     @click="showMoveMoneyModal = false"
-                                    class="w-full py-3 bg-surface-overlay text-body rounded-card font-medium hover:bg-border transition-colors"
+                                    full-width
                                 >
                                     Cancel
-                                </button>
+                                </Button>
                             </div>
                         </div>
                     </Transition>
@@ -883,18 +834,12 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                         <h3 class="text-lg font-semibold text-body">{{ confirmModal.title }}</h3>
                         <p class="text-subtle">{{ confirmModal.message }}</p>
                         <div class="flex gap-3">
-                            <button
-                                @click="cancelConfirm"
-                                class="flex-1 py-3 bg-surface-overlay text-body rounded-card font-medium hover:bg-border transition-colors"
-                            >
+                            <Button variant="muted" @click="cancelConfirm" class="flex-1">
                                 Cancel
-                            </button>
-                            <button
-                                @click="executeConfirm"
-                                class="flex-1 py-3 bg-primary text-body rounded-card font-medium hover:bg-primary/90 transition-colors"
-                            >
+                            </Button>
+                            <Button @click="executeConfirm" class="flex-1">
                                 Continue
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </div>

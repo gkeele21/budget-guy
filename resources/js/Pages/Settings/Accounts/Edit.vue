@@ -94,7 +94,7 @@ const deleteAccount = () => {
                 <AmountField
                     v-model="form.starting_balance"
                     label="Starting Balance"
-                    :color-by-type="false"
+                    color="text-secondary"
                     :border-bottom="false"
                 />
             </div>
@@ -125,13 +125,9 @@ const deleteAccount = () => {
             </Button>
 
             <!-- Delete Button -->
-            <button
-                type="button"
-                @click="showDeleteConfirm = true"
-                class="w-full py-4 text-danger font-medium"
-            >
+            <Button variant="ghost" class="w-full text-danger" @click="showDeleteConfirm = true">
                 Delete Account
-            </button>
+            </Button>
         </form>
 
         <!-- Delete Confirmation Modal -->

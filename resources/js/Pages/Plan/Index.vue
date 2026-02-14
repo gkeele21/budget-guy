@@ -1,7 +1,12 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
+import AmountField from '@/Components/Form/AmountField.vue';
+import Button from '@/Components/Base/Button.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { ref, computed, reactive } from 'vue';
+import { useTheme } from '@/Composables/useTheme.js';
+
+const { showCategoryIcons } = useTheme();
 
 const props = defineProps({
     categoryGroups: Array,
@@ -75,36 +80,7 @@ const autoSave = () => {
     }, 800);
 };
 
-// --- Projection input formatting ---
-const getProjectionDisplay = (categoryId) => {
-    return formatCurrency(projectionAmounts[categoryId] || 0);
-};
-
-const onProjectionFocus = (event, categoryId) => {
-    const val = projectionAmounts[categoryId];
-    event.target.value = val > 0 ? val.toFixed(2) : '';
-};
-
-const onProjectionBlur = (event, categoryId) => {
-    const raw = parseFloat(event.target.value) || 0;
-    projectionAmounts[categoryId] = raw;
-    event.target.value = raw > 0 ? formatCurrency(raw) : '';
-    autoSave();
-};
-
-// --- Income input formatting ---
-const getIncomeDisplay = () => {
-    return formatCurrency(expectedIncome.value || 0);
-};
-
-const onIncomeFocus = (event) => {
-    event.target.value = expectedIncome.value > 0 ? expectedIncome.value.toFixed(2) : '';
-};
-
-const onIncomeBlur = (event) => {
-    const raw = parseFloat(event.target.value) || 0;
-    expectedIncome.value = raw;
-    event.target.value = raw > 0 ? formatCurrency(raw) : '';
+const onIncomeBlur = () => {
     autoSave();
 };
 
@@ -236,7 +212,7 @@ const showToast = (message, type = 'success') => {
     <AppLayout>
         <template #title>Plan</template>
 
-        <div class="p-4 space-y-4">
+        <div class="px-2 py-4 space-y-4">
             <!-- Toast Notification -->
             <Transition
                 enter-active-class="transition ease-out duration-300"
@@ -264,7 +240,7 @@ const showToast = (message, type = 'success') => {
                 <!-- Top Row: Title + Income + Menu -->
                 <div class="flex items-center justify-between px-4 py-3 border-b border-border">
                     <div class="flex items-center gap-2">
-                        <h3 class="font-semibold text-body">Plan Your Budget</h3>
+                        <h3 class="font-semibold text-body">Plan Budget</h3>
                         <button @click="toggleInfo" class="text-subtle hover:text-body">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                                 <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
@@ -273,13 +249,11 @@ const showToast = (message, type = 'success') => {
                     </div>
                     <div class="flex items-center gap-2">
                         <span class="text-xs text-subtle uppercase">Income</span>
-                        <input
-                            :value="getIncomeDisplay()"
-                            @focus="onIncomeFocus"
+                        <AmountField
+                            v-model="expectedIncome"
+                            transaction-type="income"
                             @blur="onIncomeBlur"
-                            type="text"
-                            inputmode="decimal"
-                            class="w-28 px-2 py-1 text-right font-semibold text-success text-sm bg-surface-header border border-border rounded focus:border-primary focus:outline-none"
+                            class="w-28"
                         />
                         <div class="relative">
                             <button
@@ -391,37 +365,33 @@ const showToast = (message, type = 'success') => {
 
                 <div class="bg-surface rounded-card overflow-hidden tabular-nums">
                     <!-- Column Headers -->
-                    <div class="grid grid-cols-12 gap-2 px-3 py-2 bg-secondary/10 text-xs text-subtle uppercase border-b border-secondary/10">
-                        <div class="col-span-5">Category</div>
-                        <div class="col-span-3 text-right">Default</div>
-                        <div class="col-span-4 text-right">Projected</div>
+                    <div class="grid grid-cols-[1fr_4.5rem_6rem] gap-px px-2 py-2 bg-secondary/10 text-xs text-subtle uppercase border-b border-secondary/10">
+                        <div>Category</div>
+                        <div class="text-right">Default</div>
+                        <div class="text-right">Projected</div>
                     </div>
 
                     <!-- Category Rows -->
                     <div
                         v-for="category in group.categories"
                         :key="category.id"
-                        class="grid grid-cols-12 gap-2 px-3 py-3 items-center border-b border-secondary/10 last:border-b-0"
+                        class="grid grid-cols-[1fr_4.5rem_6rem] gap-px px-2 pt-3 pb-1 items-center border-b border-secondary/10 last:border-b-0"
                     >
-                        <div class="col-span-5 flex items-center gap-2 min-w-0">
-                            <span v-if="category.icon" class="flex-shrink-0">{{ category.icon }}</span>
+                        <div class="flex items-center gap-1 min-w-0">
+                            <span v-if="showCategoryIcons && category.icon" class="flex-shrink-0 text-sm">{{ category.icon }}</span>
                             <span class="font-medium text-body truncate">{{ category.name }}</span>
                         </div>
 
-                        <div class="col-span-3 text-right text-sm text-subtle">
+                        <div class="text-right text-sm text-subtle">
                             {{ category.default_amount ? formatCurrency(category.default_amount) : '-' }}
                         </div>
 
-                        <div class="col-span-4">
-                            <input
-                                :value="getProjectionDisplay(category.id)"
-                                @focus="onProjectionFocus($event, category.id)"
-                                @blur="onProjectionBlur($event, category.id)"
-                                type="text"
-                                inputmode="decimal"
-                                class="w-full px-2 py-1 text-right text-sm bg-surface border border-border rounded focus:border-primary focus:outline-none"
-                            />
-                        </div>
+                        <AmountField
+                            :modelValue="projectionAmounts[category.id]"
+                            @update:modelValue="val => { projectionAmounts[category.id] = parseFloat(val) || 0 }"
+                            @blur="autoSave"
+                            color="text-body"
+                        />
                     </div>
                 </div>
             </div>
@@ -457,18 +427,12 @@ const showToast = (message, type = 'success') => {
                         <h3 class="font-semibold text-body text-lg">{{ confirmModal.title }}</h3>
                         <p class="text-sm text-subtle">{{ confirmModal.message }}</p>
                         <div class="flex gap-3 justify-end">
-                            <button
-                                @click="cancelConfirm"
-                                class="px-4 py-2 text-sm font-medium text-body bg-surface-overlay rounded-card hover:bg-border-strong"
-                            >
+                            <Button variant="ghost" size="sm" @click="cancelConfirm">
                                 Cancel
-                            </button>
-                            <button
-                                @click="confirmAction"
-                                class="px-4 py-2 text-sm font-medium text-body bg-primary rounded-card hover:bg-primary/90"
-                            >
+                            </Button>
+                            <Button size="sm" @click="confirmAction">
                                 Confirm
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </div>

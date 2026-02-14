@@ -209,7 +209,7 @@ const closeModal = () => {
                     <AmountField
                         v-model="form.starting_balance"
                         label="Starting Balance"
-                        :color-by-type="false"
+                        color="text-secondary"
                         placeholder="0.00"
                         :border-bottom="false"
                     />

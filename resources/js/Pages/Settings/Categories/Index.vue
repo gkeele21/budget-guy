@@ -356,7 +356,7 @@ const isGroupCollapsed = (groupId) => {
                     <AmountField
                         v-model="categoryForm.default_amount"
                         label="Default Amount"
-                        :color-by-type="false"
+                        color="text-secondary"
                         placeholder="0.00"
                     />
                 </div>
@@ -422,7 +422,7 @@ const isGroupCollapsed = (groupId) => {
                     <AmountField
                         v-model="editForm.default_amount"
                         label="Default Amount"
-                        :color-by-type="false"
+                        color="text-secondary"
                         placeholder="0.00"
                         :border-bottom="false"
                     />
@@ -460,13 +460,9 @@ const isGroupCollapsed = (groupId) => {
 
                 <!-- Delete Button -->
                 <div class="mx-3 mt-4">
-                    <button
-                        type="button"
-                        @click="deleteCategory(editForm.id)"
-                        class="w-full py-3 text-danger font-medium text-sm"
-                    >
+                    <Button variant="ghost" size="sm" class="w-full text-danger" @click="deleteCategory(editForm.id)">
                         Delete Category
-                    </button>
+                    </Button>
                 </div>
             </form>
 
@@ -497,13 +493,9 @@ const isGroupCollapsed = (groupId) => {
 
                 <!-- Delete Button -->
                 <div class="mx-3 mt-4">
-                    <button
-                        type="button"
-                        @click="deleteGroup(editGroupForm.id)"
-                        class="w-full py-3 text-danger font-medium text-sm"
-                    >
+                    <Button variant="ghost" size="sm" class="w-full text-danger" @click="deleteGroup(editGroupForm.id)">
                         Delete Group
-                    </button>
+                    </Button>
                 </div>
             </form>
 

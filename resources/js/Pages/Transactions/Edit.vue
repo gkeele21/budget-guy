@@ -190,6 +190,7 @@ const getSaveButtonVariant = () => {
                 <!-- Amount -->
                 <AmountField
                     v-model="form.amount"
+                    label="Amount"
                     :transaction-type="form.type"
                 />
 
@@ -269,13 +270,9 @@ const getSaveButtonVariant = () => {
 
             <!-- Delete Button -->
             <div class="mx-3 mt-1">
-                <button
-                    type="button"
-                    @click="showDeleteConfirm = true"
-                    class="w-full py-3 text-danger font-medium text-sm"
-                >
+                <Button variant="ghost" class="w-full text-danger" @click="showDeleteConfirm = true">
                     Delete Transaction
-                </button>
+                </Button>
             </div>
 
             <!-- Spacer -->
@@ -352,19 +349,11 @@ const getSaveButtonVariant = () => {
                                 group-options-key="categories"
                             />
                         </div>
-                        <div class="flex items-center gap-2 ml-3">
-                            <span :class="['text-sm font-medium', item.amount ? 'text-danger' : 'text-subtle']">$</span>
-                            <input
-                                v-model="item.amount"
-                                type="text"
-                                inputmode="decimal"
-                                placeholder="0.00"
-                                :class="[
-                                    'w-20 bg-transparent text-sm font-medium text-right focus:outline-none',
-                                    item.amount ? 'text-danger' : 'text-subtle'
-                                ]"
-                            />
-                        </div>
+                        <AmountField
+                            v-model="item.amount"
+                            transaction-type="expense"
+                            class="w-20 ml-3"
+                        />
                         <button
                             type="button"
                             @click="removeSplitItem(index)"

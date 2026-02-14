@@ -210,7 +210,7 @@ const templates = [
                             <AmountField
                                 v-model="form.account_balance"
                                 label="Current Balance"
-                                :color-by-type="false"
+                                color="text-secondary"
                                 placeholder="0.00"
                                 :border-bottom="false"
                             />

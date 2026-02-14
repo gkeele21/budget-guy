@@ -9,6 +9,8 @@ const props = defineProps({
     inputmode: { type: String, default: null },
     required: { type: Boolean, default: false },
     disabled: { type: Boolean, default: false },
+    autofocus: { type: Boolean, default: false },
+    autocomplete: { type: String, default: null },
     error: { type: String, default: '' },
     borderBottom: { type: Boolean, default: true },
     textAlign: { type: String, default: 'right' }, // left, right
@@ -33,6 +35,8 @@ const onInput = (e) => {
             :placeholder="placeholder"
             :required="required"
             :disabled="disabled"
+            :autofocus="autofocus"
+            :autocomplete="autocomplete"
             :class="[
                 'flex-1 bg-transparent focus:outline-none text-base font-medium min-w-0',
                 textAlign === 'right' ? 'text-right' : 'text-left',

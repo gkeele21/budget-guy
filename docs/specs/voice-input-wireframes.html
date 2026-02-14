@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voice Input — Wireframes (Dark Mode)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ========================================
+     * Page chrome (gallery layout)
+     * ======================================== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Figtree', sans-serif;
+      background: #1a1a2e;
+      color: #e8e8e8;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    h1 { text-align: center; font-size: 1.5rem; font-weight: 600; color: #fff; margin-bottom: 8px; }
+    .subtitle { text-align: center; font-size: 0.875rem; color: #888; margin-bottom: 40px; }
+    .section-header {
+      text-align: center; font-size: 1rem; font-weight: 600;
+      color: rgb(87, 208, 37); margin: 60px 0 16px;
+      text-transform: uppercase; letter-spacing: 2px;
+    }
+    .section-desc {
+      text-align: center; font-size: 0.85rem; color: #999; margin-bottom: 30px; max-width: 700px; margin-left: auto; margin-right: auto;
+    }
+
+    .wireframes {
+      display: flex; flex-wrap: wrap; justify-content: center;
+      gap: 40px; max-width: 1600px; margin: 0 auto;
+    }
+    .screen-container { display: flex; flex-direction: column; align-items: center; }
+    .screen-label {
+      font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 1.5px; color: rgb(87, 208, 37); margin-bottom: 16px;
+    }
+    .screen-notes {
+      max-width: 256px; margin-top: 16px; font-size: 0.75rem;
+      color: #aaa; line-height: 1.5;
+    }
+    .screen-notes strong { color: #ddd; display: block; margin-bottom: 4px; }
+    .screen-notes ul { padding-left: 16px; margin-top: 4px; }
+    .screen-notes li { margin-bottom: 2px; }
+
+    .flow-arrow {
+      display: flex; align-items: center; font-size: 2rem;
+      color: rgb(87, 208, 37); opacity: 0.5; padding: 0 8px; align-self: center;
+    }
+
+    /* ========================================
+     * Phone frame
+     * ======================================== */
+    .phone {
+      width: 280px; height: 580px; background: #0a0a0a;
+      border-radius: 36px; padding: 12px;
+      box-shadow: 0 0 0 2px #333, 0 20px 60px rgba(0,0,0,0.5);
+    }
+    .phone-screen {
+      width: 100%; height: 100%; background: #4a4a4a; /* bg token */
+      border-radius: 28px; overflow: hidden;
+      display: flex; flex-direction: column; position: relative;
+    }
+
+    /* ========================================
+     * App chrome - matches BudgetGuy dark theme
+     * Using actual CSS variable values from app.css
+     * ======================================== */
+
+    /* Surface header: #0f0f0f */
+    .app-header {
+      background: #0f0f0f; color: #f5f5f5;
+      padding: 10px 14px 8px; display: flex; align-items: center; justify-content: between;
+      flex-shrink: 0;
+    }
+    .app-header .left { display: flex; align-items: center; gap: 8px; flex: 1; }
+    .app-header .logo {
+      width: 28px; height: 28px; background: rgb(87, 208, 37);
+      border-radius: 6px; display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; font-weight: 700; color: #fff;
+    }
+    .app-header .title { font-size: 1rem; font-weight: 600; }
+    .app-header .actions { display: flex; gap: 6px; }
+    .app-header .icon-btn {
+      width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+      border-radius: 50%; color: #f5f5f5; font-size: 1rem;
+    }
+
+    /* Bottom nav: #0f0f0f */
+    .bottom-nav {
+      background: #0f0f0f; border-top: 1px solid #404040;
+      padding: 6px 16px 10px; display: flex; justify-content: space-around;
+      flex-shrink: 0;
+    }
+    .nav-item {
+      display: flex; flex-direction: column; align-items: center;
+      font-size: 0.55rem; font-weight: 500; color: #737373; gap: 2px;
+    }
+    .nav-item.active { color: rgb(87, 208, 37); }
+    .nav-icon { font-size: 1.1rem; }
+
+    /* Segmented control */
+    .segmented {
+      display: flex; background: #1f1f1f; border-radius: 8px;
+      padding: 2px; margin: 8px 12px 0;
+    }
+    .seg-btn {
+      flex: 1; text-align: center; padding: 6px 0; font-size: 0.7rem;
+      font-weight: 500; color: #737373; border-radius: 6px;
+    }
+    .seg-btn.active { background: #333; color: #f5f5f5; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+
+    /* Content area */
+    .content { flex: 1; overflow: hidden; padding: 0; }
+
+    /* Filter chips */
+    .filter-bar {
+      display: flex; gap: 8px; padding: 8px 12px;
+      overflow-x: auto; border-bottom: 1px solid #404040;
+    }
+    .filter-chip {
+      white-space: nowrap; padding: 4px 10px; border-radius: 12px;
+      font-size: 0.65rem; font-weight: 500; color: #737373;
+      border: 1px solid #404040; flex-shrink: 0;
+    }
+    .filter-chip.active {
+      background: rgb(87, 208, 37, 0.15); color: rgb(87, 208, 37);
+      border-color: rgb(87, 208, 37, 0.3);
+    }
+
+    /* Transaction rows - Surface: #1f1f1f */
+    .tx-date-header {
+      font-size: 0.65rem; font-weight: 600; color: rgb(244, 118, 18); /* warning */
+      padding: 8px 12px 4px; text-transform: uppercase;
+    }
+    .tx-row {
+      background: #1f1f1f; margin: 0 8px 4px; border-radius: 12px;
+      padding: 10px 12px; display: flex; justify-content: space-between;
+      align-items: flex-start; border-left: 3px solid;
+    }
+    .tx-row.expense { border-left-color: #ef4444; }
+    .tx-row.income { border-left-color: rgb(87, 208, 37); }
+    .tx-row.transfer { border-left-color: #3b82f6; }
+    .tx-payee { font-size: 0.8rem; font-weight: 500; color: #f5f5f5; }
+    .tx-meta { font-size: 0.6rem; color: #737373; margin-top: 1px; }
+    .tx-amount { font-size: 0.8rem; font-weight: 600; font-family: monospace; text-align: right; }
+    .tx-amount.expense { color: #ef4444; }
+    .tx-amount.income { color: rgb(87, 208, 37); }
+    .tx-amount.transfer { color: #3b82f6; }
+    .tx-right { display: flex; align-items: flex-start; gap: 6px; }
+    .cleared-dot {
+      width: 6px; height: 6px; border-radius: 50%; margin-top: 5px;
+      border: 1.5px solid #737373;
+    }
+    .cleared-dot.filled { background: rgb(87, 208, 37); border-color: rgb(87, 208, 37); }
+
+    /* Highlighted (just-created) transactions */
+    .tx-row.just-created {
+      background: rgba(87, 208, 37, 0.08);
+      box-shadow: inset 0 0 0 1px rgba(87, 208, 37, 0.2);
+    }
+
+    /* FAB */
+    .fab {
+      position: absolute; bottom: 56px; right: 12px;
+      width: 44px; height: 44px; background: rgb(87, 208, 37);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 1.5rem; font-weight: 300;
+      box-shadow: 0 4px 12px rgba(87, 208, 37, 0.3); z-index: 5;
+    }
+
+    /* ========================================
+     * Voice overlay states
+     * ======================================== */
+    .voice-overlay {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.75);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px; z-index: 20;
+    }
+
+    .voice-modal {
+      background: #1f1f1f; border-radius: 20px;
+      padding: 28px 20px; text-align: center; width: 100%;
+      border: 1px solid #404040;
+    }
+
+    /* Mic circle + pulse */
+    .voice-indicator {
+      width: 80px; height: 80px; margin: 0 auto 16px;
+      position: relative; display: flex; align-items: center; justify-content: center;
+    }
+    .mic-circle {
+      width: 60px; height: 60px; background: rgb(87, 208, 37);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; position: relative; z-index: 1;
+    }
+    .pulse-ring {
+      position: absolute; width: 72px; height: 72px;
+      border: 2px solid rgb(87, 208, 37); border-radius: 50%;
+      animation: pulse 1.5s ease-out infinite; opacity: 0.6;
+    }
+    .pulse-ring-2 {
+      position: absolute; width: 72px; height: 72px;
+      border: 2px solid rgb(87, 208, 37); border-radius: 50%;
+      animation: pulse 1.5s ease-out infinite 0.5s; opacity: 0.4;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 0.6; }
+      100% { transform: scale(1.5); opacity: 0; }
+    }
+
+    /* Spinner */
+    .spinner {
+      width: 44px; height: 44px;
+      border: 3px solid #404040; border-top-color: rgb(87, 208, 37);
+      border-radius: 50%; animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .voice-status {
+      font-size: 0.9rem; font-weight: 600; color: #f5f5f5; margin-bottom: 6px;
+    }
+    .voice-transcript {
+      font-size: 0.75rem; color: #a3a3a3; font-style: italic;
+      margin-bottom: 12px; line-height: 1.4;
+    }
+    .voice-hint { font-size: 0.65rem; color: #737373; }
+
+    /* Success toast */
+    .success-toast {
+      position: absolute; bottom: 60px; left: 10px; right: 10px;
+      background: #0f0f0f; color: #f5f5f5; border-radius: 12px;
+      padding: 10px 14px; display: flex; align-items: center;
+      justify-content: space-between; font-size: 0.75rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5); z-index: 10;
+      border: 1px solid #404040;
+    }
+    .toast-icon { color: rgb(87, 208, 37); margin-right: 6px; font-weight: 700; }
+    .toast-undo { color: #3b82f6; font-weight: 600; cursor: pointer; }
+
+    /* Clarification modal */
+    .voice-modal.clarification { padding: 24px 20px; }
+    .clarify-question {
+      font-size: 1rem; font-weight: 600; color: #f5f5f5; margin-bottom: 6px;
+    }
+    .clarify-context {
+      font-size: 0.7rem; color: #a3a3a3; margin-bottom: 16px;
+      font-style: italic;
+    }
+    .clarify-options { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    .clarify-option {
+      background: #333; border: 1px solid #404040; border-radius: 10px;
+      padding: 10px 14px; font-size: 0.8rem; font-weight: 500;
+      color: #f5f5f5; cursor: pointer; text-align: left;
+    }
+    .clarify-option:hover { border-color: rgb(87, 208, 37); }
+    .clarify-cancel {
+      font-size: 0.75rem; color: #737373; cursor: pointer; margin-top: 4px;
+    }
+
+    /* ========================================
+     * Mic button on transaction create
+     * ======================================== */
+    .create-header {
+      background: #1f1f1f; border-bottom: 1px solid #404040;
+      padding: 10px 14px; display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .create-header .cancel { font-size: 0.8rem; color: #737373; font-weight: 500; }
+    .create-header .title { font-size: 0.9rem; font-weight: 600; color: #f5f5f5; }
+    .create-header .save { font-size: 0.8rem; font-weight: 600; color: #ef4444; }
+
+    /* Type toggle (colored) */
+    .type-toggle {
+      display: flex; background: #1f1f1f; border-radius: 8px;
+      padding: 2px; margin: 10px 12px 0;
+    }
+    .type-btn {
+      flex: 1; text-align: center; padding: 6px 0; font-size: 0.7rem;
+      font-weight: 500; color: #737373; border-radius: 6px;
+    }
+    .type-btn.active.expense { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+    .type-btn.active.income { background: rgba(87, 208, 37, 0.2); color: rgb(87, 208, 37); }
+    .type-btn.active.transfer { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+
+    /* Form card */
+    .form-card {
+      background: #1f1f1f; margin: 10px 12px; border-radius: 12px; overflow: hidden;
+    }
+    .form-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 11px 14px; border-bottom: 1px solid #404040;
+    }
+    .form-row:last-child { border-bottom: none; }
+    .form-label { font-size: 0.75rem; color: #737373; }
+    .form-value { font-size: 0.8rem; color: #f5f5f5; font-weight: 500; }
+    .form-value.placeholder { color: #737373; }
+    .form-value.expense { color: #ef4444; font-family: monospace; }
+    .form-value.income { color: rgb(87, 208, 37); font-family: monospace; }
+
+    /* Mic button on create page */
+    .mic-btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      margin: 12px 12px; padding: 12px;
+      background: rgba(87, 208, 37, 0.1); border: 1px dashed rgba(87, 208, 37, 0.3);
+      border-radius: 12px; color: rgb(87, 208, 37);
+      font-size: 0.8rem; font-weight: 500; cursor: pointer;
+    }
+    .mic-btn .mic-icon { font-size: 1rem; }
+
+    /* Save button */
+    .save-btn {
+      margin: auto 12px 10px; padding: 12px;
+      background: #ef4444; color: #fff; border-radius: 12px;
+      text-align: center; font-size: 0.85rem; font-weight: 600;
+    }
+    .save-btn.income { background: rgb(87, 208, 37); }
+
+    /* Mic FAB variant */
+    .fab-group {
+      position: absolute; bottom: 56px; right: 12px; z-index: 5;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+    }
+    .fab-mic {
+      width: 36px; height: 36px; background: #1f1f1f;
+      border: 1px solid #404040; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    /* ========================================
+     * Error / unsupported state
+     * ======================================== */
+    .error-msg {
+      background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 12px; padding: 12px 16px; margin: 0 4px;
+      font-size: 0.75rem; color: #ef4444; text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Voice Input — Wireframes</h1>
+  <p class="subtitle">Budget Guy dark mode theme &middot; Screens 10A–10D + entry points</p>
+
+
+  <!-- ==================== ENTRY POINTS ==================== -->
+  <div class="section-header">Entry Points</div>
+  <p class="section-desc">Two places the user can trigger voice input: a mic button on the Add Transaction form, and a mic FAB on the Transactions list.</p>
+
+  <div class="wireframes">
+
+    <!-- Entry: Transaction Create page -->
+    <div class="screen-container">
+      <div class="screen-label">Create Page — Mic Button</div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="create-header">
+            <span class="cancel">× Cancel</span>
+            <span class="title">New Transaction</span>
+            <span class="save">Save</span>
+          </div>
+
+          <div class="type-toggle">
+            <div class="type-btn active expense">Expense</div>
+            <div class="type-btn">Income</div>
+            <div class="type-btn">Transfer</div>
+          </div>
+
+          <div class="form-card">
+            <div class="form-row">
+              <span class="form-label">Payee</span>
+              <span class="form-value placeholder">Who did you pay?</span>
+            </div>
+            <div class="form-row">
+              <span class="form-label">Amount</span>
+              <span class="form-value expense">$0.00</span>
+            </div>
+            <div class="form-row">
+              <span class="form-label">Category</span>
+              <span class="form-value placeholder">Select category</span>
+            </div>
+            <div class="form-row">
+              <span class="form-label">Account</span>
+              <span class="form-value">Checking</span>
+            </div>
+            <div class="form-row">
+              <span class="form-label">Date</span>
+              <span class="form-value">Today</span>
+            </div>
+          </div>
+
+          <div class="mic-btn">
+            <span class="mic-icon">🎤</span>
+            Tap to speak transaction
+          </div>
+
+          <div style="flex: 1;"></div>
+
+          <div class="save-btn">Save Transaction</div>
+        </div>
+      </div>
+      <div class="screen-notes">
+        <strong>Mic button on create form:</strong>
+        <ul>
+          <li>Dashed green border, subtle green bg</li>
+          <li>Below the form fields, above save button</li>
+          <li>Tapping opens the listening overlay</li>
+          <li>Fills in the form fields from speech</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="flow-arrow">&</div>
+
+    <!-- Entry: Transaction List FAB -->
+    <div class="screen-container">
+      <div class="screen-label">Transactions — Mic FAB</div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="app-header">
+            <div class="left">
+              <div class="logo">BG</div>
+              <span class="title">Transactions</span>
+            </div>
+            <div class="actions">
+              <div class="icon-btn">⧩</div>
+              <div class="icon-btn">🔍</div>
+              <div class="icon-btn">⚙</div>
+            </div>
+          </div>
+
+          <div class="segmented">
+            <div class="seg-btn active">All</div>
+            <div class="seg-btn">Recurring</div>
+          </div>
+
+          <div class="filter-bar">
+            <div class="filter-chip active">All Accounts</div>
+            <div class="filter-chip">Checking</div>
+            <div class="filter-chip">Visa</div>
+          </div>
+
+          <div class="content">
+            <div class="tx-date-header">Today</div>
+            <div class="tx-row expense">
+              <div>
+                <div class="tx-payee">Costco</div>
+                <div class="tx-meta">Checking · Groceries</div>
+              </div>
+              <div class="tx-right">
+                <div class="tx-amount expense">-$120.00</div>
+                <div class="cleared-dot"></div>
+              </div>
+            </div>
+            <div class="tx-row income">
+              <div>
+                <div class="tx-payee">Paycheck</div>
+                <div class="tx-meta">Checking · Income</div>
+              </div>
+              <div class="tx-right">
+                <div class="tx-amount income">+$2,450.00</div>
+                <div class="cleared-dot filled"></div>
+              </div>
+            </div>
+
+            <div class="tx-date-header">Yesterday</div>
+            <div class="tx-row expense">
+              <div>
+                <div class="tx-payee">Target</div>
+                <div class="tx-meta">Visa · Shopping</div>
+              </div>
+              <div class="tx-right">
+                <div class="tx-amount expense">-$67.43</div>
+                <div class="cleared-dot"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Two FABs: mic (small) + add (main) -->
+          <div class="fab-group">
+            <div class="fab-mic">🎤</div>
+            <div class="fab" style="position: static; width: 44px; height: 44px; font-size: 1.5rem;">+</div>
+          </div>
+
+          <div class="bottom-nav">
+            <div class="nav-item"><div class="nav-icon">▦</div>Budget</div>
+            <div class="nav-item active"><div class="nav-icon">☰</div>Transactions</div>
+            <div class="nav-item"><div class="nav-icon">▤</div>Accounts</div>
+            <div class="nav-item"><div class="nav-icon">▥</div>Plan</div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-notes">
+        <strong>Mic FAB on transaction list:</strong>
+        <ul>
+          <li>Small mic button stacked above the main + FAB</li>
+          <li>Dark surface bg with border — doesn't compete with primary FAB</li>
+          <li>Tapping opens the listening overlay</li>
+          <li>Can create multiple transactions at once</li>
+          <li>Only shows if browser supports SpeechRecognition</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- ==================== VOICE FLOW ==================== -->
+  <div class="section-header">Voice Input Flow</div>
+  <p class="section-desc">Full-screen overlay with four states: Listening → Processing → Success or Clarification</p>
+
+  <div class="wireframes">
+
+    <!-- 10A: Listening -->
+    <div class="screen-container">
+      <div class="screen-label">10A. Listening</div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="app-header" style="opacity: 0.3;">
+            <div class="left">
+              <div class="logo">BG</div>
+              <span class="title">Transactions</span>
+            </div>
+          </div>
+
+          <div class="segmented" style="opacity: 0.3;">
+            <div class="seg-btn active">All</div>
+            <div class="seg-btn">Recurring</div>
+          </div>
+
+          <div class="content" style="opacity: 0.3; padding-top: 8px;">
+            <div class="tx-date-header">Today</div>
+            <div class="tx-row expense">
+              <div>
+                <div class="tx-payee">Costco</div>
+                <div class="tx-meta">Checking · Groceries</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="voice-overlay">
+            <div class="voice-modal">
+              <div class="voice-indicator">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring-2"></div>
+                <div class="mic-circle">🎤</div>
+              </div>
+              <div class="voice-status">Listening...</div>
+              <div class="voice-transcript">"I spent $45 at Shell on gas and $30 at..."</div>
+              <div class="voice-hint">Tap anywhere to cancel</div>
+            </div>
+          </div>
+
+          <div class="bottom-nav" style="opacity: 0.3;">
+            <div class="nav-item"><div class="nav-icon">▦</div>Budget</div>
+            <div class="nav-item active"><div class="nav-icon">☰</div>Transactions</div>
+            <div class="nav-item"><div class="nav-icon">▤</div>Accounts</div>
+            <div class="nav-item"><div class="nav-icon">▥</div>Plan</div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-notes">
+        <strong>Listening state:</strong>
+        <ul>
+          <li>Dark overlay dims background (75% black)</li>
+          <li>Pulsing green rings around mic circle</li>
+          <li>Live transcript updates as user speaks</li>
+          <li>Tap overlay background to cancel</li>
+          <li>Auto-stops after speech pause</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="flow-arrow">→</div>
+
+    <!-- 10B: Processing -->
+    <div class="screen-container">
+      <div class="screen-label">10B. Processing</div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="app-header" style="opacity: 0.3;">
+            <div class="left">
+              <div class="logo">BG</div>
+              <span class="title">Transactions</span>
+            </div>
+          </div>
+
+          <div class="segmented" style="opacity: 0.3;">
+            <div class="seg-btn active">All</div>
+            <div class="seg-btn">Recurring</div>
+          </div>
+
+          <div class="content" style="opacity: 0.3; padding-top: 8px;">
+            <div class="tx-date-header">Today</div>
+            <div class="tx-row expense">
+              <div>
+                <div class="tx-payee">Costco</div>
+                <div class="tx-meta">Checking · Groceries</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="voice-overlay">
+            <div class="voice-modal">
+              <div class="voice-indicator">
+                <div class="spinner"></div>
+              </div>
+              <div class="voice-status">Creating transactions...</div>
+              <div class="voice-transcript">"$45 at Shell on gas and $30 at Starbucks on dining"</div>
+            </div>
+          </div>
+
+          <div class="bottom-nav" style="opacity: 0.3;">
+            <div class="nav-item"><div class="nav-icon">▦</div>Budget</div>
+            <div class="nav-item active"><div class="nav-icon">☰</div>Transactions</div>
+            <div class="nav-item"><div class="nav-icon">▤</div>Accounts</div>
+            <div class="nav-item"><div class="nav-icon">▥</div>Plan</div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-notes">
+        <strong>Processing state:</strong>
+        <ul>
+          <li>Spinner replaces pulsing mic</li>
+          <li>Shows final transcript</li>
+          <li>Sending to Claude Haiku for parsing</li>
+          <li>Typically &lt; 1 second</li>
+          <li>No cancel — too fast to need one</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="flow-arrow">→</div>
+
+    <!-- 10C: Success -->
+    <div class="screen-container">
+      <div class="screen-label">10C. Success</div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="app-header">
+            <div class="left">
+              <div class="logo">BG</div>
+              <span class="title">Transactions</span>
+            </div>
+            <div class="actions">
+              <div class="icon-btn">⧩</div>
+              <div class="icon-btn">🔍</div>
+              <div class="icon-btn">⚙</div>
+            </div>
+          </div>
+
+          <div class="segmented">
+            <div class="seg-btn active">All</div>
+            <div class="seg-btn">Recurring</div>
+          </div>
+
+          <div class="filter-bar">
+            <div class="filter-chip active">All Accounts</div>
+            <div class="filter-chip">Checking</div>
+            <div class="filter-chip">Visa</div>
+          </div>
+
+          <div class="content">
+            <div class="tx-date-header">Today</div>
+
+            <!-- Highlighted new rows -->
+            <div class="tx-row expense just-created">
+              <div>
+                <div class="tx-payee">Shell</div>
+                <div class="tx-meta">Checking · Gas</div>
+              </div>
+              <div class="tx-right">
+                <div class="tx-amount expense">-$45.00</div>
+                <div class="cleared-dot"></div>
+              </div>
+            </div>
+
+            <div class="tx-row expense just-created">
+              <div>
+                <div class="tx-payee">Starbucks</div>
+                <div class="tx-meta">Checking · Dining Out</div>
+              </div>
+              <div class="tx-right">
+                <div class="tx-amount expense">-$30.00</div>
+                <div class="cleared-dot"></div>
+              </div>
+            </div>
+
+            <!-- Existing rows -->
+            <div class="tx-row expense">
+              <div>
+                <div class="tx-payee">Costco</div>
+                <div class="tx-meta">Checking · Groceries</div>
+              </div>
+              <div class="tx-right">
+                <div class="tx-amount expense">-$120.00</div>
+                <div class="cleared-dot"></div>
+              </div>
+            </div>
+
+            <div class="tx-row income">
+              <div>
+                <div class="tx-payee">Paycheck</div>
+                <div class="tx-meta">Checking · Income</div>
+              </div>
+              <div class="tx-right">
+                <div class="tx-amount income">+$2,450.00</div>
+                <div class="cleared-dot filled"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="success-toast">
+            <div>
+              <span class="toast-icon">✓</span>
+              Created 2 transactions
+            </div>
+            <span class="toast-undo">Undo</span>
+          </div>
+
+          <div class="fab-group">
+            <div class="fab-mic">🎤</div>
+            <div class="fab" style="position: static; width: 44px; height: 44px; font-size: 1.5rem;">+</div>
+          </div>
+
+          <div class="bottom-nav">
+            <div class="nav-item"><div class="nav-icon">▦</div>Budget</div>
+            <div class="nav-item active"><div class="nav-icon">☰</div>Transactions</div>
+            <div class="nav-item"><div class="nav-icon">▤</div>Accounts</div>
+            <div class="nav-item"><div class="nav-icon">▥</div>Plan</div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-notes">
+        <strong>Success state:</strong>
+        <ul>
+          <li>Overlay dismisses, list refreshes</li>
+          <li>New transactions highlighted with green tint + inset glow</li>
+          <li>Toast at bottom: count + Undo button</li>
+          <li>Highlight fades after 2 seconds</li>
+          <li>Tap any new row to edit if AI got it wrong</li>
+          <li>Undo deletes entire batch</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- ==================== CLARIFICATION ==================== -->
+  <div class="section-header">Clarification State</div>
+  <p class="section-desc">When the AI can't determine something (e.g. which account), it asks the user to pick before creating transactions.</p>
+
+  <div class="wireframes">
+
+    <!-- 10D: Clarification -->
+    <div class="screen-container">
+      <div class="screen-label">10D. Clarification</div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="app-header" style="opacity: 0.3;">
+            <div class="left">
+              <div class="logo">BG</div>
+              <span class="title">Transactions</span>
+            </div>
+          </div>
+
+          <div class="segmented" style="opacity: 0.3;">
+            <div class="seg-btn active">All</div>
+            <div class="seg-btn">Recurring</div>
+          </div>
+
+          <div class="content" style="opacity: 0.3; padding-top: 8px;">
+            <div class="tx-date-header">Today</div>
+            <div class="tx-row expense">
+              <div>
+                <div class="tx-payee">Costco</div>
+                <div class="tx-meta">Checking · Groceries</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="voice-overlay">
+            <div class="voice-modal clarification">
+              <div class="clarify-question">Which account?</div>
+              <div class="clarify-context">"$200 at Best Buy on electronics"</div>
+              <div class="clarify-options">
+                <div class="clarify-option">💰 Checking</div>
+                <div class="clarify-option">💳 Visa</div>
+                <div class="clarify-option">💵 Cash</div>
+              </div>
+              <div class="clarify-cancel">Cancel</div>
+            </div>
+          </div>
+
+          <div class="bottom-nav" style="opacity: 0.3;">
+            <div class="nav-item"><div class="nav-icon">▦</div>Budget</div>
+            <div class="nav-item active"><div class="nav-icon">☰</div>Transactions</div>
+            <div class="nav-item"><div class="nav-icon">▤</div>Accounts</div>
+            <div class="nav-item"><div class="nav-icon">▥</div>Plan</div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-notes">
+        <strong>When AI needs help:</strong>
+        <ul>
+          <li>Shows what it understood (italic context)</li>
+          <li>Simple tap-to-select from user's actual accounts/categories</li>
+          <li>Only asks when truly ambiguous (e.g. multiple accounts)</li>
+          <li>Cancel aborts the whole action</li>
+          <li>After selecting, goes to Processing → Success</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="flow-arrow">&</div>
+
+    <!-- 10E: Multiple clarifications example -->
+    <div class="screen-container">
+      <div class="screen-label">10D-alt. Category Clarification</div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="app-header" style="opacity: 0.3;">
+            <div class="left">
+              <div class="logo">BG</div>
+              <span class="title">Transactions</span>
+            </div>
+          </div>
+
+          <div class="segmented" style="opacity: 0.3;">
+            <div class="seg-btn active">All</div>
+            <div class="seg-btn">Recurring</div>
+          </div>
+
+          <div class="content" style="opacity: 0.3; padding-top: 8px;">
+            <div class="tx-date-header">Today</div>
+            <div class="tx-row expense">
+              <div>
+                <div class="tx-payee">Costco</div>
+                <div class="tx-meta">Checking · Groceries</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="voice-overlay">
+            <div class="voice-modal clarification">
+              <div class="clarify-question">Which category for Walmart?</div>
+              <div class="clarify-context">"$85 at Walmart"</div>
+              <div class="clarify-options">
+                <div class="clarify-option">🛒 Groceries</div>
+                <div class="clarify-option">🛍 Shopping</div>
+                <div class="clarify-option">🏠 Household</div>
+              </div>
+              <div class="clarify-cancel">Cancel</div>
+            </div>
+          </div>
+
+          <div class="bottom-nav" style="opacity: 0.3;">
+            <div class="nav-item"><div class="nav-icon">▦</div>Budget</div>
+            <div class="nav-item active"><div class="nav-icon">☰</div>Transactions</div>
+            <div class="nav-item"><div class="nav-icon">▤</div>Accounts</div>
+            <div class="nav-item"><div class="nav-icon">▥</div>Plan</div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-notes">
+        <strong>Category clarification:</strong>
+        <ul>
+          <li>Payee has no default category</li>
+          <li>AI couldn't match "Walmart" to a single category</li>
+          <li>Shows best-guess options with icons</li>
+          <li>After picking, that becomes the payee's default</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- ==================== ERROR / UNSUPPORTED ==================== -->
+  <div class="section-header">Edge Cases</div>
+  <p class="section-desc">What happens when speech recognition isn't available or the AI can't parse the input.</p>
+
+  <div class="wireframes">
+
+    <!-- Error: Can't parse -->
+    <div class="screen-container">
+      <div class="screen-label">Error — Can't Parse</div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="app-header" style="opacity: 0.3;">
+            <div class="left">
+              <div class="logo">BG</div>
+              <span class="title">Transactions</span>
+            </div>
+          </div>
+
+          <div class="segmented" style="opacity: 0.3;">
+            <div class="seg-btn active">All</div>
+            <div class="seg-btn">Recurring</div>
+          </div>
+
+          <div class="content" style="opacity: 0.3; padding-top: 8px;">
+            <div class="tx-date-header">Today</div>
+            <div class="tx-row expense">
+              <div>
+                <div class="tx-payee">Costco</div>
+                <div class="tx-meta">Checking · Groceries</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="voice-overlay">
+            <div class="voice-modal">
+              <div style="font-size: 2rem; margin-bottom: 12px;">😕</div>
+              <div class="voice-status">Couldn't understand that</div>
+              <div class="voice-transcript">"something something groceries maybe"</div>
+              <div style="display: flex; gap: 8px; margin-top: 16px;">
+                <div style="flex: 1; padding: 10px; background: #333; border: 1px solid #404040; border-radius: 10px; font-size: 0.8rem; color: #737373; text-align: center; cursor: pointer;">Cancel</div>
+                <div style="flex: 1; padding: 10px; background: rgb(87, 208, 37); border-radius: 10px; font-size: 0.8rem; color: #fff; text-align: center; font-weight: 600; cursor: pointer;">Try Again</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bottom-nav" style="opacity: 0.3;">
+            <div class="nav-item"><div class="nav-icon">▦</div>Budget</div>
+            <div class="nav-item active"><div class="nav-icon">☰</div>Transactions</div>
+            <div class="nav-item"><div class="nav-icon">▤</div>Accounts</div>
+            <div class="nav-item"><div class="nav-icon">▥</div>Plan</div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-notes">
+        <strong>Parse error:</strong>
+        <ul>
+          <li>Friendly emoji + message</li>
+          <li>Shows what was heard so user knows what went wrong</li>
+          <li>Try Again reopens listening</li>
+          <li>Cancel dismisses overlay</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="flow-arrow">&</div>
+
+    <!-- Unsupported browser -->
+    <div class="screen-container">
+      <div class="screen-label">Unsupported Browser</div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="app-header">
+            <div class="left">
+              <div class="logo">BG</div>
+              <span class="title">Transactions</span>
+            </div>
+            <div class="actions">
+              <div class="icon-btn">⧩</div>
+              <div class="icon-btn">🔍</div>
+              <div class="icon-btn">⚙</div>
+            </div>
+          </div>
+
+          <div class="segmented">
+            <div class="seg-btn active">All</div>
+            <div class="seg-btn">Recurring</div>
+          </div>
+
+          <div class="filter-bar">
+            <div class="filter-chip active">All Accounts</div>
+            <div class="filter-chip">Checking</div>
+          </div>
+
+          <div class="content">
+            <div class="tx-date-header">Today</div>
+            <div class="tx-row expense">
+              <div>
+                <div class="tx-payee">Costco</div>
+                <div class="tx-meta">Checking · Groceries</div>
+              </div>
+              <div class="tx-right">
+                <div class="tx-amount expense">-$120.00</div>
+                <div class="cleared-dot"></div>
+              </div>
+            </div>
+            <div class="tx-row income">
+              <div>
+                <div class="tx-payee">Paycheck</div>
+                <div class="tx-meta">Checking · Income</div>
+              </div>
+              <div class="tx-right">
+                <div class="tx-amount income">+$2,450.00</div>
+                <div class="cleared-dot filled"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- No mic FAB — just the regular + -->
+          <div class="fab">+</div>
+
+          <div class="bottom-nav">
+            <div class="nav-item"><div class="nav-icon">▦</div>Budget</div>
+            <div class="nav-item active"><div class="nav-icon">☰</div>Transactions</div>
+            <div class="nav-item"><div class="nav-icon">▤</div>Accounts</div>
+            <div class="nav-item"><div class="nav-icon">▥</div>Plan</div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-notes">
+        <strong>Unsupported browser:</strong>
+        <ul>
+          <li>Mic FAB simply doesn't render</li>
+          <li>Mic button on create page hidden too</li>
+          <li>No error shown — feature just isn't available</li>
+          <li>Feature detection via <code>window.SpeechRecognition || window.webkitSpeechRecognition</code></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+
+</body>
+</html>

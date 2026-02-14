@@ -53,7 +53,7 @@ const submit = () => {
                     <AmountField
                         v-model="form.default_monthly_income"
                         label="Monthly Income"
-                        :color-by-type="false"
+                        color="text-secondary"
                         placeholder="0.00"
                         :border-bottom="false"
                     />

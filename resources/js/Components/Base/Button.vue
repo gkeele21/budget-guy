@@ -15,16 +15,16 @@ const props = defineProps({
 const baseClasses = 'inline-flex items-center justify-center font-semibold rounded-xl transition-all focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed';
 
 const variantClasses = {
-    primary: 'bg-primary text-white hover:bg-white hover:text-primary border-2 border-transparent hover:border-primary',
-    secondary: 'bg-info text-white hover:bg-white hover:text-info border-2 border-transparent hover:border-info',
-    danger: 'bg-danger text-white hover:bg-white hover:text-danger border-2 border-transparent hover:border-danger',
-    ghost: 'bg-transparent text-muted hover:bg-surface-overlay border-2 border-transparent',
-    outline: 'bg-transparent text-primary border-2 border-primary hover:bg-primary hover:text-white',
-    muted: 'bg-surface-inset hover:bg-surface-header text-body border-2 border-border hover:border-border-strong',
+    primary: 'btn-primary bg-primary text-white border-2 border-transparent',
+    secondary: 'btn-secondary bg-info text-white border-2 border-transparent',
+    danger: 'btn-danger bg-danger text-white border-2 border-transparent',
+    ghost: 'btn-ghost bg-transparent text-muted border-2 border-transparent',
+    outline: 'btn-outline bg-transparent text-primary border-2 border-primary',
+    muted: 'btn-muted bg-surface-inset text-body border-2 border-border',
     // Transaction type variants
-    income: 'bg-success text-white hover:bg-white hover:text-success border-2 border-transparent hover:border-success',
-    expense: 'bg-danger text-white hover:bg-white hover:text-danger border-2 border-transparent hover:border-danger',
-    transfer: 'bg-info text-white hover:bg-white hover:text-info border-2 border-transparent hover:border-info',
+    income: 'btn-income bg-success text-white border-2 border-transparent',
+    expense: 'btn-expense bg-danger text-white border-2 border-transparent',
+    transfer: 'btn-transfer bg-info text-white border-2 border-transparent',
 };
 
 const sizeClasses = {
@@ -70,3 +70,54 @@ const classes = computed(() => [
         <slot />
     </button>
 </template>
+
+<style>
+/* Hover effects only on devices with pointer hover (not touch) */
+@media (hover: hover) {
+    .btn-primary:hover {
+        background-color: #ffffff;
+        color: rgb(var(--color-primary));
+        border-color: rgb(var(--color-primary));
+    }
+    .btn-secondary:hover,
+    .btn-transfer:hover {
+        background-color: #ffffff;
+        color: rgb(var(--color-info));
+        border-color: rgb(var(--color-info));
+    }
+    .btn-danger:hover,
+    .btn-expense:hover {
+        background-color: #ffffff;
+        color: rgb(var(--color-danger));
+        border-color: rgb(var(--color-danger));
+    }
+    .btn-ghost:hover {
+        background-color: rgb(var(--color-surface-overlay));
+    }
+    .btn-outline:hover {
+        background-color: rgb(var(--color-primary));
+        color: #ffffff;
+    }
+    .btn-muted:hover {
+        background-color: rgb(var(--color-surface-header));
+        border-color: rgb(var(--color-border-strong));
+    }
+    .btn-income:hover {
+        background-color: #ffffff;
+        color: rgb(var(--color-success));
+        border-color: rgb(var(--color-success));
+    }
+}
+
+/* Touch feedback for all devices */
+.btn-primary:active,
+.btn-secondary:active,
+.btn-danger:active,
+.btn-income:active,
+.btn-expense:active,
+.btn-transfer:active,
+.btn-outline:active,
+.btn-muted:active {
+    opacity: 0.8;
+}
+</style>

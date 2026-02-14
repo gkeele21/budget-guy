@@ -12,9 +12,10 @@ const props = defineProps({
     borderBottom: { type: Boolean, default: true },
     min: { type: String, default: null },
     max: { type: String, default: null },
+    clearable: { type: Boolean, default: false },
 });
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue', 'clear']);
 
 const isOpen = ref(false);
 
@@ -219,6 +220,14 @@ const tempDisplayValue = computed(() => {
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-subtle shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
             </svg>
+        </button>
+        <button
+            v-if="clearable && modelValue"
+            type="button"
+            @click.stop="emit('update:modelValue', ''); emit('clear')"
+            class="ml-2 text-subtle text-lg leading-none"
+        >
+            ×
         </button>
     </FormRow>
 

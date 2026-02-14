@@ -1,6 +1,7 @@
 <script setup>
 import GuestLayout from '@/Layouts/GuestLayout.vue';
-import InputError from '@/Components/Form/InputError.vue';
+import TextField from '@/Components/Form/TextField.vue';
+import Button from '@/Components/Base/Button.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 
 const props = defineProps({
@@ -33,60 +34,40 @@ const submit = () => {
         <Head title="Reset Password" />
 
         <form @submit.prevent="submit">
-            <!-- Form Fields - FormRow Style -->
-            <div class="space-y-1">
-                <div class="flex items-center justify-between py-4 border-b border-border">
-                    <label for="email" class="text-sm text-subtle">Email</label>
-                    <input
-                        id="email"
-                        type="email"
-                        v-model="form.email"
-                        required
-                        autocomplete="username"
-                        class="text-sm text-body text-right bg-transparent border-none focus:ring-0 focus:outline-none p-0 w-2/3"
-                    />
-                </div>
-                <InputError class="mt-1" :message="form.errors.email" />
+            <TextField
+                v-model="form.email"
+                label="Email"
+                type="email"
+                autocomplete="username"
+                required
+                :error="form.errors.email"
+            />
+            <TextField
+                v-model="form.password"
+                label="New Password"
+                type="password"
+                placeholder="••••••••"
+                autocomplete="new-password"
+                autofocus
+                required
+                :error="form.errors.password"
+            />
+            <TextField
+                v-model="form.password_confirmation"
+                label="Confirm Password"
+                type="password"
+                placeholder="••••••••"
+                autocomplete="new-password"
+                required
+                :border-bottom="false"
+                :error="form.errors.password_confirmation"
+            />
 
-                <div class="flex items-center justify-between py-4 border-b border-border">
-                    <label for="password" class="text-sm text-subtle">New Password</label>
-                    <input
-                        id="password"
-                        type="password"
-                        v-model="form.password"
-                        required
-                        autofocus
-                        autocomplete="new-password"
-                        class="text-sm text-body text-right bg-transparent border-none focus:ring-0 focus:outline-none p-0 w-2/3"
-                        placeholder="••••••••"
-                    />
-                </div>
-                <InputError class="mt-1" :message="form.errors.password" />
-
-                <div class="flex items-center justify-between py-4 border-b border-border">
-                    <label for="password_confirmation" class="text-sm text-subtle">Confirm Password</label>
-                    <input
-                        id="password_confirmation"
-                        type="password"
-                        v-model="form.password_confirmation"
-                        required
-                        autocomplete="new-password"
-                        class="text-sm text-body text-right bg-transparent border-none focus:ring-0 focus:outline-none p-0 w-2/3"
-                        placeholder="••••••••"
-                    />
-                </div>
-                <InputError class="mt-1" :message="form.errors.password_confirmation" />
+            <div class="mt-6">
+                <Button type="submit" :loading="form.processing" full-width size="lg">
+                    Reset Password
+                </Button>
             </div>
-
-            <!-- Submit Button -->
-            <button
-                type="submit"
-                :disabled="form.processing"
-                class="w-full py-4 mt-6 bg-primary text-white rounded-xl font-semibold text-center disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-                <span v-if="form.processing">Resetting...</span>
-                <span v-else>Reset Password</span>
-            </button>
         </form>
     </GuestLayout>
 </template>

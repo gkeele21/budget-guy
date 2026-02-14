@@ -1,6 +1,7 @@
 <script setup>
 import GuestLayout from '@/Layouts/GuestLayout.vue';
-import InputError from '@/Components/Form/InputError.vue';
+import TextField from '@/Components/Form/TextField.vue';
+import Button from '@/Components/Base/Button.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
 defineProps({
@@ -34,37 +35,26 @@ const submit = () => {
         </div>
 
         <form @submit.prevent="submit">
-            <!-- Form Fields - FormRow Style -->
-            <div class="space-y-1">
-                <div class="flex items-center justify-between py-4 border-b border-border">
-                    <label for="email" class="text-sm text-subtle">Email</label>
-                    <input
-                        id="email"
-                        type="email"
-                        v-model="form.email"
-                        required
-                        autofocus
-                        autocomplete="username"
-                        class="text-base text-body text-right bg-transparent border-none focus:ring-0 focus:outline-none p-0 w-2/3"
-                        placeholder="you@example.com"
-                    />
-                </div>
-                <InputError class="mt-1" :message="form.errors.email" />
-
-                <div class="flex items-center justify-between py-4 border-b border-border">
-                    <label for="password" class="text-sm text-subtle">Password</label>
-                    <input
-                        id="password"
-                        type="password"
-                        v-model="form.password"
-                        required
-                        autocomplete="current-password"
-                        class="text-base text-body text-right bg-transparent border-none focus:ring-0 focus:outline-none p-0 w-2/3"
-                        placeholder="••••••••"
-                    />
-                </div>
-                <InputError class="mt-1" :message="form.errors.password" />
-            </div>
+            <TextField
+                v-model="form.email"
+                label="Email"
+                type="email"
+                placeholder="you@example.com"
+                autocomplete="username"
+                autofocus
+                required
+                :error="form.errors.email"
+            />
+            <TextField
+                v-model="form.password"
+                label="Password"
+                type="password"
+                placeholder="••••••••"
+                autocomplete="current-password"
+                required
+                :border-bottom="false"
+                :error="form.errors.password"
+            />
 
             <!-- Forgot Password -->
             <div class="flex justify-end mt-3 mb-4">
@@ -77,15 +67,9 @@ const submit = () => {
                 </Link>
             </div>
 
-            <!-- Submit Button -->
-            <button
-                type="submit"
-                :disabled="form.processing"
-                class="w-full py-4 bg-primary text-white rounded-xl font-semibold text-center disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-                <span v-if="form.processing">Signing in...</span>
-                <span v-else>Sign In</span>
-            </button>
+            <Button type="submit" :loading="form.processing" full-width size="lg">
+                Sign In
+            </Button>
 
             <!-- Sign Up Link -->
             <p class="mt-6 text-sm text-subtle text-center">

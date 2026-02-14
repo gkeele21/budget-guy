@@ -124,6 +124,7 @@ const getSaveButtonVariant = () => {
                 <!-- Amount -->
                 <AmountField
                     v-model="form.amount"
+                    label="Amount"
                     :transaction-type="form.type"
                     :error="form.errors.amount"
                 />
@@ -170,34 +171,21 @@ const getSaveButtonVariant = () => {
                     :border-bottom="false"
                     @update:model-value="(val) => { if (val === 'custom') showEndDatePicker = true; }"
                 />
-                <div v-else class="flex items-center justify-between px-4 py-3.5">
-                    <span class="text-sm text-subtle">End</span>
-                    <div class="flex items-center gap-2">
-                        <input
-                            v-model="form.end_date"
-                            type="date"
-                            class="text-right text-sm font-medium text-primary bg-transparent focus:outline-none"
-                        />
-                        <button
-                            type="button"
-                            @click="form.end_date = ''; showEndDatePicker = false;"
-                            class="text-subtle text-lg leading-none"
-                        >
-                            ×
-                        </button>
-                    </div>
-                </div>
+                <DateField
+                    v-else
+                    v-model="form.end_date"
+                    label="End"
+                    :border-bottom="false"
+                    clearable
+                    @clear="showEndDatePicker = false"
+                />
             </div>
 
             <!-- Delete Button -->
             <div class="mx-3 mt-3">
-                <button
-                    type="button"
-                    @click="showDeleteConfirm = true"
-                    class="w-full py-3 text-danger font-medium text-sm"
-                >
+                <Button variant="ghost" class="w-full text-danger" @click="showDeleteConfirm = true">
                     Delete Recurring
-                </button>
+                </Button>
             </div>
 
             <!-- Spacer -->
