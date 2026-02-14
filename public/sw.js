@@ -1,21 +1,7 @@
 const CACHE_NAME = 'budget-guy-v1';
 
-// Static assets to cache on install
-const PRECACHE_URLS = [
-    '/',
-    '/offline',
-    '/apple-touch-icon.png',
-    '/icon-192.png',
-    '/icon-512.png',
-];
-
-// Install: cache core assets
-self.addEventListener('install', (event) => {
-    event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll(PRECACHE_URLS);
-        })
-    );
+// Install: skip waiting to activate immediately
+self.addEventListener('install', () => {
     self.skipWaiting();
 });
 
