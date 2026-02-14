@@ -1,7 +1,7 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, Link, useForm, router } from '@inertiajs/vue3';
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch, onMounted, nextTick } from 'vue';
 import TextField from '@/Components/Form/TextField.vue';
 import AmountField from '@/Components/Form/AmountField.vue';
 import Button from '@/Components/Base/Button.vue';
@@ -13,6 +13,7 @@ const props = defineProps({
 });
 
 const showAddModal = ref(false);
+const nameInput = ref(null);
 const orderedAccounts = ref([...props.accounts]);
 
 onMounted(() => {
@@ -63,6 +64,17 @@ const accountTypes = [
     { value: 'credit_card', label: 'Credit Card', icon: '💳' },
     { value: 'cash', label: 'Cash', icon: '💵' },
 ];
+
+const selectType = async (type) => {
+    form.type = type.value;
+    const userHasTypedName = form.name && !accountTypes.some(t => t.label === form.name);
+    if (!userHasTypedName) {
+        form.name = type.label;
+    }
+    await nextTick();
+    nameInput.value?.$el?.querySelector('input')?.focus();
+    nameInput.value?.$el?.querySelector('input')?.select();
+};
 
 const submit = () => {
     form.post(route('accounts.store'), {
@@ -164,7 +176,7 @@ const closeModal = () => {
                             v-for="type in accountTypes"
                             :key="type.value"
                             type="button"
-                            @click="form.type = type.value"
+                            @click="selectType(type)"
                             :class="[
                                 'flex flex-col items-center p-3 rounded-xl border-2 transition-colors bg-surface',
                                 form.type === type.value
@@ -186,10 +198,12 @@ const closeModal = () => {
                 <!-- Fields Card -->
                 <div class="mx-3 mt-3 bg-surface rounded-xl overflow-hidden">
                     <TextField
+                        ref="nameInput"
                         v-model="form.name"
                         label="Account Name"
                         placeholder="e.g., Main Checking"
                         variant="subtle"
+                        autocomplete="off"
                         required
                     />
                     <AmountField

@@ -1,6 +1,6 @@
 <script setup>
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
+import { ref, computed, nextTick } from 'vue';
 import TextField from '@/Components/Form/TextField.vue';
 import AmountField from '@/Components/Form/AmountField.vue';
 import Button from '@/Components/Base/Button.vue';
@@ -59,6 +59,19 @@ const stepConfig = computed(() => {
     };
     return configs[currentStep.value];
 });
+
+const accountNameInput = ref(null);
+
+const selectAccountType = async (type) => {
+    form.account_type = type.value;
+    const userHasTypedName = form.account_name && !accountTypes.some(t => t.label === form.account_name);
+    if (!userHasTypedName) {
+        form.account_name = type.label;
+    }
+    await nextTick();
+    accountNameInput.value?.$el?.querySelector('input')?.focus();
+    accountNameInput.value?.$el?.querySelector('input')?.select();
+};
 
 const accountTypes = [
     { value: 'checking', label: 'Checking', icon: '🏦' },
@@ -187,10 +200,12 @@ const templates = [
                         <!-- Account Name & Balance -->
                         <div class="bg-surface rounded-card overflow-hidden">
                             <TextField
+                                ref="accountNameInput"
                                 v-model="form.account_name"
                                 label="Account Name"
                                 placeholder="e.g., Main Checking"
                                 variant="subtle"
+                                autocomplete="off"
                             />
                             <AmountField
                                 v-model="form.account_balance"
@@ -211,7 +226,7 @@ const templates = [
                                     v-for="type in accountTypes"
                                     :key="type.value"
                                     type="button"
-                                    @click="form.account_type = type.value"
+                                    @click="selectAccountType(type)"
                                     class="flex flex-col items-center p-3 rounded-xl border-2 transition-colors bg-surface"
                                     :class="form.account_type === type.value
                                         ? 'border-primary bg-primary/10'

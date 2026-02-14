@@ -122,27 +122,27 @@ class OnboardingController extends Controller
     {
         $categoryData = [
             'Bills' => [
-                'Rent/Mortgage',
-                'Utilities',
-                'Phone',
-                'Internet',
-                'Insurance',
+                'Rent/Mortgage' => '🏠',
+                'Utilities' => '⚡',
+                'Phone' => '📱',
+                'Internet' => '🌐',
+                'Insurance' => '🛡️',
             ],
             'Everyday' => [
-                'Groceries',
-                'Transportation',
-                'Dining Out',
-                'Entertainment',
-                'Shopping',
+                'Groceries' => '🛒',
+                'Transportation' => '🚗',
+                'Dining Out' => '🍽️',
+                'Entertainment' => '🎬',
+                'Shopping' => '🛍️',
             ],
             'Savings' => [
-                'Emergency Fund',
-                'Vacation',
-                'Savings Goals',
+                'Emergency Fund' => '🆘',
+                'Vacation' => '✈️',
+                'Savings Goals' => '🎯',
             ],
             'Debt' => [
-                'Credit Card',
-                'Student Loans',
+                'Credit Card' => '💳',
+                'Student Loans' => '🎓',
             ],
         ];
         $groupOrder = 0;
@@ -155,10 +155,11 @@ class OnboardingController extends Controller
             ]);
 
             $categoryOrder = 0;
-            foreach ($categories as $categoryName) {
+            foreach ($categories as $categoryName => $icon) {
                 Category::create([
-                    'category_group_id' => $group->id,
+                    'group_id' => $group->id,
                     'name' => $categoryName,
+                    'icon' => $icon,
                     'sort_order' => $categoryOrder++,
                 ]);
             }

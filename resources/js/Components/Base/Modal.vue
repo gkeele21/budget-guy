@@ -55,7 +55,7 @@ onUnmounted(() => {
                     :class="['md:shadow-xl', 'md:mx-4']"
                 >
                     <!-- Header -->
-                    <div class="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0 bg-surface-header">
+                    <div class="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0 bg-surface-header safe-area-top">
                         <h2 class="text-lg font-semibold text-body">{{ title }}</h2>
                         <button
                             type="button"
@@ -84,6 +84,10 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+.safe-area-top {
+    padding-top: max(0.75rem, env(safe-area-inset-top));
+}
+
 .safe-area-bottom {
     padding-bottom: max(16px, env(safe-area-inset-bottom));
 }
