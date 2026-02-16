@@ -161,12 +161,31 @@ class BudgetController extends Controller
 
         // Calculate totals
         $totalBudgeted = $categoryGroups->sum(fn($g) => $g['categories']->sum('budgeted'));
-        $totalSpent = $categoryGroups->sum(fn($g) => $g['categories']->sum('spent'));
+        $categorizedSpent = $categoryGroups->sum(fn($g) => $g['categories']->sum('spent'));
+
+        // Query uncategorized spending for this month
+        $monthStart = $month . '-01';
+        $monthEnd = date('Y-m-t', strtotime($monthStart));
+
+        $uncategorizedQuery = $budget->transactions()
+            ->whereNull('category_id')
+            ->where('type', 'expense')
+            ->whereDoesntHave('splits')
+            ->whereBetween('date', [$monthStart, $monthEnd]);
+
+        $uncategorizedCount = $uncategorizedQuery->count();
+        $uncategorizedTotal = (float) abs($uncategorizedQuery->sum('amount'));
+
+        $uncategorizedSpending = $uncategorizedCount > 0
+            ? ['count' => $uncategorizedCount, 'total' => $uncategorizedTotal]
+            : null;
+
+        // Include uncategorized in total spent
+        $totalSpent = $categorizedSpent + $uncategorizedTotal;
         $totalAvailable = $totalBudgeted - $totalSpent;
 
         // Calculate "Ready to Assign" with month-aware breakdown
-        $monthStart = $month . '-01';
-        $monthEnd = date('Y-m-t', strtotime($monthStart));
+        // ($monthStart and $monthEnd already defined above)
 
         // Sum of all account starting balances
         $totalStartingBalances = $budget->accounts()->sum('starting_balance');
@@ -227,6 +246,7 @@ class BudgetController extends Controller
                 'isFirstMonth' => !$hasPriorActivity,
             ],
             'earliestMonth' => $earliestMonth,
+            'uncategorizedSpending' => $uncategorizedSpending,
         ]);
     }
 

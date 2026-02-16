@@ -4,7 +4,7 @@ import Toggle from '@/Components/Base/Toggle.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { useTheme } from '@/Composables/useTheme.js';
 
-const { theme, setTheme, bgMode, setBgMode, showCategoryIcons, setShowCategoryIcons } = useTheme();
+const { theme, setTheme, bgMode, setBgMode, showCategoryIcons, setShowCategoryIcons, voiceInputEnabled, setVoiceInputEnabled } = useTheme();
 
 const accentOptions = [
     { value: 'green', label: 'Green', color: '#57d025' },
@@ -199,6 +199,15 @@ const logout = () => {
                     <div class="flex items-center justify-between pt-4 border-t border-border">
                         <label class="text-sm text-body">Show Category Icons</label>
                         <Toggle :modelValue="showCategoryIcons" @update:modelValue="setShowCategoryIcons" />
+                    </div>
+
+                    <!-- Voice Input Toggle (only for AI-enabled users) -->
+                    <div v-if="user.ai_enabled" class="flex items-center justify-between pt-4 border-t border-border">
+                        <div>
+                            <label class="text-sm text-body">Voice Input</label>
+                            <p class="text-xs text-subtle">Speak transactions hands-free</p>
+                        </div>
+                        <Toggle :modelValue="voiceInputEnabled" @update:modelValue="setVoiceInputEnabled" />
                     </div>
                 </div>
             </div>

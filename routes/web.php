@@ -14,6 +14,8 @@ use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\RecurringTransactionController;
 use App\Http\Controllers\SharingController;
 use App\Http\Controllers\OnboardingController;
+use App\Http\Controllers\VoiceCategoryController;
+use App\Http\Controllers\VoiceTransactionController;
 use Illuminate\Support\Facades\Route;
 
 // Welcome page for guests
@@ -68,6 +70,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/transactions/{transaction}', [TransactionController::class, 'update'])->name('transactions.update');
     Route::delete('/transactions/{transaction}', [TransactionController::class, 'destroy'])->name('transactions.destroy');
     Route::post('/transactions/{transaction}/toggle-cleared', [TransactionController::class, 'toggleCleared'])->name('transactions.toggle-cleared');
+
+    // Voice Transactions (JSON API)
+    Route::post('/transactions/voice/parse', [VoiceTransactionController::class, 'parse'])->name('transactions.voice.parse');
+    Route::post('/transactions/voice/clarify', [VoiceTransactionController::class, 'clarify'])->name('transactions.voice.clarify');
+    Route::delete('/transactions/voice/undo/{batchId}', [VoiceTransactionController::class, 'undoBatch'])->name('transactions.voice.undo');
+
+    // Voice Categories (JSON API)
+    Route::post('/categories/voice/parse', [VoiceCategoryController::class, 'parse'])->name('categories.voice.parse');
 
     // Settings
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');

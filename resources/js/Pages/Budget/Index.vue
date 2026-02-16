@@ -14,6 +14,7 @@ const props = defineProps({
     categoryGroups: Array,
     summary: Object,
     earliestMonth: String,
+    uncategorizedSpending: Object,
 });
 
 // Track budget amounts reactively for each category
@@ -584,6 +585,49 @@ const showMoveToast = (amount, from, to, remaining = null) => {
 
             <!-- Show Details Toggle -->
             <Toggle v-model="showDetails" label="Show defaults & averages" />
+
+            <!-- Unassigned Spending Group -->
+            <div v-if="uncategorizedSpending" class="space-y-2">
+                <h2 class="text-sm font-semibold text-warning uppercase tracking-wide px-1">
+                    Unassigned
+                </h2>
+
+                <a
+                    :href="route('transactions.index', { uncategorized: 1 })"
+                    class="block bg-surface rounded-card overflow-hidden tabular-nums"
+                >
+                    <!-- Column Headers -->
+                    <div class="grid grid-cols-[1fr_4.5rem_3.5rem_5rem] gap-px px-2 py-2 bg-surface-header text-xs text-subtle uppercase border-b border-border">
+                        <div>Category</div>
+                        <div class="text-right">Budget</div>
+                        <div class="text-right">Spent</div>
+                        <div class="text-right">Available</div>
+                    </div>
+
+                    <!-- Unassigned Row -->
+                    <div class="grid grid-cols-[1fr_4.5rem_3.5rem_5rem] gap-px px-2 pt-3 pb-1 items-center">
+                        <div class="min-w-0">
+                            <span class="text-sm text-body">Unassigned</span>
+                            <div class="text-xs text-subtle italic">{{ uncategorizedSpending.count }} transaction{{ uncategorizedSpending.count !== 1 ? 's' : '' }}</div>
+                        </div>
+                        <div class="text-right text-sm text-subtle">&mdash;</div>
+                        <div class="text-right text-sm text-subtle">${{ formatNumber(uncategorizedSpending.total) }}</div>
+                        <div class="text-right text-sm font-semibold text-danger">
+                            {{ formatCurrency(-uncategorizedSpending.total) }}
+                        </div>
+                    </div>
+
+                    <!-- Total Row -->
+                    <div class="grid grid-cols-[1fr_4.5rem_3.5rem_5rem] gap-px px-2 py-2 bg-info/30 text-sm font-semibold border-t-2 border-info/40">
+                        <div class="text-info uppercase">Total</div>
+                        <div class="text-right text-subtle">&mdash;</div>
+                        <div class="text-right text-subtle">${{ formatNumber(uncategorizedSpending.total) }}</div>
+                        <div class="text-right text-danger">
+                            {{ formatCurrency(-uncategorizedSpending.total) }}
+                        </div>
+                    </div>
+                </a>
+            </div>
 
             <!-- Category Groups -->
             <div v-for="group in categoryGroups" :key="group.id" class="space-y-2">

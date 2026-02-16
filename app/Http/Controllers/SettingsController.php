@@ -28,6 +28,7 @@ class SettingsController extends Controller
             'user' => [
                 'name' => $user->name,
                 'email' => $user->email,
+                'ai_enabled' => $user->ai_enabled,
             ],
             'budgetName' => $budget?->name,
             'pendingInviteCount' => $pendingInviteCount,

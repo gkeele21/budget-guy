@@ -1,5 +1,5 @@
 <script setup>
-import { Head, useForm, Link } from '@inertiajs/vue3';
+import { Head, useForm, Link, router, usePage } from '@inertiajs/vue3';
 import { ref, computed, watch } from 'vue';
 import SegmentedControl from '@/Components/Form/SegmentedControl.vue';
 import TextField from '@/Components/Form/TextField.vue';
@@ -11,6 +11,13 @@ import AutocompleteField from '@/Components/Form/AutocompleteField.vue';
 import SelectInput from '@/Components/Form/SelectInput.vue';
 import Button from '@/Components/Base/Button.vue';
 import Modal from '@/Components/Base/Modal.vue';
+import VoiceOverlay from '@/Components/Domain/VoiceOverlay.vue';
+import { useSpeechRecognition } from '@/Composables/useSpeechRecognition.js';
+import { useTheme } from '@/Composables/useTheme.js';
+
+const { isSupported: voiceSupported } = useSpeechRecognition();
+const { voiceInputEnabled } = useTheme();
+const aiEnabled = usePage().props.auth.user.ai_enabled;
 
 const props = defineProps({
     accounts: Array,
@@ -154,6 +161,15 @@ const formatCurrency = (amount) => {
 const getSaveButtonVariant = () => {
     return form.type === 'expense' ? 'expense' : form.type === 'income' ? 'income' : 'transfer';
 };
+
+// Voice input
+const showVoiceOverlay = ref(false);
+
+const handleVoiceCreated = ({ batchId }) => {
+    showVoiceOverlay.value = false;
+    // Redirect to transactions index — the new transactions show there with highlights
+    router.visit(route('transactions.index'));
+};
 </script>
 
 <template>
@@ -236,6 +252,7 @@ const getSaveButtonVariant = () => {
                         grouped
                         group-items-key="categories"
                         :action-option="{ label: 'Split Transaction...' }"
+                        :null-option="{ label: 'Unassigned' }"
                         :error="form.errors.category_id"
                         @action="openSplitModal"
                     />
@@ -281,6 +298,19 @@ const getSaveButtonVariant = () => {
                     :border-bottom="false"
                 />
             </div>
+
+            <!-- Voice input button -->
+            <button
+                v-if="aiEnabled && voiceSupported && voiceInputEnabled && form.type !== 'transfer'"
+                type="button"
+                @click="showVoiceOverlay = true"
+                class="mx-3 mt-3 flex items-center justify-center gap-2 py-3 rounded-xl bg-primary/10 border border-dashed border-primary/30 text-primary text-sm font-medium"
+            >
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                </svg>
+                Tap to speak transaction
+            </button>
 
             <!-- Transfer hint -->
             <p v-if="form.type === 'transfer'" class="text-xs text-subtle text-center mt-3 px-4">
@@ -392,6 +422,15 @@ const getSaveButtonVariant = () => {
                 </div>
             </template>
         </Modal>
+
+        <!-- Voice Overlay -->
+        <VoiceOverlay
+            :show="showVoiceOverlay"
+            :accounts="accounts"
+            :categories="categories"
+            @close="showVoiceOverlay = false"
+            @created="handleVoiceCreated"
+        />
 
         <!-- Update Payee Default Prompt -->
         <Teleport to="body">

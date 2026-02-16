@@ -21,6 +21,8 @@ const props = defineProps({
     iconKey: { type: String, default: 'icon' },
     // Special action option (like "Split Transaction...")
     actionOption: { type: Object, default: null },
+    // Null/none option (like "Uncategorized") - selecting sets value to null
+    nullOption: { type: Object, default: null },
 });
 
 const emit = defineEmits(['update:modelValue', 'action']);
@@ -49,6 +51,7 @@ const selectAction = () => {
 
 // Get display value for the selected option
 const displayValue = computed(() => {
+    if (props.modelValue === null && props.nullOption) return props.nullOption.label;
     if (!props.modelValue) return null;
 
     if (props.grouped) {
@@ -125,6 +128,22 @@ const isSelected = (option) => {
             </button>
 
             <div v-if="actionOption" class="border-b border-border my-2" />
+
+            <!-- Null option (e.g., "Uncategorized") -->
+            <button
+                v-if="nullOption"
+                type="button"
+                @click="selectOption(null)"
+                class="w-full px-4 py-3 text-left text-sm hover:bg-surface-overlay flex items-center justify-between"
+                :class="modelValue === null ? 'text-secondary font-medium' : 'text-body'"
+            >
+                <span>{{ nullOption.label }}</span>
+                <svg v-if="modelValue === null" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-secondary" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                </svg>
+            </button>
+
+            <div v-if="nullOption" class="border-b border-border my-2" />
 
             <!-- Grouped options -->
             <template v-if="grouped">

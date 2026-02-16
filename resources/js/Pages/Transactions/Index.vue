@@ -1,14 +1,21 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
 import FAB from '@/Components/Domain/FAB.vue';
+import VoiceOverlay from '@/Components/Domain/VoiceOverlay.vue';
 import FilterChip from '@/Components/Base/FilterChip.vue';
 import SwipeableRow from '@/Components/Base/SwipeableRow.vue';
 import SegmentedControl from '@/Components/Form/SegmentedControl.vue';
 import SearchField from '@/Components/Form/SearchField.vue';
 import DateField from '@/Components/Form/DateField.vue';
 import Button from '@/Components/Base/Button.vue';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { useSpeechRecognition } from '@/Composables/useSpeechRecognition.js';
+import { useTheme } from '@/Composables/useTheme.js';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { ref, computed, watch } from 'vue';
+
+const { isSupported: voiceSupported } = useSpeechRecognition();
+const { voiceInputEnabled } = useTheme();
+const aiEnabled = usePage().props.auth.user.ai_enabled;
 
 const props = defineProps({
     transactions: Object,
@@ -18,6 +25,7 @@ const props = defineProps({
     startDate: String,
     endDate: String,
     clearedFilter: String,
+    uncategorizedFilter: Boolean,
     recurring: Array,
 });
 
@@ -29,6 +37,7 @@ const localStartDate = ref(props.startDate || '');
 const localEndDate = ref(props.endDate || '');
 const localClearedFilter = ref(props.clearedFilter || 'all');
 const localRecurringFilter = ref('all');
+const localUncategorizedFilter = ref(!!props.uncategorizedFilter);
 const searchInputRef = ref(null);
 
 // View mode toggle: 'all' or 'recurring'
@@ -44,6 +53,7 @@ const buildParams = () => {
     if (localClearedFilter.value && localClearedFilter.value !== 'all') {
         params.cleared = localClearedFilter.value;
     }
+    if (localUncategorizedFilter.value) params.uncategorized = '1';
     return params;
 };
 
@@ -89,6 +99,7 @@ const clearFilters = () => {
     localEndDate.value = '';
     localClearedFilter.value = 'all';
     localRecurringFilter.value = 'all';
+    localUncategorizedFilter.value = false;
     router.get(route('transactions.index'), buildParams(), {
         preserveState: true,
         preserveScroll: true,
@@ -97,7 +108,8 @@ const clearFilters = () => {
 
 const hasActiveFilters = computed(() => {
     return localStartDate.value || localEndDate.value ||
-           (localClearedFilter.value && localClearedFilter.value !== 'all');
+           (localClearedFilter.value && localClearedFilter.value !== 'all') ||
+           localUncategorizedFilter.value;
 });
 
 const formatCurrency = (amount) => {
@@ -131,6 +143,13 @@ const filterByAccount = (accountId) => {
     }
 
     router.get(route('transactions.index'), params, {
+        preserveState: true,
+    });
+};
+
+const toggleUncategorized = () => {
+    localUncategorizedFilter.value = !localUncategorizedFilter.value;
+    router.get(route('transactions.index'), buildParams(), {
         preserveState: true,
     });
 };
@@ -229,6 +248,9 @@ const activeFilterDescription = computed(() => {
     } else if (localClearedFilter.value === 'uncleared') {
         parts.push('uncleared only');
     }
+    if (localUncategorizedFilter.value) {
+        parts.push('unassigned only');
+    }
     return parts.length > 0 ? parts.join(', ') : '';
 });
 
@@ -258,6 +280,60 @@ const groupedRecurring = computed(() => {
             items: groups[freq],
         }));
 });
+
+// Voice input state
+const showVoiceOverlay = ref(false);
+const highlightedIds = ref(new Set());
+const voiceBatchId = ref(null);
+let highlightTimeout = null;
+
+const handleVoiceCreated = ({ transactions, batchId }) => {
+    showVoiceOverlay.value = false;
+    voiceBatchId.value = batchId;
+
+    // Collect new transaction IDs for highlighting
+    const newIds = new Set(transactions.map(tx => tx.id));
+    highlightedIds.value = newIds;
+
+    // Show voice toast
+    if (toastTimeout) clearTimeout(toastTimeout);
+    toast.value = {
+        show: true,
+        message: `Created ${transactions.length} transaction${transactions.length !== 1 ? 's' : ''}`,
+        payee: '',
+        transactionId: null,
+        wasCleared: false,
+        isVoiceBatch: true,
+    };
+
+    toastTimeout = setTimeout(() => {
+        toast.value.show = false;
+        voiceBatchId.value = null;
+    }, 5000);
+
+    // Reload transaction list
+    router.reload({ preserveScroll: true });
+
+    // Fade highlights after 3 seconds
+    if (highlightTimeout) clearTimeout(highlightTimeout);
+    highlightTimeout = setTimeout(() => {
+        highlightedIds.value = new Set();
+    }, 3000);
+};
+
+const undoVoiceBatch = async () => {
+    if (!voiceBatchId.value) return;
+
+    try {
+        await window.axios.delete(route('transactions.voice.undo', voiceBatchId.value));
+        toast.value.show = false;
+        voiceBatchId.value = null;
+        highlightedIds.value = new Set();
+        router.reload({ preserveScroll: true });
+    } catch (e) {
+        // Silently fail — transactions may have already been edited
+    }
+};
 
 const formatNextDate = (dateStr, frequency) => {
     const date = new Date(dateStr + 'T00:00:00');
@@ -319,10 +395,10 @@ const formatNextDate = (dateStr, frequency) => {
                 >
                     <div class="flex items-center gap-2">
                         <span class="text-success">✓</span>
-                        <span>{{ toast.payee }} {{ toast.message }}</span>
+                        <span>{{ toast.isVoiceBatch ? toast.message : `${toast.payee} ${toast.message}` }}</span>
                     </div>
                     <button
-                        @click="undoClear"
+                        @click="toast.isVoiceBatch ? undoVoiceBatch() : undoClear()"
                         class="text-secondary font-medium hover:underline"
                     >
                         Undo
@@ -444,6 +520,15 @@ const formatNextDate = (dateStr, frequency) => {
                         >
                             {{ account.name }}
                         </FilterChip>
+                        <!-- Separator -->
+                        <div class="w-px h-5 bg-border self-center flex-shrink-0"></div>
+                        <!-- Unassigned filter -->
+                        <FilterChip
+                            :active="localUncategorizedFilter"
+                            @click="toggleUncategorized"
+                        >
+                            Unassigned
+                        </FilterChip>
                     </div>
                 </div>
 
@@ -474,6 +559,7 @@ const formatNextDate = (dateStr, frequency) => {
                                     'border-danger': transaction.type === 'expense',
                                     'border-success': transaction.type === 'income',
                                     'border-info': transaction.type === 'transfer',
+                                    'voice-highlight': highlightedIds.has(transaction.id),
                                 }"
                             >
                                 <div class="flex items-start justify-between">
@@ -499,6 +585,10 @@ const formatNextDate = (dateStr, frequency) => {
                                         <!-- Single category -->
                                         <div v-else-if="transaction.category" class="text-xs text-subtle mt-0.5 truncate">
                                             {{ transaction.category }}
+                                        </div>
+                                        <!-- Unassigned (not transfers, not splits) -->
+                                        <div v-else-if="transaction.type !== 'transfer' && !transaction.is_split" class="text-xs text-subtle mt-0.5 truncate italic">
+                                            Unassigned
                                         </div>
                                     </div>
 
@@ -616,8 +706,46 @@ const formatNextDate = (dateStr, frequency) => {
             </template>
         </div>
 
+        <!-- Voice Overlay -->
+        <VoiceOverlay
+            :show="showVoiceOverlay"
+            :accounts="accounts"
+            @close="showVoiceOverlay = false"
+            @created="handleVoiceCreated"
+        />
+
         <template #fab>
+            <button
+                v-if="aiEnabled && voiceSupported && voiceInputEnabled && viewMode === 'all'"
+                @click="showVoiceOverlay = true"
+                class="absolute bottom-[76px] right-4 w-10 h-10 bg-surface border border-border rounded-full shadow-lg flex items-center justify-center text-body z-40"
+            >
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                </svg>
+            </button>
             <FAB :href="viewMode === 'all' ? route('transactions.create') : route('recurring.create')" />
         </template>
     </AppLayout>
 </template>
+
+<style scoped>
+.voice-highlight {
+    animation: voice-highlight-fade 3s ease-out forwards;
+}
+
+@keyframes voice-highlight-fade {
+    0% {
+        box-shadow: inset 0 0 0 1px rgb(var(--color-primary) / 0.4);
+        background-color: rgb(var(--color-primary) / 0.08);
+    }
+    70% {
+        box-shadow: inset 0 0 0 1px rgb(var(--color-primary) / 0.4);
+        background-color: rgb(var(--color-primary) / 0.08);
+    }
+    100% {
+        box-shadow: none;
+        background-color: rgb(var(--color-surface));
+    }
+}
+</style>

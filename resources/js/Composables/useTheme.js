@@ -3,6 +3,7 @@ import { ref, watch } from 'vue';
 const STORAGE_KEY = 'budgetguy-theme';
 const STORAGE_KEY_BG = 'budgetguy-bg-mode';
 const STORAGE_KEY_ICONS = 'budgetguy-show-category-icons';
+const STORAGE_KEY_VOICE = 'budgetguy-voice-input';
 const DEFAULT_THEME = 'green';
 const DEFAULT_BG_MODE = 'slate';
 const VALID_THEMES = ['green', 'blue', 'orange'];
@@ -12,6 +13,7 @@ const VALID_BG_MODES = ['slate', 'cream'];
 const currentTheme = ref(DEFAULT_THEME);
 const currentBgMode = ref(DEFAULT_BG_MODE);
 const showCategoryIcons = ref(true);
+const voiceInputEnabled = ref(false);
 const isInitialized = ref(false);
 
 function applyTheme(theme) {
@@ -61,6 +63,17 @@ function saveShowCategoryIcons(value) {
     localStorage.setItem(STORAGE_KEY_ICONS, String(value));
 }
 
+function loadVoiceInputEnabled() {
+    if (typeof localStorage === 'undefined') return false;
+    const stored = localStorage.getItem(STORAGE_KEY_VOICE);
+    return stored === 'true';
+}
+
+function saveVoiceInputEnabled(value) {
+    if (typeof localStorage === 'undefined') return;
+    localStorage.setItem(STORAGE_KEY_VOICE, String(value));
+}
+
 function initializeTheme() {
     if (isInitialized.value) return;
 
@@ -73,6 +86,7 @@ function initializeTheme() {
     applyBgMode(storedBgMode);
 
     showCategoryIcons.value = loadShowCategoryIcons();
+    voiceInputEnabled.value = loadVoiceInputEnabled();
 
     isInitialized.value = true;
 }
@@ -116,6 +130,11 @@ export function useTheme() {
         saveShowCategoryIcons(value);
     }
 
+    function setVoiceInputEnabled(value) {
+        voiceInputEnabled.value = value;
+        saveVoiceInputEnabled(value);
+    }
+
     return {
         theme: currentTheme,
         setTheme,
@@ -126,6 +145,8 @@ export function useTheme() {
         bgModes: VALID_BG_MODES,
         showCategoryIcons,
         setShowCategoryIcons,
+        voiceInputEnabled,
+        setVoiceInputEnabled,
     };
 }
 

@@ -24,6 +24,7 @@ class Transaction extends Model
         'transfer_pair_id',
         'recurring_id',
         'created_by',
+        'voice_batch_id',
     ];
 
     protected function casts(): array

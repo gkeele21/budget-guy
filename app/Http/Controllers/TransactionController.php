@@ -27,6 +27,7 @@ class TransactionController extends Controller
         $endDate = $request->get('end_date');
         $clearedFilter = $request->get('cleared'); // 'all', 'cleared', 'uncleared'
         $recurringFilter = $request->get('recurring'); // 'all', 'recurring'
+        $uncategorizedFilter = $request->boolean('uncategorized');
 
         $query = $budget->transactions()
             ->with(['account', 'category', 'payee', 'splits.category', 'transferPair.account'])
@@ -64,6 +65,13 @@ class TransactionController extends Controller
             $query->whereNotNull('recurring_id');
         }
 
+        // Uncategorized filter
+        if ($uncategorizedFilter) {
+            $query->whereNull('category_id')
+                  ->where('type', '!=', 'transfer')
+                  ->whereDoesntHave('splits');
+        }
+
         // Search functionality
         if ($searchQuery) {
             $query->where(function ($q) use ($searchQuery) {
@@ -79,6 +87,15 @@ class TransactionController extends Controller
                 ->orWhereHas('category', function ($cq) use ($searchQuery) {
                     $cq->where('name', 'like', "%{$searchQuery}%");
                 });
+
+                // Match "unassigned" search to null-category transactions
+                if (stripos('unassigned', $searchQuery) !== false) {
+                    $q->orWhere(function ($uq) {
+                        $uq->whereNull('category_id')
+                            ->where('type', '!=', 'transfer')
+                            ->whereDoesntHave('splits');
+                    });
+                }
             });
         }
 
@@ -143,6 +160,7 @@ class TransactionController extends Controller
             'endDate' => $endDate,
             'clearedFilter' => $clearedFilter ?? 'all',
             'recurringFilter' => $recurringFilter ?? 'all',
+            'uncategorizedFilter' => $uncategorizedFilter,
             'recurring' => $recurringTransactions,
         ]);
     }

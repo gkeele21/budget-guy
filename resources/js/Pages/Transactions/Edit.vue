@@ -23,7 +23,7 @@ const form = useForm({
     type: props.transaction.type,
     amount: parseFloat(props.transaction.amount).toFixed(2),
     account_id: props.transaction.account_id,
-    category_id: props.transaction.category_id || '',
+    category_id: props.transaction.category_id ?? '',
     payee_name: props.transaction.payee_name || '',
     date: props.transaction.date,
     cleared: props.transaction.cleared,
@@ -217,6 +217,7 @@ const getSaveButtonVariant = () => {
                         grouped
                         group-items-key="categories"
                         :action-option="{ label: 'Split Transaction...' }"
+                        :null-option="{ label: 'Unassigned' }"
                         @action="openSplitModal"
                     />
                 </template>

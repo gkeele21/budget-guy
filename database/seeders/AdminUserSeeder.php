@@ -19,6 +19,7 @@ class AdminUserSeeder extends Seeder
             'email' => 'bertkeele@gmail.com',
             'password' => Hash::make('myBUDGET#1'),
             'email_verified_at' => now(),
+            'ai_enabled' => true,
         ]);
     }
 }
