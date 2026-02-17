@@ -10,6 +10,7 @@ import draggable from 'vuedraggable';
 
 const props = defineProps({
     accounts: Array,
+    emojiGrid: Array,
 });
 
 const showAddModal = ref(false);
@@ -77,20 +78,7 @@ const typeDescriptions = {
     credit: 'Credit cards and store credit. e.g. Visa, Target Card, Kohl\'s.',
 };
 
-const accountEmojiGrid = [
-    { emoji: '🏦', label: 'Bank' },
-    { emoji: '💰', label: 'Savings' },
-    { emoji: '💳', label: 'Credit Card' },
-    { emoji: '💵', label: 'Cash' },
-    { emoji: '📲', label: 'Mobile Pay' },
-    { emoji: '🎓', label: 'Student Loan' },
-    { emoji: '🏠', label: 'Mortgage' },
-    { emoji: '🛍️', label: 'Store Card' },
-    { emoji: '🎁', label: 'Gift Card' },
-    { emoji: '💎', label: 'Investment' },
-    { emoji: '🔗', label: 'Linked' },
-    { emoji: '🌐', label: 'Online' },
-];
+const accountEmojiGrid = props.emojiGrid;
 
 const selectAccountIcon = (item) => {
     if (form.icon === item.emoji) {

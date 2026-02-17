@@ -71,7 +71,9 @@ class VoiceCategoryService
             'categories' => $g->categories->pluck('name')->toArray(),
         ])->toJson(JSON_PRETTY_PRINT);
 
-        $emojiList = '🛒 🍎 🥗 🛍️ 🏠 ⚡ 💧 📱 🌐 🚗 ⛽ 🍽️ ☕ 🎬 🎮 🎵 💪 💊 👕 ✂️ 🎁 ✈️ 🏖️ 📚 🛡️ 💳 🎓 🎯 🆘 🐾 👶 🏋️';
+        $emojiMap = collect(config('emoji.categories'))
+            ->map(fn ($item) => "{$item['emoji']}={$item['label']}")
+            ->implode(', ');
 
         return <<<PROMPT
 You are a category parser for an envelope budgeting app. Parse the user's spoken description into category groups and categories.
@@ -80,8 +82,9 @@ Rules:
 - Parse group names and category names with optional default budget amounts.
 - If a spoken group name closely matches an existing group (fuzzy match), use the existing group's ID. Set "existing_group_id" to the matched ID.
 - If creating a new group, set "existing_group_id" to null.
-- For each category, suggest an appropriate emoji icon from this list: {$emojiList}
-- Pick the emoji that best represents the category's purpose (e.g. "Rent" → 🏠, "Groceries" → 🛒, "Electric" → ⚡, "Gas" → ⛽, "Dining" → 🍽️, "Coffee" → ☕, "Gym" → 🏋️).
+- For each category, pick the best emoji icon. Use this mapping (emoji=label):
+{$emojiMap}
+- If a category name exactly or closely matches a label, use that emoji. For other categories, pick the most relevant emoji from the list.
 - Default amounts are optional. If the user says a dollar amount after a category name, use it as default_amount. If not mentioned, set default_amount to null.
 - Support multiple groups in one utterance.
 - Title-case category names and group names.

@@ -32,6 +32,7 @@ class AccountController extends Controller
 
         return Inertia::render('Settings/Accounts/Index', [
             'accounts' => $accounts,
+            'emojiGrid' => config('emoji.accounts'),
         ]);
     }
 
@@ -82,6 +83,7 @@ class AccountController extends Controller
                 'starting_balance' => (float) $account->starting_balance,
                 'is_closed' => $account->is_closed,
             ],
+            'emojiGrid' => config('emoji.accounts'),
         ]);
     }
 

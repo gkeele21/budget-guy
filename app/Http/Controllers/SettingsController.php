@@ -64,6 +64,7 @@ class SettingsController extends Controller
 
         return Inertia::render('Settings/Accounts/Index', [
             'accounts' => $accounts,
+            'emojiGrid' => config('emoji.accounts'),
         ]);
     }
 
@@ -93,6 +94,7 @@ class SettingsController extends Controller
 
         return Inertia::render('Settings/Categories/Index', [
             'categoryGroups' => $categoryGroups,
+            'emojiGrid' => config('emoji.categories'),
         ]);
     }
 }
