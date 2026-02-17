@@ -77,11 +77,11 @@ class DemoDataSeeder extends Seeder
     private function createAccounts(Budget $budget): array
     {
         $accountsData = [
-            ['name' => 'Main Checking', 'type' => 'checking', 'starting_balance' => 2500.00],
-            ['name' => 'Savings Account', 'type' => 'savings', 'starting_balance' => 15000.00],
-            ['name' => 'Chase Sapphire', 'type' => 'credit_card', 'starting_balance' => -450.00],
-            ['name' => 'Amazon Card', 'type' => 'credit_card', 'starting_balance' => -125.00],
-            ['name' => 'Capital One', 'type' => 'credit_card', 'starting_balance' => -200.00],
+            ['name' => 'Main Checking', 'type' => 'bank', 'starting_balance' => 2500.00],
+            ['name' => 'Savings Account', 'type' => 'bank', 'starting_balance' => 15000.00],
+            ['name' => 'Chase Sapphire', 'type' => 'credit', 'starting_balance' => -450.00],
+            ['name' => 'Amazon Card', 'type' => 'credit', 'starting_balance' => -125.00],
+            ['name' => 'Capital One', 'type' => 'credit', 'starting_balance' => -200.00],
             ['name' => 'Cash Wallet', 'type' => 'cash', 'starting_balance' => 150.00],
         ];
 

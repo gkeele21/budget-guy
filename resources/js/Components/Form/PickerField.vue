@@ -21,7 +21,7 @@ const props = defineProps({
     iconKey: { type: String, default: 'icon' },
     // Special action option (like "Split Transaction...")
     actionOption: { type: Object, default: null },
-    // Null/none option (like "Uncategorized") - selecting sets value to null
+    // Null/none option (like "Unassigned") - selecting sets value to null
     nullOption: { type: Object, default: null },
 });
 
@@ -129,7 +129,7 @@ const isSelected = (option) => {
 
             <div v-if="actionOption" class="border-b border-border my-2" />
 
-            <!-- Null option (e.g., "Uncategorized") -->
+            <!-- Null option (e.g., "Unassigned") -->
             <button
                 v-if="nullOption"
                 type="button"

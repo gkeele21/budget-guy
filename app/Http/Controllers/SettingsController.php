@@ -56,6 +56,7 @@ class SettingsController extends Controller
                 'id' => $account->id,
                 'name' => $account->name,
                 'type' => $account->type,
+                'icon' => $account->icon,
                 'starting_balance' => (float) $account->starting_balance,
                 'balance' => $account->balance,
                 'is_closed' => $account->is_closed,

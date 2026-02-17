@@ -14,7 +14,7 @@ const form = useForm({
     budget_name: '',
     start_month: currentMonth,
     account_name: '',
-    account_type: 'checking',
+    account_type: 'bank',
     account_balance: '',
     use_template: 'starter',
 });
@@ -74,10 +74,9 @@ const selectAccountType = async (type) => {
 };
 
 const accountTypes = [
-    { value: 'checking', label: 'Checking', icon: '🏦' },
-    { value: 'savings', label: 'Savings', icon: '💰' },
-    { value: 'credit_card', label: 'Credit Card', icon: '💳' },
+    { value: 'bank', label: 'Bank', icon: '🏦' },
     { value: 'cash', label: 'Cash', icon: '💵' },
+    { value: 'credit', label: 'Credit', icon: '💳' },
 ];
 
 const templates = [
@@ -192,7 +191,7 @@ const templates = [
                         </div>
                         <div>
                             <h2 class="text-xl font-bold text-body mb-0.5">Add your first account</h2>
-                            <p class="text-sm text-subtle">Add a checking, savings, or credit card.</p>
+                            <p class="text-sm text-subtle">Add a bank account, cash, or credit card.</p>
                         </div>
                     </div>
 
@@ -203,7 +202,7 @@ const templates = [
                                 ref="accountNameInput"
                                 v-model="form.account_name"
                                 label="Account Name"
-                                placeholder="e.g., Main Checking"
+                                placeholder="e.g., Checking Account"
                                 variant="subtle"
                                 autocomplete="off"
                             />
@@ -221,7 +220,7 @@ const templates = [
                             <div class="text-xs font-semibold text-subtle uppercase tracking-wide mb-2 px-1">
                                 Account Type
                             </div>
-                            <div class="grid grid-cols-4 gap-2">
+                            <div class="grid grid-cols-3 gap-2">
                                 <button
                                     v-for="type in accountTypes"
                                     :key="type.value"

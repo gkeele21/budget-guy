@@ -14,6 +14,7 @@ const props = defineProps({
 const form = useForm({
     name: props.account.name,
     type: props.account.type,
+    icon: props.account.icon || '',
     starting_balance: parseFloat(props.account.starting_balance).toFixed(2),
     is_closed: props.account.is_closed,
 });
@@ -21,11 +22,22 @@ const form = useForm({
 const showDeleteConfirm = ref(false);
 
 const accountTypes = [
-    { value: 'checking', label: 'Checking', icon: '🏦' },
-    { value: 'savings', label: 'Savings', icon: '💰' },
-    { value: 'credit_card', label: 'Credit Card', icon: '💳' },
+    { value: 'bank', label: 'Bank', icon: '🏦' },
     { value: 'cash', label: 'Cash', icon: '💵' },
+    { value: 'credit', label: 'Credit', icon: '💳' },
 ];
+
+const accountEmojiGrid = [
+    '🏦', '💰', '💳', '💵', '📲', '💸',
+    '🏧', '🪙', '⚡', '🔗', '🌐', '🎯',
+    '🛒', '🎁', '👗', '🏬', '🛍️', '📦',
+    '🍎', '☕', '🎮', '📱', '💎', '🏠',
+];
+
+const selectType = (type) => {
+    form.type = type.value;
+    form.icon = type.icon;
+};
 
 const submit = () => {
     form.put(route('accounts.update', props.account.id));
@@ -55,7 +67,7 @@ const deleteAccount = () => {
                 <TextField
                     v-model="form.name"
                     label="Account Name"
-                    placeholder="e.g., Main Checking"
+                    placeholder="e.g., Checking Account"
                     variant="subtle"
                     :border-bottom="false"
                     required
@@ -65,12 +77,12 @@ const deleteAccount = () => {
             <!-- Account Type -->
             <div class="bg-surface rounded-card p-4">
                 <label class="block text-sm text-subtle mb-2">Account Type</label>
-                <div class="grid grid-cols-4 gap-2">
+                <div class="grid grid-cols-3 gap-2">
                     <button
                         v-for="type in accountTypes"
                         :key="type.value"
                         type="button"
-                        @click="form.type = type.value"
+                        @click="selectType(type)"
                         :class="[
                             'flex flex-col items-center p-3 rounded-xl border-2 transition-colors',
                             form.type === type.value
@@ -85,6 +97,30 @@ const deleteAccount = () => {
                                 form.type === type.value ? 'text-primary' : 'text-subtle'
                             ]"
                         >{{ type.label }}</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Icon Picker -->
+            <div class="bg-surface rounded-card p-4">
+                <div class="flex items-center justify-between mb-2">
+                    <label class="text-sm text-subtle">Icon</label>
+                    <span class="text-2xl">{{ form.icon || '💳' }}</span>
+                </div>
+                <div class="grid grid-cols-6 gap-1.5">
+                    <button
+                        v-for="emoji in accountEmojiGrid"
+                        :key="emoji"
+                        type="button"
+                        @click="form.icon = emoji"
+                        :class="[
+                            'w-10 h-10 flex items-center justify-center text-xl rounded-lg transition-colors',
+                            form.icon === emoji
+                                ? 'bg-primary/20 ring-2 ring-primary'
+                                : 'bg-surface-overlay hover:bg-border-strong'
+                        ]"
+                    >
+                        {{ emoji }}
                     </button>
                 </div>
             </div>

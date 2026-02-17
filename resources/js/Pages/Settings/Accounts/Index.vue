@@ -37,7 +37,8 @@ const saveOrder = () => {
 
 const form = useForm({
     name: '',
-    type: 'checking',
+    type: 'bank',
+    icon: '',
     starting_balance: '',
 });
 
@@ -48,25 +49,38 @@ const formatCurrency = (amount) => {
     }).format(amount);
 };
 
-const getAccountIcon = (type) => {
-    const icons = {
-        checking: '🏦',
-        savings: '💰',
-        credit_card: '💳',
-        cash: '💵',
-    };
-    return icons[type] || '💳';
+const defaultTypeIcons = {
+    bank: '🏦',
+    cash: '💵',
+    credit: '💳',
+};
+
+const typeLabels = {
+    bank: 'Bank',
+    cash: 'Cash',
+    credit: 'Credit Card',
+};
+
+const getAccountIcon = (account) => {
+    return account.icon || defaultTypeIcons[account.type] || '💳';
 };
 
 const accountTypes = [
-    { value: 'checking', label: 'Checking', icon: '🏦' },
-    { value: 'savings', label: 'Savings', icon: '💰' },
-    { value: 'credit_card', label: 'Credit Card', icon: '💳' },
+    { value: 'bank', label: 'Bank', icon: '🏦' },
     { value: 'cash', label: 'Cash', icon: '💵' },
+    { value: 'credit', label: 'Credit', icon: '💳' },
+];
+
+const accountEmojiGrid = [
+    '🏦', '💰', '💳', '💵', '📲', '💸',
+    '🏧', '🪙', '⚡', '🔗', '🌐', '🎯',
+    '🛒', '🎁', '👗', '🏬', '🛍️', '📦',
+    '🍎', '☕', '🎮', '📱', '💎', '🏠',
 ];
 
 const selectType = async (type) => {
     form.type = type.value;
+    form.icon = type.icon;
     const userHasTypedName = form.name && !accountTypes.some(t => t.label === form.name);
     if (!userHasTypedName) {
         form.name = type.label;
@@ -131,14 +145,14 @@ const closeModal = () => {
                                 class="flex items-center justify-between flex-1 py-4 pr-4 hover:bg-surface-overlay"
                             >
                                 <div class="flex items-center gap-3">
-                                    <span class="text-2xl">{{ getAccountIcon(account.type) }}</span>
+                                    <span class="text-2xl">{{ getAccountIcon(account) }}</span>
                                     <div>
                                         <div class="font-medium text-body">
                                             {{ account.name }}
                                             <span v-if="account.is_closed" class="text-xs text-subtle">(Closed)</span>
                                         </div>
                                         <div class="text-sm text-subtle capitalize">
-                                            {{ account.type.replace('_', ' ') }}
+                                            {{ typeLabels[account.type] || account.type }}
                                         </div>
                                     </div>
                                 </div>
@@ -171,7 +185,7 @@ const closeModal = () => {
                     <div class="text-xs font-semibold text-subtle uppercase tracking-wide mb-2 px-1">
                         Account Type
                     </div>
-                    <div class="grid grid-cols-4 gap-2">
+                    <div class="grid grid-cols-3 gap-2">
                         <button
                             v-for="type in accountTypes"
                             :key="type.value"
@@ -201,7 +215,7 @@ const closeModal = () => {
                         ref="nameInput"
                         v-model="form.name"
                         label="Account Name"
-                        placeholder="e.g., Main Checking"
+                        placeholder="e.g., Checking Account"
                         variant="subtle"
                         autocomplete="off"
                         required
@@ -213,6 +227,31 @@ const closeModal = () => {
                         placeholder="0.00"
                         :border-bottom="false"
                     />
+                </div>
+
+                <!-- Icon Picker -->
+                <div class="mx-3 mt-3">
+                    <div class="text-xs font-semibold text-subtle uppercase tracking-wide mb-2 px-1">
+                        Icon
+                    </div>
+                    <div class="bg-surface rounded-xl p-3">
+                        <div class="grid grid-cols-6 gap-1.5">
+                            <button
+                                v-for="emoji in accountEmojiGrid"
+                                :key="emoji"
+                                type="button"
+                                @click="form.icon = emoji"
+                                :class="[
+                                    'w-10 h-10 flex items-center justify-center text-xl rounded-lg transition-colors',
+                                    form.icon === emoji
+                                        ? 'bg-primary/20 ring-2 ring-primary'
+                                        : 'bg-surface-overlay hover:bg-border-strong'
+                                ]"
+                            >
+                                {{ emoji }}
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </form>
 

@@ -25,7 +25,7 @@ const props = defineProps({
     startDate: String,
     endDate: String,
     clearedFilter: String,
-    uncategorizedFilter: Boolean,
+    unassignedFilter: Boolean,
     recurring: Array,
 });
 
@@ -37,7 +37,7 @@ const localStartDate = ref(props.startDate || '');
 const localEndDate = ref(props.endDate || '');
 const localClearedFilter = ref(props.clearedFilter || 'all');
 const localRecurringFilter = ref('all');
-const localUncategorizedFilter = ref(!!props.uncategorizedFilter);
+const localUnassignedFilter = ref(!!props.unassignedFilter);
 const searchInputRef = ref(null);
 
 // View mode toggle: 'all' or 'recurring'
@@ -53,7 +53,7 @@ const buildParams = () => {
     if (localClearedFilter.value && localClearedFilter.value !== 'all') {
         params.cleared = localClearedFilter.value;
     }
-    if (localUncategorizedFilter.value) params.uncategorized = '1';
+    if (localUnassignedFilter.value) params.unassigned = '1';
     return params;
 };
 
@@ -99,7 +99,7 @@ const clearFilters = () => {
     localEndDate.value = '';
     localClearedFilter.value = 'all';
     localRecurringFilter.value = 'all';
-    localUncategorizedFilter.value = false;
+    localUnassignedFilter.value = false;
     router.get(route('transactions.index'), buildParams(), {
         preserveState: true,
         preserveScroll: true,
@@ -109,7 +109,7 @@ const clearFilters = () => {
 const hasActiveFilters = computed(() => {
     return localStartDate.value || localEndDate.value ||
            (localClearedFilter.value && localClearedFilter.value !== 'all') ||
-           localUncategorizedFilter.value;
+           localUnassignedFilter.value;
 });
 
 const formatCurrency = (amount) => {
@@ -147,8 +147,8 @@ const filterByAccount = (accountId) => {
     });
 };
 
-const toggleUncategorized = () => {
-    localUncategorizedFilter.value = !localUncategorizedFilter.value;
+const toggleUnassigned = () => {
+    localUnassignedFilter.value = !localUnassignedFilter.value;
     router.get(route('transactions.index'), buildParams(), {
         preserveState: true,
     });
@@ -248,7 +248,7 @@ const activeFilterDescription = computed(() => {
     } else if (localClearedFilter.value === 'uncleared') {
         parts.push('uncleared only');
     }
-    if (localUncategorizedFilter.value) {
+    if (localUnassignedFilter.value) {
         parts.push('unassigned only');
     }
     return parts.length > 0 ? parts.join(', ') : '';
@@ -524,8 +524,8 @@ const formatNextDate = (dateStr, frequency) => {
                         <div class="w-px h-5 bg-border self-center flex-shrink-0"></div>
                         <!-- Unassigned filter -->
                         <FilterChip
-                            :active="localUncategorizedFilter"
-                            @click="toggleUncategorized"
+                            :active="localUnassignedFilter"
+                            @click="toggleUnassigned"
                         >
                             Unassigned
                         </FilterChip>

@@ -14,7 +14,7 @@ const props = defineProps({
     categoryGroups: Array,
     summary: Object,
     earliestMonth: String,
-    uncategorizedSpending: Object,
+    unassignedSpending: Object,
 });
 
 // Track budget amounts reactively for each category
@@ -587,13 +587,13 @@ const showMoveToast = (amount, from, to, remaining = null) => {
             <Toggle v-model="showDetails" label="Show defaults & averages" />
 
             <!-- Unassigned Spending Group -->
-            <div v-if="uncategorizedSpending" class="space-y-2">
+            <div v-if="unassignedSpending" class="space-y-2">
                 <h2 class="text-sm font-semibold text-warning uppercase tracking-wide px-1">
                     Unassigned
                 </h2>
 
                 <a
-                    :href="route('transactions.index', { uncategorized: 1 })"
+                    :href="route('transactions.index', { unassigned: 1 })"
                     class="block bg-surface rounded-card overflow-hidden tabular-nums"
                 >
                     <!-- Column Headers -->
@@ -608,12 +608,12 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                     <div class="grid grid-cols-[1fr_4.5rem_3.5rem_5rem] gap-px px-2 pt-3 pb-1 items-center">
                         <div class="min-w-0">
                             <span class="text-sm text-body">Unassigned</span>
-                            <div class="text-xs text-subtle italic">{{ uncategorizedSpending.count }} transaction{{ uncategorizedSpending.count !== 1 ? 's' : '' }}</div>
+                            <div class="text-xs text-subtle italic">{{ unassignedSpending.count }} transaction{{ unassignedSpending.count !== 1 ? 's' : '' }}</div>
                         </div>
                         <div class="text-right text-sm text-subtle">&mdash;</div>
-                        <div class="text-right text-sm text-subtle">${{ formatNumber(uncategorizedSpending.total) }}</div>
+                        <div class="text-right text-sm text-subtle">${{ formatNumber(unassignedSpending.total) }}</div>
                         <div class="text-right text-sm font-semibold text-danger">
-                            {{ formatCurrency(-uncategorizedSpending.total) }}
+                            {{ formatCurrency(-unassignedSpending.total) }}
                         </div>
                     </div>
 
@@ -621,9 +621,9 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                     <div class="grid grid-cols-[1fr_4.5rem_3.5rem_5rem] gap-px px-2 py-2 bg-info/30 text-sm font-semibold border-t-2 border-info/40">
                         <div class="text-info uppercase">Total</div>
                         <div class="text-right text-subtle">&mdash;</div>
-                        <div class="text-right text-subtle">${{ formatNumber(uncategorizedSpending.total) }}</div>
+                        <div class="text-right text-subtle">${{ formatNumber(unassignedSpending.total) }}</div>
                         <div class="text-right text-danger">
-                            {{ formatCurrency(-uncategorizedSpending.total) }}
+                            {{ formatCurrency(-unassignedSpending.total) }}
                         </div>
                     </div>
                 </a>

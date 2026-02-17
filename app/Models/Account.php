@@ -15,6 +15,8 @@ class Account extends Model
         'budget_id',
         'name',
         'type',
+        'icon',
+        'is_on_budget',
         'starting_balance',
         'sort_order',
         'is_closed',
@@ -25,6 +27,7 @@ class Account extends Model
         return [
             'starting_balance' => 'decimal:2',
             'is_closed' => 'boolean',
+            'is_on_budget' => 'boolean',
         ];
     }
 

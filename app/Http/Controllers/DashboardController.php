@@ -27,6 +27,7 @@ class DashboardController extends Controller
                     'id' => $account->id,
                     'name' => $account->name,
                     'type' => $account->type,
+                    'icon' => $account->icon,
                     'balance' => $account->balance,
                     'cleared_balance' => $account->cleared_balance,
                 ];

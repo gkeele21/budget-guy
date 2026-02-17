@@ -16,13 +16,12 @@ const props = defineProps({
 });
 
 const accountTypeLabels = {
+    bank: 'Bank Accounts',
     cash: 'Cash',
-    checking: 'Checking',
-    savings: 'Savings',
-    credit_card: 'Credit Cards',
+    credit: 'Credit Cards',
 };
 
-const accountTypeOrder = ['cash', 'checking', 'savings', 'credit_card'];
+const accountTypeOrder = ['bank', 'cash', 'credit'];
 </script>
 
 <template>

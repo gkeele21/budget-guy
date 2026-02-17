@@ -182,13 +182,93 @@ const formatCurrency = (amount) => {
     }).format(amount);
 };
 
-// Common emoji suggestions for budgeting - organized grid from wireframe
+// Common emoji suggestions for budgeting with category name hints
 const emojiGrid = [
-    '🛒', '🍎', '🥗', '🛍️', '🏠', '⚡', '💧', '📱',
-    '🌐', '🚗', '⛽', '🍽️', '☕', '🎬', '🎮', '🎵',
-    '💪', '💊', '👕', '✂️', '🎁', '✈️', '🏖️', '📚',
-    '🛡️', '💳', '🎓', '🎯', '🆘', '🐾', '👶', '🏋️',
+    // Food & Everyday
+    { emoji: '🛒', label: 'Groceries' },
+    { emoji: '🍽️', label: 'Dining' },
+    { emoji: '🍺', label: 'Drinks' },
+    { emoji: '📦', label: 'General' },
+    // Housing & Utilities
+    { emoji: '🏠', label: 'Mortgage' },
+    { emoji: '⚡', label: 'Power' },
+    { emoji: '🔥', label: 'Natural Gas' },
+    { emoji: '💧', label: 'Water' },
+    { emoji: '🏛️', label: 'Utilities' },
+    { emoji: '🌐', label: 'Internet' },
+    { emoji: '📱', label: 'Phone' },
+    { emoji: '📺', label: 'Subscriptions' },
+    { emoji: '🎫', label: 'Memberships' },
+    // Transportation
+    { emoji: '🚗', label: 'Vehicle' },
+    { emoji: '⛽', label: 'Fuel' },
+    { emoji: '🔧', label: 'Car Repair' },
+    { emoji: '🛡️', label: 'Insurance' },
+    // Personal Care
+    { emoji: '👕', label: 'Clothing' },
+    { emoji: '💊', label: 'Medical' },
+    { emoji: '💪', label: 'Fitness' },
+    { emoji: '🪒', label: 'Personal Care' },
+    // Home & Household
+    { emoji: '🧻', label: 'Household' },
+    { emoji: '🔨', label: 'Home Improve' },
+    { emoji: '🌳', label: 'Landscaping' },
+    { emoji: '💻', label: 'Tech' },
+    // Entertainment & Hobbies
+    { emoji: '🎬', label: 'Entertainment' },
+    { emoji: '🎵', label: 'Music' },
+    { emoji: '⛳', label: 'Golf' },
+    { emoji: '🏅', label: 'Sports' },
+    { emoji: '🏊', label: 'Pool & Spa' },
+    // Shopping & Events
+    { emoji: '🛍️', label: 'Shopping' },
+    { emoji: '🎁', label: 'Gifts' },
+    { emoji: '🎄', label: 'Christmas' },
+    { emoji: '🎉', label: 'Occasions' },
+    // Travel
+    { emoji: '✈️', label: 'Travel' },
+    { emoji: '🏖️', label: 'Vacation' },
+    // Family & Personal
+    { emoji: '👶', label: 'Kids' },
+    { emoji: '🐾', label: 'Pets' },
+    { emoji: '🎓', label: 'School' },
+    { emoji: '👨', label: 'His Money' },
+    { emoji: '👩', label: 'Her Money' },
+    // Financial
+    { emoji: '💳', label: 'Fees' },
+    { emoji: '📈', label: 'Investing' },
+    { emoji: '💰', label: 'Savings' },
+    { emoji: '🆘', label: 'Emergency' },
+    { emoji: '🔄', label: 'Reimburse' },
+    // Church
+    { emoji: '⛪', label: 'Tithing' },
+    { emoji: '🙏', label: 'Fast Offering' },
+    { emoji: '❤️', label: 'Charity' },
+    { emoji: '🌍', label: 'Mission' },
 ];
+
+// Auto-fill category name from icon label if name is empty
+const selectCategoryIcon = (item) => {
+    if (categoryForm.icon === item.emoji) {
+        categoryForm.name = item.label;
+        return;
+    }
+    categoryForm.icon = item.emoji;
+    if (!categoryForm.name) {
+        categoryForm.name = item.label;
+    }
+};
+
+const selectEditIcon = (item) => {
+    if (editForm.icon === item.emoji) {
+        editForm.name = item.label;
+        return;
+    }
+    editForm.icon = item.emoji;
+    if (!editForm.name) {
+        editForm.name = item.label;
+    }
+};
 
 const toggleGroup = (groupId) => {
     collapsedGroups.value[groupId] = !collapsedGroups.value[groupId];
@@ -393,20 +473,21 @@ const isGroupCollapsed = (groupId) => {
                         Icon
                     </div>
                     <div class="bg-surface rounded-xl p-3">
-                        <div class="grid grid-cols-8 gap-1.5">
+                        <div class="grid grid-cols-4 gap-2">
                             <button
-                                v-for="emoji in emojiGrid"
-                                :key="emoji"
+                                v-for="item in emojiGrid"
+                                :key="item.emoji"
                                 type="button"
-                                @click="categoryForm.icon = emoji"
+                                @click="selectCategoryIcon(item)"
                                 :class="[
-                                    'w-9 h-9 flex items-center justify-center text-xl rounded-lg transition-colors',
-                                    categoryForm.icon === emoji
+                                    'flex flex-col items-center gap-0.5 py-1.5 rounded-lg transition-colors',
+                                    categoryForm.icon === item.emoji
                                         ? 'bg-primary/20 ring-2 ring-primary'
                                         : 'bg-surface-overlay hover:bg-border-strong'
                                 ]"
                             >
-                                {{ emoji }}
+                                <span class="text-xl">{{ item.emoji }}</span>
+                                <span class="text-[10px] text-muted leading-tight">{{ item.label }}</span>
                             </button>
                         </div>
                     </div>
@@ -461,20 +542,21 @@ const isGroupCollapsed = (groupId) => {
                         <span class="text-2xl">{{ editForm.icon || '📁' }}</span>
                     </div>
                     <div class="bg-surface rounded-xl p-3">
-                        <div class="grid grid-cols-8 gap-1.5">
+                        <div class="grid grid-cols-4 gap-2">
                             <button
-                                v-for="emoji in emojiGrid"
-                                :key="emoji"
+                                v-for="item in emojiGrid"
+                                :key="item.emoji"
                                 type="button"
-                                @click="editForm.icon = emoji"
+                                @click="selectEditIcon(item)"
                                 :class="[
-                                    'w-9 h-9 flex items-center justify-center text-xl rounded-lg transition-colors',
-                                    editForm.icon === emoji
+                                    'flex flex-col items-center gap-0.5 py-1.5 rounded-lg transition-colors',
+                                    editForm.icon === item.emoji
                                         ? 'bg-primary/20 ring-2 ring-primary'
                                         : 'bg-surface-overlay hover:bg-border-strong'
                                 ]"
                             >
-                                {{ emoji }}
+                                <span class="text-xl">{{ item.emoji }}</span>
+                                <span class="text-[10px] text-muted leading-tight">{{ item.label }}</span>
                             </button>
                         </div>
                     </div>

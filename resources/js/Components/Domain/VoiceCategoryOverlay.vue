@@ -16,13 +16,19 @@ const state = ref('idle');
 const errorMessage = ref('');
 const createdGroups = ref([]);
 
-// Silence timeout — auto-close if nothing heard for 5s
+// Silence timeout — auto-close if nothing heard for 5s, or auto-stop after 5s pause
 let silenceTimer = null;
 
 function startSilenceTimer() {
     clearSilenceTimer();
     silenceTimer = setTimeout(() => {
-        if (state.value === 'listening' && !transcript.value && !interimTranscript.value) {
+        if (state.value !== 'listening') return;
+
+        if (transcript.value || interimTranscript.value) {
+            // User spoke then went silent — auto-finish
+            stop();
+        } else {
+            // Never spoke at all — show error
             abort();
             state.value = 'error';
             errorMessage.value = "I didn't hear anything. Try again?";
@@ -37,10 +43,10 @@ function clearSilenceTimer() {
     }
 }
 
-// Clear silence timer once speech is detected
+// Restart silence timer on speech activity
 watch([transcript, interimTranscript], () => {
-    if (state.value === 'listening' && (transcript.value || interimTranscript.value)) {
-        clearSilenceTimer();
+    if (state.value === 'listening') {
+        startSilenceTimer();
     }
 });
 

@@ -43,7 +43,7 @@ class OnboardingController extends Controller
             'budget_name' => 'required|string|max:255',
             'start_month' => 'nullable|string|date_format:Y-m',
             'account_name' => 'nullable|string|max:255',
-            'account_type' => 'nullable|in:checking,savings,credit_card,cash',
+            'account_type' => 'nullable|in:bank,cash,credit',
             'account_balance' => 'nullable|numeric',
             'use_template' => 'nullable|string|in:starter,none',
         ]);
@@ -70,7 +70,7 @@ class OnboardingController extends Controller
                 Account::create([
                     'budget_id' => $budget->id,
                     'name' => $validated['account_name'],
-                    'type' => $validated['account_type'] ?? 'checking',
+                    'type' => $validated['account_type'] ?? 'bank',
                     'starting_balance' => $validated['account_balance'] ?? 0,
                     'sort_order' => 0,
                 ]);

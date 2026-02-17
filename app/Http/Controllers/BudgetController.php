@@ -163,32 +163,32 @@ class BudgetController extends Controller
         $totalBudgeted = $categoryGroups->sum(fn($g) => $g['categories']->sum('budgeted'));
         $categorizedSpent = $categoryGroups->sum(fn($g) => $g['categories']->sum('spent'));
 
-        // Query uncategorized spending for this month
+        // Query unassigned spending for this month
         $monthStart = $month . '-01';
         $monthEnd = date('Y-m-t', strtotime($monthStart));
 
-        $uncategorizedQuery = $budget->transactions()
+        $unassignedQuery = $budget->transactions()
             ->whereNull('category_id')
             ->where('type', 'expense')
             ->whereDoesntHave('splits')
             ->whereBetween('date', [$monthStart, $monthEnd]);
 
-        $uncategorizedCount = $uncategorizedQuery->count();
-        $uncategorizedTotal = (float) abs($uncategorizedQuery->sum('amount'));
+        $unassignedCount = $unassignedQuery->count();
+        $unassignedTotal = (float) abs($unassignedQuery->sum('amount'));
 
-        $uncategorizedSpending = $uncategorizedCount > 0
-            ? ['count' => $uncategorizedCount, 'total' => $uncategorizedTotal]
+        $unassignedSpending = $unassignedCount > 0
+            ? ['count' => $unassignedCount, 'total' => $unassignedTotal]
             : null;
 
-        // Include uncategorized in total spent
-        $totalSpent = $categorizedSpent + $uncategorizedTotal;
+        // Include unassigned in total spent
+        $totalSpent = $categorizedSpent + $unassignedTotal;
         $totalAvailable = $totalBudgeted - $totalSpent;
 
         // Calculate "Ready to Assign" with month-aware breakdown
         // ($monthStart and $monthEnd already defined above)
 
         // Sum of all account starting balances
-        $totalStartingBalances = $budget->accounts()->sum('starting_balance');
+        $totalStartingBalances = $budget->accounts()->where('is_on_budget', true)->sum('starting_balance');
 
         // Category IDs for budgeted queries
         $budgetCategoryIds = $budget->categoryGroups()
@@ -246,7 +246,7 @@ class BudgetController extends Controller
                 'isFirstMonth' => !$hasPriorActivity,
             ],
             'earliestMonth' => $earliestMonth,
-            'uncategorizedSpending' => $uncategorizedSpending,
+            'unassignedSpending' => $unassignedSpending,
         ]);
     }
 

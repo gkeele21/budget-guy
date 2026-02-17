@@ -16,23 +16,22 @@ const formatCurrency = (amount) => {
     }).format(amount);
 };
 
-const getAccountIcon = (type) => {
+const getAccountIcon = (account) => {
+    if (account.icon) return account.icon;
     const icons = {
-        checking: '🏦',
-        savings: '💰',
-        credit_card: '💳',
+        bank: '🏦',
         cash: '💵',
+        credit: '💳',
     };
-    return icons[type] || '💳';
+    return icons[account.type] || '💳';
 };
 
 // Account type colors map to our 5-color palette
 const getAccountBorderColor = (type) => {
     const colors = {
+        bank: 'border-l-secondary',     // Brand Blue
         cash: 'border-l-primary',       // Brand Green
-        checking: 'border-l-secondary', // Brand Blue
-        savings: 'border-l-success',     // Income Green
-        credit_card: 'border-l-danger', // Expense Red
+        credit: 'border-l-danger',      // Expense Red
     };
     return colors[type] || 'border-l-secondary';
 };
@@ -56,7 +55,7 @@ const hasUncleared = computed(() => {
         ]"
     >
         <div class="flex items-start gap-3">
-            <span class="text-2xl">{{ getAccountIcon(account.type) }}</span>
+            <span class="text-2xl">{{ getAccountIcon(account) }}</span>
             <div>
                 <div class="font-medium text-body">{{ account.name }}</div>
                 <div v-if="hasUncleared" class="text-xs text-danger">

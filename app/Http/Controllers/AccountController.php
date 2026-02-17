@@ -24,6 +24,7 @@ class AccountController extends Controller
                 'id' => $account->id,
                 'name' => $account->name,
                 'type' => $account->type,
+                'icon' => $account->icon,
                 'starting_balance' => (float) $account->starting_balance,
                 'balance' => $account->balance,
                 'is_closed' => $account->is_closed,
@@ -49,7 +50,8 @@ class AccountController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'type' => 'required|in:checking,savings,credit_card,cash',
+            'type' => 'required|in:bank,cash,credit',
+            'icon' => 'nullable|string|max:10',
             'starting_balance' => 'nullable|numeric',
         ]);
 
@@ -59,6 +61,7 @@ class AccountController extends Controller
             'budget_id' => $budget->id,
             'name' => $validated['name'],
             'type' => $validated['type'],
+            'icon' => $validated['icon'] ?? null,
             'starting_balance' => $validated['starting_balance'] ?? 0,
             'sort_order' => $maxOrder + 1,
         ]);
@@ -75,6 +78,7 @@ class AccountController extends Controller
                 'id' => $account->id,
                 'name' => $account->name,
                 'type' => $account->type,
+                'icon' => $account->icon,
                 'starting_balance' => (float) $account->starting_balance,
                 'is_closed' => $account->is_closed,
             ],
@@ -87,7 +91,8 @@ class AccountController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'type' => 'required|in:checking,savings,credit_card,cash',
+            'type' => 'required|in:bank,cash,credit',
+            'icon' => 'nullable|string|max:10',
             'starting_balance' => 'nullable|numeric',
             'is_closed' => 'boolean',
         ]);
