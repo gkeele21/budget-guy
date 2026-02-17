@@ -32,7 +32,7 @@ class DashboardController extends Controller
                     'cleared_balance' => $account->cleared_balance,
                 ];
             })
-            ->groupBy('type');
+            ->values();
 
         return Inertia::render('Dashboard', [
             'accounts' => $accounts,

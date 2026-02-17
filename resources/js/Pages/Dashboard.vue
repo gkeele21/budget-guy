@@ -6,7 +6,7 @@ import { Head } from '@inertiajs/vue3';
 
 const props = defineProps({
     accounts: {
-        type: Object,
+        type: Array,
         required: true,
     },
     budgetName: {
@@ -14,14 +14,6 @@ const props = defineProps({
         required: true,
     },
 });
-
-const accountTypeLabels = {
-    bank: 'Bank Accounts',
-    cash: 'Cash',
-    credit: 'Credit Cards',
-};
-
-const accountTypeOrder = ['bank', 'cash', 'credit'];
 </script>
 
 <template>
@@ -31,27 +23,19 @@ const accountTypeOrder = ['bank', 'cash', 'credit'];
         <template #title>{{ budgetName }}</template>
 
         <div class="p-4 space-y-4">
-            <h1 class="text-lg font-semibold text-body">Accounts</h1>
+            <h2 class="text-sm font-semibold text-warning uppercase tracking-wide px-1">Accounts</h2>
 
-            <!-- Accounts by Type -->
-            <div v-for="type in accountTypeOrder" :key="type">
-                <div v-if="accounts[type] && accounts[type].length > 0" class="space-y-2">
-                    <h2 class="text-sm font-semibold text-warning uppercase tracking-wide px-1">
-                        {{ accountTypeLabels[type] }}
-                    </h2>
-                    <div class="space-y-2">
-                        <AccountCard
-                            v-for="account in accounts[type]"
-                            :key="account.id"
-                            :account="account"
-                        />
-                    </div>
-                </div>
+            <div class="space-y-2">
+                <AccountCard
+                    v-for="account in accounts"
+                    :key="account.id"
+                    :account="account"
+                />
             </div>
 
             <!-- Empty State -->
             <div
-                v-if="Object.keys(accounts).length === 0"
+                v-if="accounts.length === 0"
                 class="text-center py-12"
             >
                 <div class="mb-4 flex justify-center">
