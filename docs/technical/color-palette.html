@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Guy — Color Palette</title>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #7ED957;
+            --primary-light: #8bd93e;
+            --primary-bg: #edfce0;
+            --primary-hover: #6bc94a;
+            --secondary: #2196F3;
+            --secondary-hover: #1976D2;
+            --income: #2E7D32;
+            --income-hover: #256b29;
+            --expense: #E5533D;
+            --expense-hover: #d04a35;
+            --transfer: #2196F3;
+            --bg: #f0f2f5;
+            --surface: #ffffff;
+            --surface-elevated: #ffffff;
+            --surface-inset: #f5f5f5;
+            --surface-header: #2c2c2e;
+            --border: #e5e7eb;
+            --border-dark: #d1d5db;
+            --body: #1F2933;
+            --muted: #6b7280;
+            --subtle: #888888;
+            --inverse: #ffffff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Figtree', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--body);
+            padding: 32px;
+            line-height: 1.5;
+        }
+
+        h1 { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+        .subtitle { color: var(--subtle); margin-bottom: 32px; font-size: 14px; }
+
+        h2 {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--subtle);
+            margin: 32px 0 16px;
+        }
+
+        .palette-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
+
+        .swatch {
+            display: flex;
+            flex-direction: column;
+            border-radius: 12px;
+            overflow: hidden;
+            background: var(--surface);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            min-width: 120px;
+            flex: 1;
+            max-width: 180px;
+        }
+
+        .swatch-color {
+            height: 72px;
+        }
+
+        .swatch-info {
+            padding: 10px 12px;
+        }
+
+        .swatch-name {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .swatch-token {
+            font-size: 10px;
+            color: var(--subtle);
+            margin-bottom: 4px;
+        }
+
+        .swatch-hex {
+            display: inline-block;
+            font-family: monospace;
+            font-size: 11px;
+            font-weight: 500;
+            background: var(--surface-inset);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .swatch-pair {
+            display: flex;
+            gap: 0;
+            border-radius: 12px;
+            overflow: hidden;
+            background: var(--surface);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            min-width: 120px;
+            flex: 1;
+            max-width: 180px;
+        }
+
+        .swatch-pair .swatch-color {
+            height: 72px;
+            flex: 1;
+        }
+
+        .swatch-pair .swatch-color-hover {
+            height: 72px;
+            width: 36px;
+            flex-shrink: 0;
+            border-left: 1px dashed rgba(255,255,255,0.3);
+        }
+    </style>
+</head>
+<body>
+    <h1>Budget Guy</h1>
+    <p class="subtitle">Color Palette — see docs/technical/design-system.md for usage guidelines</p>
+
+    <!-- PRIMARY & SECONDARY -->
+    <h2>Brand Colors</h2>
+    <div class="palette-row">
+        <div class="swatch">
+            <div class="swatch-color" style="background: var(--primary)"></div>
+            <div class="swatch-info">
+                <div class="swatch-name">Primary Green</div>
+                <div class="swatch-token">bg-primary</div>
+                <span class="swatch-hex">#7ED957</span>
+            </div>
+        </div>
+        <div class="swatch">
+            <div class="swatch-color" style="background: var(--primary-hover)"></div>
+            <div class="swatch-info">
+                <div class="swatch-name">Primary Hover</div>
+                <div class="swatch-token">bg-primary-hover</div>
+                <span class="swatch-hex">#6bc94a</span>
+            </div>
+        </div>
+        <div class="swatch">
+            <div class="swatch-color" style="background: var(--primary-bg)"></div>
+            <div class="swatch-info">
+                <div class="swatch-name">Primary BG</div>
+                <div class="swatch-token">bg-primary-bg</div>
+                <span class="swatch-hex">#edfce0</span>
+            </div>
+        </div>
+        <div class="swatch">
+            <div class="swatch-color" style="background: var(--secondary)"></div>
+            <div class="swatch-info">
+                <div class="swatch-name">Secondary Blue</div>
+                <div class="swatch-token">bg-secondary</div>
+                <span class="swatch-hex">#2196F3</span>
+            </div>
+        </div>
+        <div class="swatch">
+            <div class="swatch-color" style="background: var(--secondary-hover)"></div>
+            <div class="swatch-info">
+                <div class="swatch-name">Secondary Hover</div>
+                <div class="swatch-token">bg-secondary-hover</div>
+                <span class="swatch-hex">#1976D2</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- FINANCIAL SEMANTICS -->
+    <h2>Financial Semantics</h2>
+    <div class="palette-row">
+        <div class="swatch">
+            <div class="swatch-color" style="background: var(--income)"></div>
+            <div class="swatch-info">
+                <div class="swatch-name">Income</div>
+                <div class="swatch-token">text-income</div>
+                <span class="swatch-hex">#2E7D32</span>
+            </div>
+        </div>
+        <div class="swatch">
+            <div class="swatch-color" style="background: var(--income-hover)"></div>
+            <div class="swatch-info">
+                <div class="swatch-name">Income Hover</div>
+                <div class="swatch-token">—</div>
+                <span class="swatch-hex">#256b29</span>
+            </div>
+        </div>
+        <div class="swatch">
+            <div class="swatch-color" style="background: var(--expense)"></div>
+            <div class="swatch-info">
+                <div class="swatch-name">Expense</div>
+                <div class="swatch-token">text-expense</div>
+                <span class="swatch-hex">#E5533D</span>
+            </div>
+        </div>
+        <div class="swatch">
+            <div class="swatch-color" style="background: var(--expense-hover)"></div>
+            <div class="swatch-info">
+                <div class="swatch-name">Expense Hover</div>
+                <div class="swatch-token">—</div>
+                <span class="swatch-hex">#d04a35</span>
+            </div>
+        </div>
+        <div class="swatch">
+            <div class="swatch-color" style="background: var(--transfer)"></div>
+            <div class="swatch-info">
+                <div class="swatch-name">Transfer</div>
+                <div class="swatch-token">text-transfer</div>
+                <span class="swatch-hex">#2196F3</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- SURFACES -->
+    <h2>Surfaces</h2>
+    <div class="palette-row">
+        <div class="swatch">
+            <div class="swatch-color" style="background: var(--bg); border-bottom: 1px solid var(--border);"></div>
+            <div class="swatch-info">
+                <div class="swatch-name">Background</div>
+                <div class="swatch-token">bg-bg</div>
+                <span class="swatch-hex">#f0f2f5</span>
+            </div>
+        </div>
+        <div class="swatch">
+            <div class="swatch-color" style="background: var(--surface); border-bottom: 1px solid var(--border);"></div>
+            <div class="swatch-info">
+                <div class="swatch-name">Surface</div>
+                <div class="swatch-token">bg-surface</div>
+                <span class="swatch-hex">#ffffff</span>
+            </div>
+        </div>
+        <div class="swatch">
+            <div class="swatch-color" style="background: var(--surface-inset); border-bottom: 1px solid var(--border);"></div>
+            <div class="swatch-info">
+                <div class="swatch-name">Surface Inset</div>
+                <div class="swatch-token">bg-surface-inset</div>
+                <span class="swatch-hex">#f5f5f5</span>
+            </div>
+        </div>
+        <div class="swatch">
+            <div class="swatch-color" style="background: var(--surface-header)"></div>
+            <div class="swatch-info">
+                <div class="swatch-name">Header</div>
+                <div class="swatch-token">bg-surface-header</div>
+                <span class="swatch-hex">#2c2c2e</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- TEXT -->
+    <h2>Text</h2>
+    <div class="palette-row">
+        <div class="swatch">
+            <div class="swatch-color" style="background: var(--body)"></div>
+            <div class="swatch-info">
+                <div class="swatch-name">Body</div>
+                <div class="swatch-token">text-body</div>
+                <span class="swatch-hex">#1F2933</span>
+            </div>
+        </div>
+        <div class="swatch">
+            <div class="swatch-color" style="background: var(--muted)"></div>
+            <div class="swatch-info">
+                <div class="swatch-name">Muted</div>
+                <div class="swatch-token">text-muted</div>
+                <span class="swatch-hex">#6b7280</span>
+            </div>
+        </div>
+        <div class="swatch">
+            <div class="swatch-color" style="background: var(--subtle)"></div>
+            <div class="swatch-info">
+                <div class="swatch-name">Subtle</div>
+                <div class="swatch-token">text-subtle</div>
+                <span class="swatch-hex">#888888</span>
+            </div>
+        </div>
+        <div class="swatch">
+            <div class="swatch-color" style="background: var(--inverse); border-bottom: 1px solid var(--border);"></div>
+            <div class="swatch-info">
+                <div class="swatch-name">Inverse</div>
+                <div class="swatch-token">text-inverse</div>
+                <span class="swatch-hex">#ffffff</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- BORDERS -->
+    <h2>Borders</h2>
+    <div class="palette-row">
+        <div class="swatch">
+            <div class="swatch-color" style="background: var(--border)"></div>
+            <div class="swatch-info">
+                <div class="swatch-name">Border</div>
+                <div class="swatch-token">border-border</div>
+                <span class="swatch-hex">#e5e7eb</span>
+            </div>
+        </div>
+        <div class="swatch">
+            <div class="swatch-color" style="background: var(--border-dark)"></div>
+            <div class="swatch-info">
+                <div class="swatch-name">Border Strong</div>
+                <div class="swatch-token">border-border-strong</div>
+                <span class="swatch-hex">#d1d5db</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

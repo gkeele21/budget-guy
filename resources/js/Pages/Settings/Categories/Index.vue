@@ -238,12 +238,18 @@ const isGroupCollapsed = (groupId) => {
                 v-if="aiEnabled && voiceSupported && voiceInputEnabled"
                 type="button"
                 @click="showVoiceOverlay = true"
-                class="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-primary/10 border border-dashed border-primary/30 text-primary text-sm font-medium"
+                class="w-full flex items-center gap-3 py-2.5 px-3.5 rounded-xl bg-primary/5 border border-primary/20"
             >
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <div class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 shadow-[0_0_0_2px_rgb(var(--color-primary)/0.3)]">
+                    <img src="/images/Avatar.png" alt="Budget Guy" class="w-full h-full object-cover" />
+                </div>
+                <div class="flex-1 text-left">
+                    <p class="text-body text-sm font-semibold">Tell Budget Guy your categories</p>
+                    <p class="text-subtle text-xs">Tap to describe your groups &amp; categories</p>
+                </div>
+                <svg class="w-4 h-4 text-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
                 </svg>
-                Add categories with voice
             </button>
 
             <!-- Add Group Button -->

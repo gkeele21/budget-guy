@@ -37,11 +37,17 @@ Accounts represent your bank accounts, credit cards, and cash. They track balanc
 | Credit Card | 💳 | Red | Credit purchases |
 | Cash | 💵 | Green | Physical cash |
 
+### Account Icons
+Each account type has a default emoji icon. Users can customize the icon per account.
+
+### Sort Order
+Accounts are displayed in user-defined order via the `sort_order` field. Users can reorder accounts by dragging within the Accounts tab.
+
 ## User Workflows
 
 ### View Account Balances
 1. Navigate to Accounts tab
-2. See all accounts grouped by type
+2. See all accounts ordered by `sort_order`
 3. Each card shows: icon, name, current balance
 4. Credit cards may show pending amount
 5. Tap account to see its transactions

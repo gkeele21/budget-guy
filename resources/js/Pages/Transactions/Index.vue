@@ -718,11 +718,14 @@ const formatNextDate = (dateStr, frequency) => {
             <button
                 v-if="aiEnabled && voiceSupported && voiceInputEnabled && viewMode === 'all'"
                 @click="showVoiceOverlay = true"
-                class="absolute bottom-[76px] right-4 w-10 h-10 bg-surface border border-border rounded-full shadow-lg flex items-center justify-center text-body z-40"
+                class="voice-avatar-fab"
             >
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                </svg>
+                <img src="/images/Avatar.png" alt="Budget Guy" class="w-full h-full rounded-full object-cover" />
+                <span class="voice-avatar-mic-badge">
+                    <svg class="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                    </svg>
+                </span>
             </button>
             <FAB :href="viewMode === 'all' ? route('transactions.create') : route('recurring.create')" />
         </template>
@@ -747,5 +750,49 @@ const formatNextDate = (dateStr, frequency) => {
         box-shadow: none;
         background-color: rgb(var(--color-surface));
     }
+}
+
+.voice-avatar-fab {
+    position: absolute;
+    bottom: 19px;
+    right: 76px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    z-index: 40;
+    box-shadow: 0 4px 16px rgb(var(--color-primary) / 0.25), 0 0 0 2px rgb(var(--color-primary) / 0.4);
+    cursor: pointer;
+    border: none;
+    padding: 0;
+    background: none;
+}
+
+.voice-avatar-fab::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    border: 2px solid rgb(var(--color-primary) / 0.3);
+    animation: avatar-idle-pulse 3s ease-in-out infinite;
+}
+
+@keyframes avatar-idle-pulse {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.08); }
+}
+
+.voice-avatar-mic-badge {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 20px;
+    height: 20px;
+    background: rgb(var(--color-primary));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid rgb(var(--color-bg));
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 </style>

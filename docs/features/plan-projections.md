@@ -50,6 +50,11 @@ The Plan tab allows users to project and plan their budget for future months bef
 3. Projected amounts become the actual monthly budget
 4. Navigate to Budget tab to see applied amounts
 
+### Save Projections as Defaults
+1. Tap "Save as Defaults" from the menu
+2. Updates each category's default amount to match its current projection
+3. Useful when projections have been refined and should become the new baseline
+
 ### Clear All Projections
 1. Tap "Clear All Projections"
 2. Resets all projections to category defaults
@@ -106,6 +111,9 @@ Stored in `budgets.default_monthly_income` as decimal.
 
 ### Sticky Header
 The expected income and summary stats stay visible while scrolling the category list. This lets users see the impact of changes as they scroll.
+
+### Totals Row
+A totals row at the bottom of the category list shows the sum of all projected amounts in a highlighted blue row. This helps users see the total at a glance alongside the per-category breakdown.
 
 ### Default vs Projected Columns
 Showing both columns lets users see how their projection differs from their baseline (default amount).

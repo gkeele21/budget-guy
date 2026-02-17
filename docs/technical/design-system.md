@@ -76,8 +76,8 @@ Background colors for cards and pages.
 ### Font Families
 
 ```css
-font-sans: 'IBM Plex Sans'  /* All UI text */
-font-mono: 'IBM Plex Mono'  /* Currency amounts */
+font-sans: 'Figtree'  /* All UI text */
+font-mono: monospace   /* Currency amounts */
 ```
 
 ### Common Patterns
@@ -247,9 +247,25 @@ Budget Guy uses inline SVG icons and emoji for category icons.
 
 **Category Icons:** Emoji (stored in `categories.icon` field)
 
+**Budget Guy Avatar:** `public/images/Avatar.png` - Cartoon mascot character used in voice overlays and trigger buttons.
+
 **UI Icons:** Inline SVG with current color:
 ```vue
 <svg class="w-5 h-5 text-subtle" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <!-- path -->
 </svg>
 ```
+
+---
+
+## Voice Avatar Animations
+
+CSS animations used in voice overlays (`VoiceOverlay.vue`, `VoiceCategoryOverlay.vue`):
+
+| Animation | Usage | Description |
+|-----------|-------|-------------|
+| `avatar-pulse-ring` | Listening state | 3 concentric rings expanding outward from avatar |
+| `mic-glow` | Mic badge | Red badge pulsing on avatar during listening |
+| `thinking-bounce` | Processing state | 3 dots bouncing sequentially in speech bubble |
+| `avatar-bob` | Processing state | Subtle up/down bob on avatar |
+| `avatar-idle-pulse` | FAB idle state | Gentle pulse ring on avatar trigger button |

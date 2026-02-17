@@ -232,24 +232,31 @@ const displayTranscript = () => {
 
                 <!-- LISTENING STATE -->
                 <div v-if="state === 'listening'" class="relative w-full max-w-sm bg-surface rounded-2xl p-8 text-center">
-                    <!-- Pulsing mic -->
-                    <div class="relative w-20 h-20 mx-auto mb-5">
-                        <div class="voice-pulse-ring"></div>
-                        <div class="voice-pulse-ring voice-pulse-ring-2"></div>
-                        <div class="w-16 h-16 bg-primary rounded-full flex items-center justify-center absolute top-2 left-2">
-                            <svg class="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <!-- Budget Guy avatar with pulse -->
+                    <div class="relative w-[88px] h-[88px] mx-auto mb-4">
+                        <div class="avatar-pulse-ring"></div>
+                        <div class="avatar-pulse-ring avatar-pulse-ring-2"></div>
+                        <div class="avatar-pulse-ring avatar-pulse-ring-3"></div>
+                        <div class="w-[72px] h-[72px] rounded-full absolute top-2 left-2 overflow-hidden shadow-[0_0_0_3px_rgb(var(--color-primary)/0.5)] z-[2]">
+                            <img src="/images/Avatar.png" alt="Budget Guy" class="w-full h-full object-cover" />
+                        </div>
+                        <div class="avatar-mic-indicator">
+                            <svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
                             </svg>
                         </div>
                     </div>
 
-                    <p class="text-body font-semibold mb-1">Listening...</p>
-                    <p v-if="displayTranscript()" class="text-muted text-sm italic mb-4 min-h-[2.5rem]">
-                        "{{ displayTranscript() }}"
-                    </p>
-                    <p v-else class="text-subtle text-sm mb-4 min-h-[2.5rem]">
-                        Say something like "I spent $45 at Shell on gas"
-                    </p>
+                    <p class="text-body font-semibold mb-2">Budget Guy is listening...</p>
+                    <div class="bg-surface-inset rounded-2xl rounded-bl-sm px-3.5 py-2.5 mx-2 mb-3 text-left relative">
+                        <div class="absolute -top-1.5 left-5 w-3 h-3 bg-surface-inset rotate-45 rounded-sm"></div>
+                        <p v-if="displayTranscript()" class="text-body text-sm italic">
+                            "{{ displayTranscript() }}"
+                        </p>
+                        <p v-else class="text-subtle text-sm">
+                            Try: "I spent $45 at Shell on gas"
+                        </p>
+                    </div>
                     <Button
                         v-if="displayTranscript()"
                         variant="primary"
@@ -263,8 +270,17 @@ const displayTranscript = () => {
 
                 <!-- PROCESSING STATE -->
                 <div v-else-if="state === 'processing'" class="relative w-full max-w-sm bg-surface rounded-2xl p-8 text-center">
-                    <div class="w-12 h-12 mx-auto mb-5 border-3 border-border border-t-primary rounded-full animate-spin"></div>
-                    <p class="text-body font-semibold mb-1">Creating transactions...</p>
+                    <div class="relative w-[88px] h-[88px] mx-auto mb-3">
+                        <div class="w-[72px] h-[72px] rounded-full absolute top-2 left-2 overflow-hidden shadow-[0_0_0_3px_rgb(var(--color-primary)/0.2)] z-[2] avatar-bob">
+                            <img src="/images/Avatar.png" alt="Budget Guy" class="w-full h-full object-cover" />
+                        </div>
+                    </div>
+                    <div class="inline-flex gap-1.5 bg-surface-inset rounded-2xl px-4 py-2.5 mb-3">
+                        <div class="thinking-dot"></div>
+                        <div class="thinking-dot"></div>
+                        <div class="thinking-dot"></div>
+                    </div>
+                    <p class="text-body font-semibold mb-1">Budget Guy is on it...</p>
                     <p v-if="transcript" class="text-muted text-sm italic">
                         "{{ transcript }}"
                     </p>
@@ -272,13 +288,20 @@ const displayTranscript = () => {
 
                 <!-- SUCCESS STATE -->
                 <div v-else-if="state === 'success'" class="relative w-full max-w-sm bg-surface rounded-2xl p-8 text-center">
-                    <div class="w-16 h-16 mx-auto mb-4 bg-success/20 rounded-full flex items-center justify-center">
-                        <svg class="w-8 h-8 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
+                    <div class="relative w-[88px] h-[88px] mx-auto mb-3">
+                        <div class="absolute inset-0 border-2 border-primary/30 rounded-full shadow-[0_0_20px_rgb(var(--color-primary)/0.15)]"></div>
+                        <div class="w-[72px] h-[72px] rounded-full absolute top-2 left-2 overflow-hidden shadow-[0_0_0_3px_rgb(var(--color-primary)/0.5)] z-[2]">
+                            <img src="/images/Avatar.png" alt="Budget Guy" class="w-full h-full object-cover" />
+                        </div>
+                        <div class="absolute bottom-1 right-1 w-6 h-6 bg-success rounded-full flex items-center justify-center z-[3] border-2 border-surface">
+                            <svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
                     </div>
-                    <p class="text-body font-semibold mb-2">
-                        Created {{ createdTransactions.length }} transaction{{ createdTransactions.length !== 1 ? 's' : '' }}
+                    <p class="text-success font-semibold mb-1">Done!</p>
+                    <p class="text-muted text-sm mb-2">
+                        Budget Guy created {{ createdTransactions.length }} transaction{{ createdTransactions.length !== 1 ? 's' : '' }}
                     </p>
                     <div class="space-y-1">
                         <div
@@ -296,12 +319,19 @@ const displayTranscript = () => {
 
                 <!-- CLARIFICATION STATE -->
                 <div v-else-if="state === 'clarification'" class="relative w-full max-w-sm bg-surface rounded-2xl p-6">
-                    <p class="text-body font-semibold text-center mb-1">
-                        {{ currentClarification()?.message }}
-                    </p>
-                    <p class="text-muted text-sm italic text-center mb-5">
-                        "{{ transcript }}"
-                    </p>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-11 h-11 rounded-full overflow-hidden flex-shrink-0 shadow-[0_0_0_2px_rgb(var(--color-primary)/0.3)]">
+                            <img src="/images/Avatar.png" alt="Budget Guy" class="w-full h-full object-cover" />
+                        </div>
+                        <div>
+                            <p class="text-body font-semibold text-sm">
+                                {{ currentClarification()?.message }}
+                            </p>
+                            <p class="text-muted text-xs italic">
+                                "{{ transcript }}"
+                            </p>
+                        </div>
+                    </div>
 
                     <div class="space-y-2">
                         <button
@@ -324,11 +354,15 @@ const displayTranscript = () => {
 
                 <!-- ERROR STATE -->
                 <div v-else-if="state === 'error'" class="relative w-full max-w-sm bg-surface rounded-2xl p-8 text-center">
-                    <div class="text-4xl mb-4">
-                        {{ speechError === 'not-allowed' ? '🔇' : isServiceError() ? '⚠️' : '😕' }}
+                    <div class="relative w-[88px] h-[88px] mx-auto mb-3">
+                        <div class="absolute inset-0 border-2 border-danger/30 rounded-full"></div>
+                        <div class="w-[72px] h-[72px] rounded-full absolute top-2 left-2 overflow-hidden shadow-[0_0_0_3px_rgb(var(--color-danger)/0.3)] z-[2]">
+                            <img src="/images/Avatar.png" alt="Budget Guy" class="w-full h-full object-cover" />
+                        </div>
+                        <div class="absolute bottom-1 right-1 w-6 h-6 bg-danger rounded-full flex items-center justify-center z-[3] border-2 border-surface text-white text-xs font-bold">?</div>
                     </div>
                     <p class="text-body font-semibold mb-2">
-                        {{ speechError === 'not-allowed' ? 'Microphone access denied' : isServiceError() ? 'Something went wrong' : "Couldn't understand that" }}
+                        {{ speechError === 'not-allowed' ? 'Microphone access denied' : isServiceError() ? 'Something went wrong' : "Budget Guy didn't catch that" }}
                     </p>
                     <p class="text-muted text-sm mb-5">
                         {{ speechError === 'not-allowed'
@@ -348,26 +382,65 @@ const displayTranscript = () => {
 </template>
 
 <style scoped>
-.voice-pulse-ring {
+.avatar-pulse-ring {
     position: absolute;
     inset: 0;
     border: 2px solid rgb(var(--color-primary));
     border-radius: 50%;
-    animation: voice-pulse 1.5s ease-out infinite;
-    opacity: 0.6;
+    animation: avatar-pulse 2s ease-out infinite;
 }
 
-.voice-pulse-ring-2 {
-    animation-delay: 0.5s;
-    opacity: 0.4;
+.avatar-pulse-ring-2 { animation-delay: 0.7s; }
+.avatar-pulse-ring-3 { animation-delay: 1.4s; }
+
+@keyframes avatar-pulse {
+    0% { transform: scale(1); opacity: 0.5; }
+    100% { transform: scale(1.7); opacity: 0; }
 }
 
-@keyframes voice-pulse {
-    0% { transform: scale(1); opacity: 0.6; }
-    100% { transform: scale(1.5); opacity: 0; }
+.avatar-mic-indicator {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    width: 24px;
+    height: 24px;
+    background: rgb(var(--color-danger));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3;
+    border: 2px solid rgb(var(--color-surface));
+    animation: mic-glow 1s ease-in-out infinite alternate;
 }
 
-.border-3 {
-    border-width: 3px;
+@keyframes mic-glow {
+    0% { box-shadow: 0 0 0 0 rgb(var(--color-danger) / 0.4); }
+    100% { box-shadow: 0 0 8px 3px rgb(var(--color-danger) / 0.3); }
+}
+
+.thinking-dot {
+    width: 8px;
+    height: 8px;
+    background: rgb(var(--color-primary));
+    border-radius: 50%;
+    animation: thinking-bounce 1.4s ease-in-out infinite;
+}
+
+.thinking-dot:nth-child(2) { animation-delay: 0.2s; }
+.thinking-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes thinking-bounce {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+    40% { transform: scale(1); opacity: 1; }
+}
+
+.avatar-bob {
+    animation: subtle-bob 2s ease-in-out infinite;
+}
+
+@keyframes subtle-bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
 }
 </style>

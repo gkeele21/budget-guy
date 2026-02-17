@@ -56,6 +56,20 @@ The Budget view is the primary screen where users manage their monthly envelope 
 2. Sets all categories to their default amounts
 3. Useful for starting a new month
 
+### Copy Projections to Defaults
+1. From the menu, tap "Copy Projections to Defaults"
+2. Updates each category's default amount to match the current projection
+3. Useful when projections have been fine-tuned and should become the new baseline
+
+### Hidden Categories
+- Categories marked as hidden are excluded from the budget view
+- Existing transactions for hidden categories are preserved
+- Hidden categories can be unhidden via Settings → Categories
+
+### Zero Amount Display
+- Categories with $0 budgeted or $0 available display "$0.00" rather than being blank
+- $0 amounts are copyable/selectable like any other amount
+
 ## Design Decisions
 
 ### Why Categories Have Both Budgeted and Available

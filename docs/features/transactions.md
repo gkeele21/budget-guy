@@ -16,11 +16,22 @@ Transactions are the core data of the budgeting system. Every expense, income, a
 
 ### Controllers
 - `app/Http/Controllers/TransactionController.php` - CRUD, toggle cleared, filters
+- `app/Http/Controllers/VoiceTransactionController.php` - Voice input processing via Claude API
+
+### Services
+- `app/Services/VoiceTransactionService.php` - Parses voice transcript into transaction(s)
+- `app/Services/Concerns/CallsClaudeApi.php` - Shared trait for Claude API calls
 
 ### Pages
 - `resources/js/Pages/Transactions/Index.vue` - Transaction list with filters
 - `resources/js/Pages/Transactions/Create.vue` - Add new transaction
 - `resources/js/Pages/Transactions/Edit.vue` - Edit existing transaction
+
+### Components
+- `resources/js/Components/Domain/VoiceOverlay.vue` - Voice input overlay with Budget Guy avatar
+
+### Composables
+- `resources/js/Composables/useSpeechRecognition.js` - Browser Web Speech API wrapper
 
 ### Models
 - `app/Models/Transaction.php` - Main transaction model
@@ -133,6 +144,32 @@ When a payee is selected:
 After saving with different category:
 1. Prompt: "Update default for [Payee]?"
 2. If yes, updates payee's default category
+
+## Voice Input
+
+Budget Guy supports voice-powered transaction creation. Users speak naturally (e.g., "Spent $45 at Target on groceries") and the app creates transactions automatically.
+
+### How It Works
+1. Tap the Budget Guy avatar FAB (positioned beside the main FAB)
+2. Full-screen overlay appears with the avatar in listening state
+3. Browser Speech Recognition captures the transcript in real-time
+4. Transcript is sent to the backend which uses Claude API to parse it
+5. Parsed transactions are created and displayed in the success state
+
+### Voice Overlay States
+- **Listening**: Avatar with pulse rings + red mic badge, speech bubble shows live transcript
+- **Processing**: Avatar with bob animation + thinking dots bubble
+- **Success**: Avatar with green check badge, shows created transaction(s) with undo option
+- **Clarification**: Avatar asks follow-up question (e.g., which account?) with inline response
+- **Error**: Avatar with red `?` badge, retry option
+
+### Voice Trigger
+- Avatar FAB on Transactions Index page (side-by-side with main FAB)
+- Requires `aiEnabled`, `voiceSupported`, and `voiceInputEnabled` feature flags
+- Also available inline on the Create Transaction page
+
+### Batch Creation
+Voice input can create multiple transactions from a single utterance (e.g., "I spent $30 on gas and $50 on groceries"). Success state shows all created transactions with a single undo action.
 
 ## Design Decisions
 

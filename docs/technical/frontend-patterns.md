@@ -408,3 +408,40 @@ Most pages don't need responsive variants since the app is designed for mobile.
 ### Global Error Display
 
 Form errors are typically displayed inline with each field using the `:error` prop.
+
+---
+
+## Voice Overlay Pattern
+
+Voice input uses full-screen overlays teleported to `<body>` with the Budget Guy avatar as the central visual element.
+
+### Components
+- `VoiceOverlay.vue` - Transaction voice input (used on Transactions Index and Create pages)
+- `VoiceCategoryOverlay.vue` - Category voice input (used on Settings/Categories page)
+
+### Avatar Integration
+The Budget Guy avatar (`/images/Avatar.png`) replaces generic mic icons across all voice states:
+- **Listening**: Avatar with 3 concentric pulse rings + red mic badge
+- **Processing**: Avatar with subtle bob animation + thinking dots speech bubble
+- **Success**: Avatar with green check badge + warm glow ring
+- **Clarification**: Avatar beside chat-style question bubble
+- **Error**: Avatar with red `?` badge + red ring
+
+### Trigger Buttons
+- **Transactions**: Avatar FAB positioned side-by-side with the main FAB (bottom-right)
+- **Categories**: Card-style button with mini avatar, "Tell Budget Guy your categories" heading
+
+### Composable: useSpeechRecognition
+Located at `resources/js/Composables/useSpeechRecognition.js`. Wraps the browser Web Speech API:
+
+```vue
+import { useSpeechRecognition } from '@/Composables/useSpeechRecognition';
+
+const { isListening, transcript, start, stop, isSupported } = useSpeechRecognition();
+```
+
+### Voice Feature Flags
+Voice buttons are conditionally rendered based on:
+- `aiEnabled` - AI features enabled for the budget
+- `voiceSupported` - Browser supports Web Speech API
+- `voiceInputEnabled` - Voice input enabled in settings

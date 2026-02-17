@@ -17,9 +17,19 @@ Categories are the "envelopes" in envelope budgeting. Money is allocated to cate
 ### Controllers
 - `app/Http/Controllers/CategoryController.php` - CRUD categories
 - `app/Http/Controllers/CategoryGroupController.php` - CRUD groups
+- `app/Http/Controllers/VoiceCategoryController.php` - Voice category creation via Claude API
+
+### Services
+- `app/Services/VoiceCategoryService.php` - Parses voice transcript into groups and categories
 
 ### Pages
 - `resources/js/Pages/Settings/Categories/Index.vue` - Manage categories
+
+### Components
+- `resources/js/Components/Domain/VoiceCategoryOverlay.vue` - Voice category creation overlay with Budget Guy avatar
+
+### Config
+- `config/emoji.php` - Consolidated emoji configuration for category icons
 
 ### Models
 - `app/Models/Category.php`
@@ -64,6 +74,14 @@ Categories are the "envelopes" in envelope budgeting. Money is allocated to cate
 3. Category won't appear in budget view or pickers
 4. Existing transactions preserved
 5. Can unhide later
+
+### Add Categories with Voice
+1. Go to Settings → Categories
+2. Tap the "Tell Budget Guy your categories" card
+3. Voice overlay appears with Budget Guy avatar
+4. Describe groups and categories naturally (e.g., "Bills group with Rent $1500, Electric $150")
+5. Budget Guy parses the speech and creates groups/categories with default amounts
+6. Success state shows what was created
 
 ### Delete Category
 1. Edit the category
