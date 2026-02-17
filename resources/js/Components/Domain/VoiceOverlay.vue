@@ -364,12 +364,16 @@ const displayTranscript = () => {
                     <p class="text-body font-semibold mb-2">
                         {{ speechError === 'not-allowed' ? 'Microphone access denied' : isServiceError() ? 'Something went wrong' : "Budget Guy didn't catch that" }}
                     </p>
-                    <p class="text-muted text-sm mb-5">
+                    <p class="text-muted text-sm mb-4">
                         {{ speechError === 'not-allowed'
                             ? 'Allow microphone access in your browser settings.'
                             : errorMessage
                         }}
                     </p>
+                    <div v-if="transcript && speechError !== 'not-allowed'" class="bg-surface-inset rounded-lg px-3 py-2 mb-4 text-left select-all">
+                        <p class="text-subtle text-xs font-semibold mb-1">What I heard:</p>
+                        <p class="text-body text-sm italic">"{{ transcript }}"</p>
+                    </div>
                     <div v-if="speechError !== 'not-allowed'" class="flex gap-3">
                         <Button variant="muted" class="flex-1" @click="handleClose">Cancel</Button>
                         <Button variant="primary" class="flex-1" @click="tryAgain">Try Again</Button>
