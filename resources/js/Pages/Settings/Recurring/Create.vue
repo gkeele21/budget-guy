@@ -147,6 +147,7 @@ const getSaveButtonVariant = () => {
                     placeholder="Select category"
                     grouped
                     group-items-key="categories"
+                    searchable
                 />
 
                 <!-- Frequency -->

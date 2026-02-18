@@ -178,6 +178,7 @@ const getCategoryName = (categoryId) => {
                         placeholder="None"
                         grouped
                         group-items-key="categories"
+                        searchable
                         :border-bottom="false"
                     />
                 </div>

@@ -481,10 +481,23 @@ PROMPT;
         $categories = $budget->categoryGroups()
             ->with('categories')
             ->get()
-            ->flatMap(fn ($g) => $g->categories->pluck('name', 'id'))
+            ->flatMap(fn ($g) => $g->categories)
+            ->pluck('name', 'id')
             ->toArray();
 
-        return array_map(function ($tx) use ($accounts, $categories) {
+        // Build payee default category map for fallback
+        $payeeDefaults = $budget->payees()
+            ->whereNotNull('default_category_id')
+            ->pluck('default_category_id', 'name')
+            ->toArray();
+
+        return array_map(function ($tx) use ($accounts, $categories, $payeeDefaults) {
+            // Resolve category with same fallback logic as createExpenseOrIncome
+            $categoryId = $tx['category_id'] ?? null;
+            if (!$categoryId && empty($tx['splits']) && $tx['type'] !== 'transfer' && $tx['payee_name']) {
+                $categoryId = $payeeDefaults[$tx['payee_name']] ?? null;
+            }
+
             return [
                 'data' => $tx,
                 'display' => [
@@ -494,7 +507,7 @@ PROMPT;
                     'account_name' => $accounts[$tx['account_id']] ?? 'Unknown',
                     'category_name' => $tx['type'] === 'transfer'
                         ? null
-                        : (!empty($tx['splits']) ? null : ($categories[$tx['category_id'] ?? 0] ?? 'Unassigned')),
+                        : (!empty($tx['splits']) ? null : ($categories[$categoryId ?? 0] ?? 'Unassigned')),
                     'splits' => !empty($tx['splits']) ? array_map(fn ($s) => [
                         'category' => $categories[$s['category_id'] ?? 0] ?? 'Unassigned',
                         'amount' => $s['amount'],

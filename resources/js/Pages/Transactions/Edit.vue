@@ -216,6 +216,7 @@ const getSaveButtonVariant = () => {
                         placeholder="Select category"
                         grouped
                         group-items-key="categories"
+                        searchable
                         :action-option="{ label: 'Split Transaction...' }"
                         :null-option="{ label: 'Unassigned' }"
                         @action="openSplitModal"
