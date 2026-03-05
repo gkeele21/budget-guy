@@ -590,6 +590,10 @@ const formatNextDate = (dateStr, frequency) => {
                                         <div v-else-if="transaction.type !== 'transfer' && !transaction.is_split" class="text-xs text-subtle mt-0.5 truncate italic">
                                             Unassigned
                                         </div>
+                                        <!-- Memo -->
+                                        <div v-if="transaction.memo" class="text-xs text-muted mt-0.5 truncate italic">
+                                            {{ transaction.memo }}
+                                        </div>
                                     </div>
 
                                     <!-- Right side: Amount + Account + Cleared dot -->
