@@ -1,0 +1,1830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Guy — Desktop / Tablet Responsive Mockups</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #4a4a4a;
+            --surface: #1f1f1f;
+            --surface-elevated: #262626;
+            --surface-overlay: #333333;
+            --surface-inset: #0f0f0f;
+            --surface-header: #0f0f0f;
+            --text: #f5f5f5;
+            --text-muted: #a3a3a3;
+            --text-subtle: #737373;
+            --border: #404040;
+            --border-strong: #525252;
+            --primary: #57d025;
+            --success: #57d025;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --warning: #f47612;
+            --secondary: #3b82f6;
+        }
+
+        body {
+            font-family: 'Figtree', system-ui, -apple-system, sans-serif;
+            background: #1a1a2e;
+            color: #e0e0e0;
+            padding: 32px;
+            line-height: 1.5;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            color: var(--text-muted);
+            font-size: 15px;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        .mockup-label {
+            color: var(--primary);
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            padding: 4px 10px;
+            background: rgba(87, 208, 37, 0.1);
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .mockup-desc {
+            color: #999;
+            font-size: 13px;
+            margin-bottom: 16px;
+            line-height: 1.6;
+        }
+
+        .option-divider {
+            border: none;
+            border-top: 2px dashed #333;
+            margin: 48px 0;
+        }
+
+        .annotation {
+            position: absolute;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--warning);
+            background: rgba(244, 118, 18, 0.15);
+            padding: 2px 6px;
+            border-radius: 3px;
+            border: 1px solid rgba(244, 118, 18, 0.3);
+            white-space: nowrap;
+            z-index: 100;
+        }
+
+        .annotation::before {
+            content: '→ ';
+        }
+
+        /* =============================================
+           DESKTOP FRAME
+           ============================================= */
+        .desktop-frame {
+            width: 1200px;
+            max-width: 100%;
+            margin: 0 auto 16px;
+            background: var(--bg);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            display: flex;
+            height: 700px;
+            position: relative;
+        }
+
+        .desktop-frame.tall {
+            height: 820px;
+        }
+
+        .desktop-frame.short {
+            height: 580px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 200px;
+            background: var(--surface-header);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 16px 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sidebar-logo .logo-circle {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 700;
+            color: #000;
+        }
+
+        .sidebar-logo .logo-text {
+            font-weight: 600;
+            font-size: 15px;
+            color: var(--text);
+        }
+
+        .sidebar-nav {
+            padding: 8px 0;
+            flex: 1;
+        }
+
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.15s;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-nav a:hover {
+            background: var(--surface-overlay);
+            color: var(--text);
+        }
+
+        .sidebar-nav a.active {
+            color: var(--primary);
+            background: rgba(87, 208, 37, 0.08);
+            border-left-color: var(--primary);
+        }
+
+        .sidebar-nav .nav-icon {
+            width: 20px;
+            height: 20px;
+            opacity: 0.7;
+        }
+
+        .sidebar-nav a.active .nav-icon {
+            opacity: 1;
+        }
+
+        .sidebar-footer {
+            padding: 12px 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .sidebar-footer a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-subtle);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .sidebar-footer a:hover {
+            color: var(--text);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .main-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .main-header .header-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .main-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 24px;
+        }
+
+        /* =============================================
+           SHARED COMPONENT STYLES
+           ============================================= */
+        .card {
+            background: var(--surface);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .btn {
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #000;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+
+        .btn-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: transparent;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .text-primary { color: var(--primary); }
+        .text-success { color: var(--success); }
+        .text-danger { color: var(--danger); }
+        .text-info { color: var(--info); }
+        .text-warning { color: var(--warning); }
+        .text-muted { color: var(--text-muted); }
+        .text-subtle { color: var(--text-subtle); }
+        .text-body { color: var(--text); }
+        .font-mono { font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace; }
+
+        .badge-cleared {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            display: inline-block;
+        }
+
+        .badge-uncleared {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            border: 1.5px solid var(--text-subtle);
+            display: inline-block;
+        }
+
+        .segmented {
+            display: inline-flex;
+            background: var(--surface-overlay);
+            border-radius: 8px;
+            padding: 3px;
+        }
+
+        .seg-btn {
+            padding: 5px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .seg-btn.active {
+            background: var(--surface);
+            color: var(--text);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        .filter-chip {
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .filter-chip.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .group-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--warning);
+            margin-bottom: 8px;
+        }
+
+        /* =============================================
+           TABLE OF CONTENTS
+           ============================================= */
+        .toc {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 40px;
+        }
+
+        .toc a {
+            padding: 6px 14px;
+            background: var(--surface);
+            border-radius: 8px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            border: 1px solid var(--border);
+            transition: all 0.15s;
+        }
+
+        .toc a:hover {
+            background: var(--surface-overlay);
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        /* FAB for desktop */
+        .fab-desktop {
+            position: absolute;
+            bottom: 24px;
+            right: 24px;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 300;
+            box-shadow: 0 4px 12px rgba(87, 208, 37, 0.3);
+            border: none;
+            cursor: pointer;
+        }
+
+        .voice-fab {
+            position: absolute;
+            bottom: 24px;
+            right: 80px;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: var(--surface);
+            border: 2px solid var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            box-shadow: 0 2px 8px rgba(87, 208, 37, 0.2);
+            cursor: pointer;
+        }
+
+        /* =============================================
+           MULTI-MONTH BUDGET TABLE
+           ============================================= */
+        .mm-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .mm-table th {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--text-subtle);
+            padding: 8px 8px;
+            background: var(--surface-header);
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .mm-table th:first-child {
+            text-align: left;
+            width: 160px;
+        }
+
+        .mm-table th.month-header {
+            text-align: center;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text);
+            padding: 10px 4px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .mm-table th.month-header.current {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .mm-table th.sub-header {
+            font-size: 10px;
+            padding: 5px 6px;
+            color: var(--text-subtle);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .mm-table td {
+            padding: 8px 8px;
+            font-size: 13px;
+            border-bottom: 1px solid var(--border);
+            text-align: right;
+            font-family: ui-monospace, monospace;
+            font-size: 12px;
+        }
+
+        .mm-table td:first-child {
+            text-align: left;
+            font-family: 'Figtree', system-ui, sans-serif;
+            font-size: 13px;
+        }
+
+        .mm-table .cat-name {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .mm-table .cat-name .emoji { font-size: 13px; }
+
+        .mm-table .editable-cell {
+            background: var(--surface-inset);
+            border-radius: 4px;
+            padding: 2px 6px;
+            text-align: right;
+            display: inline-block;
+            min-width: 60px;
+            cursor: text;
+        }
+
+        .mm-table .future-cell {
+            color: var(--text-subtle);
+            font-style: italic;
+        }
+
+        .mm-table .group-total {
+            background: rgba(59, 130, 246, 0.10);
+            border-top: 2px solid rgba(59, 130, 246, 0.25);
+        }
+
+        .mm-table .group-total td {
+            font-weight: 600;
+            border-bottom: none;
+            padding: 7px 8px;
+        }
+
+        .mm-table .group-total td:first-child {
+            color: var(--info);
+            text-transform: uppercase;
+            font-size: 11px;
+            font-weight: 700;
+            font-family: 'Figtree', system-ui, sans-serif;
+        }
+
+        /* Highlight current month columns */
+        .mm-table .col-current {
+            background: rgba(87, 208, 37, 0.03);
+        }
+
+        .mm-table .group-total .col-current {
+            background: rgba(59, 130, 246, 0.10);
+        }
+
+        /* Ready to Assign bar */
+        .ready-to-assign {
+            border-radius: 12px;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .ready-to-assign.positive { background: var(--primary); }
+        .ready-to-assign.negative { background: var(--danger); }
+
+        /* Month navigation */
+        .month-nav {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .month-arrow {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .month-count-selector {
+            display: inline-flex;
+            background: var(--surface-overlay);
+            border-radius: 6px;
+            padding: 2px;
+            font-size: 12px;
+        }
+
+        .month-count-btn {
+            padding: 3px 10px;
+            border-radius: 4px;
+            border: none;
+            background: transparent;
+            color: var(--text-subtle);
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 12px;
+        }
+
+        .month-count-btn.active {
+            background: var(--surface);
+            color: var(--text);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        /* =============================================
+           ACCOUNTS
+           ============================================= */
+        .account-card {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            padding: 16px;
+            background: var(--surface);
+            border-radius: 12px;
+            border-left: 4px solid var(--info);
+        }
+
+        .account-card.type-savings { border-left-color: var(--success); }
+        .account-card.type-credit { border-left-color: var(--danger); }
+        .account-card.type-cash { border-left-color: var(--warning); }
+
+        .accounts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        /* =============================================
+           TRANSACTIONS TABLE
+           ============================================= */
+        .tx-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .tx-table th {
+            text-align: left;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--text-subtle);
+            padding: 8px 12px;
+            background: var(--surface-header);
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+        }
+
+        .tx-table th.right { text-align: right; }
+
+        .tx-table td {
+            padding: 10px 12px;
+            font-size: 13px;
+            color: var(--text);
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        .tx-table td.right { text-align: right; }
+
+        .tx-table tr:hover td {
+            background: var(--surface-overlay);
+        }
+
+        .tx-table .date-header td {
+            background: transparent;
+            padding: 16px 12px 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--warning);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: none;
+        }
+
+        .tx-table .date-header:hover td {
+            background: transparent;
+        }
+
+        .tx-table .type-indicator {
+            width: 3px;
+            height: 24px;
+            border-radius: 2px;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        .tx-table .type-indicator.expense { background: var(--danger); }
+        .tx-table .type-indicator.income { background: var(--success); }
+        .tx-table .type-indicator.transfer { background: var(--info); }
+
+        .tx-table .payee { font-weight: 500; }
+
+        .tx-table .memo {
+            font-size: 12px;
+            color: var(--text-subtle);
+            font-style: italic;
+        }
+
+        .search-input {
+            background: var(--surface-inset);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 6px 12px 6px 32px;
+            font-size: 13px;
+            color: var(--text);
+            width: 220px;
+        }
+
+        .search-wrapper {
+            position: relative;
+        }
+
+        .search-wrapper::before {
+            content: '🔍';
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 12px;
+            opacity: 0.5;
+        }
+
+        /* =============================================
+           FORM (Transaction Create)
+           ============================================= */
+        .form-container { max-width: 520px; margin: 0 auto; }
+
+        .form-card {
+            background: var(--surface);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .form-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .form-row:last-child { border-bottom: none; }
+
+        .form-row .form-label {
+            font-size: 13px;
+            color: var(--text-subtle);
+            flex-shrink: 0;
+        }
+
+        .form-row .form-value {
+            font-size: 14px;
+            color: var(--text);
+            text-align: right;
+        }
+
+        .form-row .form-placeholder {
+            font-size: 14px;
+            color: var(--text-subtle);
+            text-align: right;
+        }
+
+        /* =============================================
+           CATEGORY DETAIL (side-by-side)
+           ============================================= */
+        .cat-detail-layout {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        .cat-summary-card {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 20px;
+            position: sticky;
+            top: 24px;
+        }
+
+        .cat-summary-stat {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .cat-summary-stat:last-child { border-bottom: none; }
+    </style>
+</head>
+<body>
+
+<h1>Budget Guy — Desktop Responsive Mockups</h1>
+<p class="page-subtitle">
+    These mockups show how the app could look on a ~1200px desktop viewport with a persistent sidebar nav.<br>
+    The big idea: <strong>Budget and Plan pages show multiple months side-by-side</strong> instead of just widening one month.<br>
+    Transactions switch to a proper data table. Forms stay centered. Mobile is untouched.
+</p>
+
+<div class="toc">
+    <a href="#accounts">1. Accounts</a>
+    <a href="#budget">2. Budget (Multi-Month)</a>
+    <a href="#transactions">3. Transactions</a>
+    <a href="#tx-create">4. Add Transaction</a>
+    <a href="#plan">5. Plan (Multi-Month)</a>
+    <a href="#cat-detail">6. Category Detail</a>
+    <a href="#breakpoints">7. Breakpoint Strategy</a>
+</div>
+
+
+<!-- ============================================================
+     1. ACCOUNTS / DASHBOARD
+     ============================================================ -->
+<div id="accounts"></div>
+<div class="mockup-label">Page 1 — Accounts (Dashboard)</div>
+<p class="mockup-desc">
+    Accounts display as a 2-column card grid. Sidebar replaces bottom nav. FAB stays bottom-right of content area.
+</p>
+
+<div class="desktop-frame short" style="position: relative;">
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-circle">B</div>
+            <div class="logo-text">Budget Guy</div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#" class="active">
+                <span class="nav-icon">💳</span> Accounts
+            </a>
+            <a href="#">
+                <span class="nav-icon">🧮</span> Budget
+            </a>
+            <a href="#">
+                <span class="nav-icon">📋</span> Transactions
+            </a>
+            <a href="#">
+                <span class="nav-icon">📊</span> Plan
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="#">⚙️ Settings</a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="main-header">
+            <h2>Bert's Budget</h2>
+        </div>
+        <div class="main-body">
+            <div class="group-label">Accounts</div>
+            <div class="accounts-grid">
+                <div class="account-card">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 20px;">🏦</span>
+                        <div>
+                            <div style="font-weight: 500; color: var(--text); font-size: 14px;">Joint Checking</div>
+                            <div style="font-size: 12px; color: var(--text-subtle);">Checking</div>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div class="font-mono" style="font-weight: 600; font-size: 15px; color: var(--text);">$4,215.83</div>
+                        <div style="font-size: 11px; color: var(--text-subtle);">Cleared: $4,100.00</div>
+                    </div>
+                </div>
+                <div class="account-card type-savings">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 20px;">💰</span>
+                        <div>
+                            <div style="font-weight: 500; color: var(--text); font-size: 14px;">Emergency Fund</div>
+                            <div style="font-size: 12px; color: var(--text-subtle);">Savings</div>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div class="font-mono" style="font-weight: 600; font-size: 15px; color: var(--text);">$12,500.00</div>
+                        <div style="font-size: 11px; color: var(--text-subtle);">Cleared: $12,500.00</div>
+                    </div>
+                </div>
+                <div class="account-card type-credit">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 20px;">💳</span>
+                        <div>
+                            <div style="font-weight: 500; color: var(--text); font-size: 14px;">Citi Visa</div>
+                            <div style="font-size: 12px; color: var(--text-subtle);">Credit Card</div>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div class="font-mono text-danger" style="font-weight: 600; font-size: 15px;">-$1,247.36</div>
+                        <div style="font-size: 11px; color: var(--text-subtle);">Cleared: -$982.00</div>
+                    </div>
+                </div>
+                <div class="account-card type-cash">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 20px;">💵</span>
+                        <div>
+                            <div style="font-weight: 500; color: var(--text); font-size: 14px;">Cash</div>
+                            <div style="font-size: 12px; color: var(--text-subtle);">Cash</div>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div class="font-mono" style="font-weight: 600; font-size: 15px; color: var(--text);">$85.00</div>
+                        <div style="font-size: 11px; color: var(--text-subtle);">Cleared: $85.00</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="fab-desktop">+</div>
+    </div>
+    <div class="annotation" style="top: 12px; right: 12px;">2-col card grid — stacks to 1-col on mobile</div>
+</div>
+
+<hr class="option-divider">
+
+
+<!-- ============================================================
+     2. BUDGET — MULTI-MONTH VIEW
+     ============================================================ -->
+<div id="budget"></div>
+<div class="mockup-label">Page 2 — Budget (Multi-Month View)</div>
+<p class="mockup-desc">
+    <strong>The big idea:</strong> On desktop, show 3 months side-by-side (Feb → Mar → Apr).
+    Categories are pinned on the left. Each month gets Budgeted / Spent / Available columns.
+    The current month is highlighted. You can edit budgeted amounts for any visible month inline.
+    Future months show projected/default amounts in italic. A toggle lets you switch between 1, 2, or 3 months.
+    On mobile, nothing changes — single month view with the left/right arrows.
+</p>
+
+<div class="desktop-frame tall" style="position: relative;">
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-circle">B</div>
+            <div class="logo-text">Budget Guy</div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#">
+                <span class="nav-icon">💳</span> Accounts
+            </a>
+            <a href="#" class="active">
+                <span class="nav-icon">🧮</span> Budget
+            </a>
+            <a href="#">
+                <span class="nav-icon">📋</span> Transactions
+            </a>
+            <a href="#">
+                <span class="nav-icon">📊</span> Plan
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="#">⚙️ Settings</a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="main-header">
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <h2>Budget</h2>
+                <div class="month-nav">
+                    <span class="month-arrow">‹</span>
+                    <span style="font-weight: 600; font-size: 14px; color: var(--text);">Feb – Apr 2026</span>
+                    <span class="month-arrow">›</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <span style="font-size: 12px; color: var(--text-subtle);">Months:</span>
+                <div class="month-count-selector">
+                    <button class="month-count-btn">1</button>
+                    <button class="month-count-btn">2</button>
+                    <button class="month-count-btn active">3</button>
+                </div>
+                <span style="font-size: 12px; color: var(--text-subtle); margin-left: 8px;">Details</span>
+                <div style="width: 32px; height: 18px; background: var(--border); border-radius: 9px; position: relative;">
+                    <div style="width: 14px; height: 14px; background: var(--text-muted); border-radius: 50%; position: absolute; left: 2px; top: 2px;"></div>
+                </div>
+                <span style="font-size: 16px; cursor: pointer; color: var(--text-muted); margin-left: 4px;">⋮</span>
+            </div>
+        </div>
+
+        <div class="main-body" style="padding: 16px 20px;">
+            <!-- Ready to Assign (current month) -->
+            <div class="ready-to-assign positive" style="margin-bottom: 16px;">
+                <div>
+                    <span style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: rgba(255,255,255,0.85); font-weight: 500;">Ready to Assign</span>
+                    <span style="font-size: 11px; color: rgba(255,255,255,0.6); margin-left: 6px;">March 2026</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span class="font-mono" style="font-size: 22px; font-weight: 700; color: #fff;">$350.00</span>
+                    <span style="font-size: 14px; color: rgba(255,255,255,0.6); cursor: pointer;">ℹ</span>
+                </div>
+            </div>
+
+            <!-- Multi-Month Budget Table: Fixed Expenses -->
+            <div class="group-label">Fixed Expenses</div>
+            <div class="card" style="margin-bottom: 16px;">
+                <table class="mm-table">
+                    <thead>
+                        <!-- Month headers spanning 3 sub-columns each -->
+                        <tr>
+                            <th rowspan="2" style="vertical-align: bottom;">Category</th>
+                            <th class="month-header" colspan="3" style="border-left: 1px solid var(--border);">February</th>
+                            <th class="month-header current" colspan="3" style="border-left: 1px solid var(--border);">March</th>
+                            <th class="month-header" colspan="3" style="border-left: 1px solid var(--border);">April</th>
+                        </tr>
+                        <tr>
+                            <th class="sub-header" style="border-left: 1px solid var(--border);">Budget</th>
+                            <th class="sub-header">Spent</th>
+                            <th class="sub-header">Avail</th>
+                            <th class="sub-header col-current" style="border-left: 1px solid var(--border);">Budget</th>
+                            <th class="sub-header col-current">Spent</th>
+                            <th class="sub-header col-current">Avail</th>
+                            <th class="sub-header" style="border-left: 1px solid var(--border);">Budget</th>
+                            <th class="sub-header">Spent</th>
+                            <th class="sub-header">Avail</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><div class="cat-name"><span class="emoji">🏠</span> Mortgage</div></td>
+                            <!-- Feb -->
+                            <td style="border-left: 1px solid var(--border);">1,850</td>
+                            <td class="text-muted">1,850</td>
+                            <td class="text-success">0.00</td>
+                            <!-- Mar (current) -->
+                            <td class="col-current" style="border-left: 1px solid var(--border);"><span class="editable-cell">1,850</span></td>
+                            <td class="col-current text-muted">1,850</td>
+                            <td class="col-current text-success">0.00</td>
+                            <!-- Apr (future) -->
+                            <td class="future-cell" style="border-left: 1px solid var(--border);"><span class="editable-cell">1,850</span></td>
+                            <td class="future-cell">—</td>
+                            <td class="future-cell">1,850</td>
+                        </tr>
+                        <tr>
+                            <td><div class="cat-name"><span class="emoji">⚡</span> Utilities</div></td>
+                            <td style="border-left: 1px solid var(--border);">280</td>
+                            <td class="text-muted">267</td>
+                            <td class="text-success">13.00</td>
+                            <td class="col-current" style="border-left: 1px solid var(--border);"><span class="editable-cell">280</span></td>
+                            <td class="col-current text-muted">215</td>
+                            <td class="col-current text-success">65.00</td>
+                            <td class="future-cell" style="border-left: 1px solid var(--border);"><span class="editable-cell">280</span></td>
+                            <td class="future-cell">—</td>
+                            <td class="future-cell">280</td>
+                        </tr>
+                        <tr>
+                            <td><div class="cat-name"><span class="emoji">📱</span> Phone</div></td>
+                            <td style="border-left: 1px solid var(--border);">85</td>
+                            <td class="text-muted">85</td>
+                            <td class="text-success">0.00</td>
+                            <td class="col-current" style="border-left: 1px solid var(--border);"><span class="editable-cell">85</span></td>
+                            <td class="col-current text-muted">85</td>
+                            <td class="col-current text-success">0.00</td>
+                            <td class="future-cell" style="border-left: 1px solid var(--border);"><span class="editable-cell">85</span></td>
+                            <td class="future-cell">—</td>
+                            <td class="future-cell">85</td>
+                        </tr>
+                        <tr>
+                            <td><div class="cat-name"><span class="emoji">🛡️</span> Insurance</div></td>
+                            <td style="border-left: 1px solid var(--border);">320</td>
+                            <td class="text-muted">320</td>
+                            <td class="text-success">0.00</td>
+                            <td class="col-current" style="border-left: 1px solid var(--border);"><span class="editable-cell">320</span></td>
+                            <td class="col-current text-muted">320</td>
+                            <td class="col-current text-success">0.00</td>
+                            <td class="future-cell" style="border-left: 1px solid var(--border);"><span class="editable-cell">320</span></td>
+                            <td class="future-cell">—</td>
+                            <td class="future-cell">320</td>
+                        </tr>
+                        <tr class="group-total">
+                            <td>Total</td>
+                            <td style="border-left: 1px solid var(--border);">2,535</td>
+                            <td class="text-muted">2,522</td>
+                            <td class="text-success">13.00</td>
+                            <td class="col-current" style="border-left: 1px solid var(--border);">2,535</td>
+                            <td class="col-current text-muted">2,470</td>
+                            <td class="col-current text-success">65.00</td>
+                            <td style="border-left: 1px solid var(--border);">2,535</td>
+                            <td class="text-muted">—</td>
+                            <td>2,535</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Multi-Month Budget Table: Variable Expenses -->
+            <div class="group-label">Variable Expenses</div>
+            <div class="card" style="margin-bottom: 16px;">
+                <table class="mm-table">
+                    <thead>
+                        <tr>
+                            <th rowspan="2" style="vertical-align: bottom;">Category</th>
+                            <th class="month-header" colspan="3" style="border-left: 1px solid var(--border);">February</th>
+                            <th class="month-header current" colspan="3" style="border-left: 1px solid var(--border);">March</th>
+                            <th class="month-header" colspan="3" style="border-left: 1px solid var(--border);">April</th>
+                        </tr>
+                        <tr>
+                            <th class="sub-header" style="border-left: 1px solid var(--border);">Budget</th>
+                            <th class="sub-header">Spent</th>
+                            <th class="sub-header">Avail</th>
+                            <th class="sub-header col-current" style="border-left: 1px solid var(--border);">Budget</th>
+                            <th class="sub-header col-current">Spent</th>
+                            <th class="sub-header col-current">Avail</th>
+                            <th class="sub-header" style="border-left: 1px solid var(--border);">Budget</th>
+                            <th class="sub-header">Spent</th>
+                            <th class="sub-header">Avail</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><div class="cat-name"><span class="emoji">🛒</span> Groceries</div></td>
+                            <td style="border-left: 1px solid var(--border);">600</td>
+                            <td class="text-muted">583</td>
+                            <td class="text-success">17.00</td>
+                            <td class="col-current" style="border-left: 1px solid var(--border);"><span class="editable-cell">600</span></td>
+                            <td class="col-current text-muted">423</td>
+                            <td class="col-current text-success">177.00</td>
+                            <td class="future-cell" style="border-left: 1px solid var(--border);"><span class="editable-cell">600</span></td>
+                            <td class="future-cell">—</td>
+                            <td class="future-cell">600</td>
+                        </tr>
+                        <tr>
+                            <td><div class="cat-name"><span class="emoji">⛽</span> Gas</div></td>
+                            <td style="border-left: 1px solid var(--border);">200</td>
+                            <td class="text-muted">178</td>
+                            <td class="text-success">22.00</td>
+                            <td class="col-current" style="border-left: 1px solid var(--border);"><span class="editable-cell">200</span></td>
+                            <td class="col-current text-muted">88</td>
+                            <td class="col-current text-success">112.00</td>
+                            <td class="future-cell" style="border-left: 1px solid var(--border);"><span class="editable-cell">200</span></td>
+                            <td class="future-cell">—</td>
+                            <td class="future-cell">200</td>
+                        </tr>
+                        <tr>
+                            <td><div class="cat-name"><span class="emoji">🍽️</span> Dining Out</div></td>
+                            <td style="border-left: 1px solid var(--border);">150</td>
+                            <td class="text-muted">162</td>
+                            <td class="text-danger">-12.00</td>
+                            <td class="col-current" style="border-left: 1px solid var(--border);"><span class="editable-cell">150</span></td>
+                            <td class="col-current text-muted">182</td>
+                            <td class="col-current text-danger">-32.00</td>
+                            <td class="future-cell" style="border-left: 1px solid var(--border);"><span class="editable-cell">150</span></td>
+                            <td class="future-cell">—</td>
+                            <td class="future-cell">150</td>
+                        </tr>
+                        <tr>
+                            <td><div class="cat-name"><span class="emoji">🎬</span> Entertainment</div></td>
+                            <td style="border-left: 1px solid var(--border);">100</td>
+                            <td class="text-muted">45</td>
+                            <td class="text-success">55.00</td>
+                            <td class="col-current" style="border-left: 1px solid var(--border);"><span class="editable-cell">100</span></td>
+                            <td class="col-current text-muted">65</td>
+                            <td class="col-current text-success">35.00</td>
+                            <td class="future-cell" style="border-left: 1px solid var(--border);"><span class="editable-cell">100</span></td>
+                            <td class="future-cell">—</td>
+                            <td class="future-cell">100</td>
+                        </tr>
+                        <tr class="group-total">
+                            <td>Total</td>
+                            <td style="border-left: 1px solid var(--border);">1,050</td>
+                            <td class="text-muted">968</td>
+                            <td class="text-success">82.00</td>
+                            <td class="col-current" style="border-left: 1px solid var(--border);">1,050</td>
+                            <td class="col-current text-muted">758</td>
+                            <td class="col-current text-success">292.00</td>
+                            <td style="border-left: 1px solid var(--border);">1,050</td>
+                            <td class="text-muted">—</td>
+                            <td>1,050</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="annotation" style="top: 12px; right: 12px;">3 months side-by-side — the desktop killer feature</div>
+    <div class="annotation" style="top: 48px; right: 12px;">Toggle between 1 / 2 / 3 visible months</div>
+    <div class="annotation" style="bottom: 12px; left: 220px;">Current month highlighted with green header + subtle bg tint</div>
+</div>
+
+<hr class="option-divider">
+
+
+<!-- ============================================================
+     3. TRANSACTIONS
+     ============================================================ -->
+<div id="transactions"></div>
+<div class="mockup-label">Page 3 — Transactions</div>
+<p class="mockup-desc">
+    Transaction cards become a proper data table on desktop. Filters are always visible in a top bar.
+    Account filter chips show inline without horizontal scroll. Type indicator replaces the card's left border.
+    Summary row (Income / Spent / Net) sits below the filters.
+</p>
+
+<div class="desktop-frame tall" style="position: relative;">
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-circle">B</div>
+            <div class="logo-text">Budget Guy</div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#">
+                <span class="nav-icon">💳</span> Accounts
+            </a>
+            <a href="#">
+                <span class="nav-icon">🧮</span> Budget
+            </a>
+            <a href="#" class="active">
+                <span class="nav-icon">📋</span> Transactions
+            </a>
+            <a href="#">
+                <span class="nav-icon">📊</span> Plan
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="#">⚙️ Settings</a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="main-header">
+            <h2>Transactions</h2>
+            <div class="header-actions">
+                <div class="segmented">
+                    <button class="seg-btn active">All</button>
+                    <button class="seg-btn">Recurring</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-body" style="padding: 16px 24px;">
+            <!-- Filter Bar -->
+            <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 12px; flex-wrap: wrap;">
+                <div class="search-wrapper">
+                    <input type="text" class="search-input" placeholder="Search payee, memo, amount...">
+                </div>
+                <div style="display: flex; gap: 0; border-bottom: 1px solid var(--border);">
+                    <span class="filter-chip active">All Accounts</span>
+                    <span class="filter-chip">Joint Checking</span>
+                    <span class="filter-chip">Emergency Fund</span>
+                    <span class="filter-chip">Citi Visa</span>
+                    <span class="filter-chip">Cash</span>
+                    <span style="width: 1px; background: var(--border); margin: 4px 8px;"></span>
+                    <span class="filter-chip">Unassigned</span>
+                </div>
+                <button class="btn-icon" title="Filters" style="margin-left: auto;">
+                    <span style="font-size: 14px;">🔽</span>
+                </button>
+            </div>
+
+            <!-- Summary Row -->
+            <div class="card" style="display: flex; align-items: center; justify-content: center; gap: 0; padding: 10px 20px; margin-bottom: 12px; font-size: 13px;">
+                <div style="text-align: center; flex: 1;">
+                    <div style="font-size: 11px; color: var(--text-subtle); text-transform: uppercase;">Income</div>
+                    <div class="font-mono text-success" style="font-weight: 600;">$5,200.00</div>
+                </div>
+                <div style="width: 1px; height: 32px; background: var(--border);"></div>
+                <div style="text-align: center; flex: 1;">
+                    <div style="font-size: 11px; color: var(--text-subtle); text-transform: uppercase;">Spent</div>
+                    <div class="font-mono text-danger" style="font-weight: 600;">$3,142.77</div>
+                </div>
+                <div style="width: 1px; height: 32px; background: var(--border);"></div>
+                <div style="text-align: center; flex: 1;">
+                    <div style="font-size: 11px; color: var(--text-subtle); text-transform: uppercase;">Net</div>
+                    <div class="font-mono text-success" style="font-weight: 600;">$2,057.23</div>
+                </div>
+            </div>
+
+            <!-- Transactions Table -->
+            <div class="card">
+                <table class="tx-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 30px;"></th>
+                            <th>Payee</th>
+                            <th>Category</th>
+                            <th>Account</th>
+                            <th class="right">Amount</th>
+                            <th style="width: 32px; text-align: center;">✓</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="date-header">
+                            <td colspan="6">Today</td>
+                        </tr>
+                        <tr>
+                            <td><span class="type-indicator expense"></span></td>
+                            <td><span class="payee">Costco</span></td>
+                            <td class="text-muted">🛒 Groceries</td>
+                            <td class="text-muted">Joint Checking</td>
+                            <td class="right font-mono text-danger">-$127.43</td>
+                            <td style="text-align: center;"><span class="badge-uncleared"></span></td>
+                        </tr>
+                        <tr>
+                            <td><span class="type-indicator expense"></span></td>
+                            <td><span class="payee">Shell Gas</span></td>
+                            <td class="text-muted">⛽ Gas</td>
+                            <td class="text-muted">Joint Checking</td>
+                            <td class="right font-mono text-danger">-$52.18</td>
+                            <td style="text-align: center;"><span class="badge-cleared"></span></td>
+                        </tr>
+                        <tr class="date-header">
+                            <td colspan="6">Yesterday</td>
+                        </tr>
+                        <tr>
+                            <td><span class="type-indicator expense"></span></td>
+                            <td>
+                                <span class="payee">Chipotle</span>
+                                <div class="memo">lunch with team</div>
+                            </td>
+                            <td class="text-muted">🍽️ Dining Out</td>
+                            <td class="text-muted">Citi Visa</td>
+                            <td class="right font-mono text-danger">-$14.85</td>
+                            <td style="text-align: center;"><span class="badge-uncleared"></span></td>
+                        </tr>
+                        <tr>
+                            <td><span class="type-indicator income"></span></td>
+                            <td><span class="payee">Acme Corp</span></td>
+                            <td class="text-muted" style="font-style: italic;">Income</td>
+                            <td class="text-muted">Joint Checking</td>
+                            <td class="right font-mono text-success">$2,600.00</td>
+                            <td style="text-align: center;"><span class="badge-cleared"></span></td>
+                        </tr>
+                        <tr>
+                            <td><span class="type-indicator transfer"></span></td>
+                            <td><span class="payee text-info">↔ Transfer</span></td>
+                            <td class="text-muted">—</td>
+                            <td class="text-muted">Checking → Savings</td>
+                            <td class="right font-mono text-info">$500.00</td>
+                            <td style="text-align: center;"><span class="badge-cleared"></span></td>
+                        </tr>
+                        <tr class="date-header">
+                            <td colspan="6">Mon, Mar 2</td>
+                        </tr>
+                        <tr>
+                            <td><span class="type-indicator expense"></span></td>
+                            <td>
+                                <span class="payee">Netflix</span>
+                                <span style="color: var(--primary); font-size: 11px; margin-left: 4px;">↻</span>
+                            </td>
+                            <td class="text-muted">📺 Netflix</td>
+                            <td class="text-muted">Citi Visa</td>
+                            <td class="right font-mono text-danger">-$22.99</td>
+                            <td style="text-align: center;"><span class="badge-cleared"></span></td>
+                        </tr>
+                        <tr>
+                            <td><span class="type-indicator expense"></span></td>
+                            <td><span class="payee">Target</span></td>
+                            <td class="text-muted">
+                                <span style="color: var(--primary); font-size: 12px;">Split (2)</span>
+                            </td>
+                            <td class="text-muted">Citi Visa</td>
+                            <td class="right font-mono text-danger">-$84.32</td>
+                            <td style="text-align: center;"><span class="badge-uncleared"></span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="voice-fab">🎙</div>
+        <div class="fab-desktop">+</div>
+    </div>
+    <div class="annotation" style="top: 12px; right: 12px;">Table view replaces card list on desktop</div>
+    <div class="annotation" style="top: 90px; right: 12px;">Filters always visible — no overlay needed</div>
+</div>
+
+<hr class="option-divider">
+
+
+<!-- ============================================================
+     4. TRANSACTION CREATE
+     ============================================================ -->
+<div id="tx-create"></div>
+<div class="mockup-label">Page 4 — Add Transaction</div>
+<p class="mockup-desc">
+    The form stays centered at max-w-lg (~520px). Identical to mobile but with more breathing room.
+    No sidebar — this is a focused modal-like experience. BottomSheet pickers become dropdown popovers on desktop.
+</p>
+
+<div class="desktop-frame" style="position: relative; background: var(--bg);">
+    <div class="main-content" style="width: 100%;">
+        <div style="background: var(--surface); border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between;">
+            <span style="color: var(--text-subtle); font-weight: 500; cursor: pointer;">✕ Cancel</span>
+            <span style="font-weight: 600; color: var(--text);">New Transaction</span>
+            <span style="font-weight: 600; color: var(--danger); cursor: pointer;">Save</span>
+        </div>
+
+        <div class="main-body" style="display: flex; justify-content: center; padding-top: 32px;">
+            <div class="form-container">
+                <div class="segmented" style="display: flex; width: 100%; margin-bottom: 16px;">
+                    <button class="seg-btn" style="flex: 1; text-align: center; background: var(--danger); color: #fff; font-weight: 600;">Expense</button>
+                    <button class="seg-btn" style="flex: 1; text-align: center;">Income</button>
+                    <button class="seg-btn" style="flex: 1; text-align: center;">Transfer</button>
+                </div>
+
+                <div class="form-card">
+                    <div class="form-row">
+                        <span class="form-label">Payee</span>
+                        <span class="form-value">Costco</span>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">Amount</span>
+                        <span class="form-value font-mono text-danger">$127.43</span>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">Category</span>
+                        <span class="form-value">🛒 Groceries</span>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">Account</span>
+                        <span class="form-value">Joint Checking</span>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">Date</span>
+                        <span class="form-value">March 5, 2026</span>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">Cleared</span>
+                        <span class="form-value text-subtle">Not yet</span>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">Memo</span>
+                        <span class="form-placeholder">Add note...</span>
+                    </div>
+                </div>
+
+                <div style="margin-top: 12px; padding: 12px; border: 1px dashed rgba(87, 208, 37, 0.3); border-radius: 12px; background: rgba(87, 208, 37, 0.05); text-align: center; color: var(--primary); font-size: 13px; font-weight: 500;">
+                    🎙 Tap to speak transaction
+                </div>
+
+                <button class="btn btn-primary" style="width: 100%; margin-top: 24px; padding: 14px; font-size: 15px; border-radius: 12px; justify-content: center; background: var(--danger); color: #fff;">
+                    Save Transaction
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="annotation" style="top: 12px; right: 12px;">Centered max-w-lg form — no sidebar</div>
+    <div class="annotation" style="bottom: 60px; right: 12px;">BottomSheet pickers → dropdown popovers</div>
+</div>
+
+<hr class="option-divider">
+
+
+<!-- ============================================================
+     5. PLAN — MULTI-MONTH VIEW
+     ============================================================ -->
+<div id="plan"></div>
+<div class="mockup-label">Page 5 — Plan (Multi-Month Projections)</div>
+<p class="mockup-desc">
+    <strong>Same multi-month idea applied to Plan:</strong> Show 3 projection columns side-by-side.
+    Each column is a future month with editable projected amounts. The "Default" column becomes the frozen left reference.
+    This lets you plan different amounts for different months (e.g., higher groceries in December).
+    Menu actions become labeled toolbar buttons.
+</p>
+
+<div class="desktop-frame tall" style="position: relative;">
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-circle">B</div>
+            <div class="logo-text">Budget Guy</div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#">
+                <span class="nav-icon">💳</span> Accounts
+            </a>
+            <a href="#">
+                <span class="nav-icon">🧮</span> Budget
+            </a>
+            <a href="#">
+                <span class="nav-icon">📋</span> Transactions
+            </a>
+            <a href="#" class="active">
+                <span class="nav-icon">📊</span> Plan
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="#">⚙️ Settings</a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="main-header">
+            <h2>Plan Budget</h2>
+            <div class="header-actions" style="gap: 6px;">
+                <button class="btn btn-ghost" style="font-size: 12px;">Copy Defaults</button>
+                <button class="btn btn-ghost" style="font-size: 12px;">Apply to Budget</button>
+                <button class="btn btn-ghost" style="font-size: 12px;">Save as Defaults</button>
+            </div>
+        </div>
+
+        <div class="main-body" style="padding: 16px 20px;">
+            <!-- Plan Stats -->
+            <div class="card" style="margin-bottom: 16px;">
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; padding: 12px 20px;">
+                    <div>
+                        <div style="font-size: 11px; text-transform: uppercase; color: var(--text-subtle);">Expected Income</div>
+                        <div class="font-mono text-success" style="font-weight: 600; font-size: 16px; cursor: pointer; border-bottom: 1px dashed var(--text-subtle); display: inline-block;">$5,200.00</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 11px; text-transform: uppercase; color: var(--text-subtle);">Total Projected</div>
+                        <div class="font-mono" style="font-weight: 600; font-size: 16px; color: var(--text);">$4,850.00</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 11px; text-transform: uppercase; color: var(--text-subtle);">Left to Allocate</div>
+                        <div class="font-mono text-success" style="font-weight: 600; font-size: 16px;">$350.00</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Multi-Month Plan Table -->
+            <div class="group-label">Fixed Expenses</div>
+            <div class="card" style="margin-bottom: 16px;">
+                <table class="mm-table">
+                    <thead>
+                        <tr>
+                            <th rowspan="2" style="vertical-align: bottom;">Category</th>
+                            <th class="month-header" colspan="1" style="border-left: 1px solid var(--border); font-size: 11px; color: var(--text-subtle);">Default</th>
+                            <th class="month-header current" colspan="1" style="border-left: 1px solid var(--border);">April</th>
+                            <th class="month-header" colspan="1" style="border-left: 1px solid var(--border);">May</th>
+                            <th class="month-header" colspan="1" style="border-left: 1px solid var(--border);">June</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><div class="cat-name"><span class="emoji">🏠</span> Mortgage</div></td>
+                            <td class="text-muted" style="border-left: 1px solid var(--border);">1,850</td>
+                            <td class="col-current" style="border-left: 1px solid var(--border);"><span class="editable-cell">1,850</span></td>
+                            <td style="border-left: 1px solid var(--border);"><span class="editable-cell">1,850</span></td>
+                            <td style="border-left: 1px solid var(--border);"><span class="editable-cell">1,850</span></td>
+                        </tr>
+                        <tr>
+                            <td><div class="cat-name"><span class="emoji">⚡</span> Utilities</div></td>
+                            <td class="text-muted" style="border-left: 1px solid var(--border);">280</td>
+                            <td class="col-current" style="border-left: 1px solid var(--border);"><span class="editable-cell">280</span></td>
+                            <td style="border-left: 1px solid var(--border);"><span class="editable-cell">320</span></td>
+                            <td style="border-left: 1px solid var(--border);"><span class="editable-cell">350</span></td>
+                        </tr>
+                        <tr>
+                            <td><div class="cat-name"><span class="emoji">📱</span> Phone</div></td>
+                            <td class="text-muted" style="border-left: 1px solid var(--border);">85</td>
+                            <td class="col-current" style="border-left: 1px solid var(--border);"><span class="editable-cell">85</span></td>
+                            <td style="border-left: 1px solid var(--border);"><span class="editable-cell">85</span></td>
+                            <td style="border-left: 1px solid var(--border);"><span class="editable-cell">85</span></td>
+                        </tr>
+                        <tr class="group-total">
+                            <td>Total</td>
+                            <td class="text-muted" style="border-left: 1px solid var(--border);">2,215</td>
+                            <td class="col-current" style="border-left: 1px solid var(--border);">2,215</td>
+                            <td style="border-left: 1px solid var(--border);">2,255</td>
+                            <td style="border-left: 1px solid var(--border);">2,285</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="group-label">Variable Expenses</div>
+            <div class="card" style="margin-bottom: 16px;">
+                <table class="mm-table">
+                    <thead>
+                        <tr>
+                            <th rowspan="2" style="vertical-align: bottom;">Category</th>
+                            <th class="month-header" colspan="1" style="border-left: 1px solid var(--border); font-size: 11px; color: var(--text-subtle);">Default</th>
+                            <th class="month-header current" colspan="1" style="border-left: 1px solid var(--border);">April</th>
+                            <th class="month-header" colspan="1" style="border-left: 1px solid var(--border);">May</th>
+                            <th class="month-header" colspan="1" style="border-left: 1px solid var(--border);">June</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><div class="cat-name"><span class="emoji">🛒</span> Groceries</div></td>
+                            <td class="text-muted" style="border-left: 1px solid var(--border);">600</td>
+                            <td class="col-current" style="border-left: 1px solid var(--border);"><span class="editable-cell">600</span></td>
+                            <td style="border-left: 1px solid var(--border);"><span class="editable-cell">600</span></td>
+                            <td style="border-left: 1px solid var(--border);"><span class="editable-cell">650</span></td>
+                        </tr>
+                        <tr>
+                            <td><div class="cat-name"><span class="emoji">⛽</span> Gas</div></td>
+                            <td class="text-muted" style="border-left: 1px solid var(--border);">200</td>
+                            <td class="col-current" style="border-left: 1px solid var(--border);"><span class="editable-cell">200</span></td>
+                            <td style="border-left: 1px solid var(--border);"><span class="editable-cell">200</span></td>
+                            <td style="border-left: 1px solid var(--border);"><span class="editable-cell">200</span></td>
+                        </tr>
+                        <tr>
+                            <td><div class="cat-name"><span class="emoji">🍽️</span> Dining Out</div></td>
+                            <td class="text-muted" style="border-left: 1px solid var(--border);">150</td>
+                            <td class="col-current" style="border-left: 1px solid var(--border);"><span class="editable-cell">175</span></td>
+                            <td style="border-left: 1px solid var(--border);"><span class="editable-cell">150</span></td>
+                            <td style="border-left: 1px solid var(--border);"><span class="editable-cell">150</span></td>
+                        </tr>
+                        <tr class="group-total">
+                            <td>Total</td>
+                            <td class="text-muted" style="border-left: 1px solid var(--border);">950</td>
+                            <td class="col-current" style="border-left: 1px solid var(--border);">975</td>
+                            <td style="border-left: 1px solid var(--border);">950</td>
+                            <td style="border-left: 1px solid var(--border);">1,000</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="annotation" style="top: 12px; right: 12px;">Plan different amounts for different months</div>
+    <div class="annotation" style="top: 48px; right: 12px;">Default column as frozen reference</div>
+    <div class="annotation" style="bottom: 12px; left: 220px;">e.g. higher Utilities in summer, more Groceries in Dec</div>
+</div>
+
+<hr class="option-divider">
+
+
+<!-- ============================================================
+     6. CATEGORY DETAIL
+     ============================================================ -->
+<div id="cat-detail"></div>
+<div class="mockup-label">Page 6 — Category Detail</div>
+<p class="mockup-desc">
+    Side-by-side: sticky summary card on the left with budget stats and spending progress,
+    transaction table on the right. On mobile this stays stacked vertically.
+</p>
+
+<div class="desktop-frame" style="position: relative;">
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-circle">B</div>
+            <div class="logo-text">Budget Guy</div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#">
+                <span class="nav-icon">💳</span> Accounts
+            </a>
+            <a href="#" class="active">
+                <span class="nav-icon">🧮</span> Budget
+            </a>
+            <a href="#">
+                <span class="nav-icon">📋</span> Transactions
+            </a>
+            <a href="#">
+                <span class="nav-icon">📊</span> Plan
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="#">⚙️ Settings</a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="main-header">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="cursor: pointer; color: var(--text-muted);">← Back</span>
+                <h2>🛒 Groceries</h2>
+            </div>
+            <span class="text-muted" style="font-size: 13px;">March 2026</span>
+        </div>
+
+        <div class="main-body">
+            <div class="cat-detail-layout">
+                <div class="cat-summary-card">
+                    <h3 style="font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 16px;">Summary</h3>
+                    <div class="cat-summary-stat">
+                        <span style="font-size: 13px; color: var(--text-subtle);">Budgeted</span>
+                        <span class="font-mono" style="font-weight: 600; font-size: 15px; color: var(--text);">$600.00</span>
+                    </div>
+                    <div class="cat-summary-stat">
+                        <span style="font-size: 13px; color: var(--text-subtle);">Spent</span>
+                        <span class="font-mono text-danger" style="font-weight: 600; font-size: 15px;">$423.17</span>
+                    </div>
+                    <div class="cat-summary-stat">
+                        <span style="font-size: 13px; color: var(--text-subtle);">Available</span>
+                        <span class="font-mono text-success" style="font-weight: 600; font-size: 15px;">$176.83</span>
+                    </div>
+
+                    <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border);">
+                        <div style="font-size: 12px; color: var(--text-subtle); margin-bottom: 8px; text-transform: uppercase;">Spending Progress</div>
+                        <div style="height: 8px; background: var(--border); border-radius: 4px; overflow: hidden;">
+                            <div style="width: 70%; height: 100%; background: var(--success); border-radius: 4px;"></div>
+                        </div>
+                        <div style="font-size: 12px; color: var(--text-subtle); margin-top: 4px;">70% of budget used</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <table class="tx-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 30px;"></th>
+                                <th>Payee</th>
+                                <th>Account</th>
+                                <th class="right">Amount</th>
+                                <th style="width: 32px; text-align: center;">✓</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="date-header">
+                                <td colspan="5">Today, March 5</td>
+                            </tr>
+                            <tr>
+                                <td><span class="type-indicator expense"></span></td>
+                                <td><span class="payee">Costco</span></td>
+                                <td class="text-muted">Joint Checking</td>
+                                <td class="right font-mono text-danger">$127.43</td>
+                                <td style="text-align: center;"><span class="badge-uncleared"></span></td>
+                            </tr>
+                            <tr class="date-header">
+                                <td colspan="5">Mon, March 2</td>
+                            </tr>
+                            <tr>
+                                <td><span class="type-indicator expense"></span></td>
+                                <td><span class="payee">Trader Joe's</span></td>
+                                <td class="text-muted">Joint Checking</td>
+                                <td class="right font-mono text-danger">$68.92</td>
+                                <td style="text-align: center;"><span class="badge-cleared"></span></td>
+                            </tr>
+                            <tr>
+                                <td><span class="type-indicator expense"></span></td>
+                                <td><span class="payee">H-E-B</span></td>
+                                <td class="text-muted">Joint Checking</td>
+                                <td class="right font-mono text-danger">$94.15</td>
+                                <td style="text-align: center;"><span class="badge-cleared"></span></td>
+                            </tr>
+                            <tr class="date-header">
+                                <td colspan="5">Sat, February 28</td>
+                            </tr>
+                            <tr>
+                                <td><span class="type-indicator expense"></span></td>
+                                <td><span class="payee">Costco</span></td>
+                                <td class="text-muted">Joint Checking</td>
+                                <td class="right font-mono text-danger">$132.67</td>
+                                <td style="text-align: center;"><span class="badge-cleared"></span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="annotation" style="top: 12px; right: 12px;">Side-by-side: sticky summary + transaction table</div>
+</div>
+
+<hr class="option-divider">
+
+
+<!-- ============================================================
+     7. BREAKPOINT STRATEGY
+     ============================================================ -->
+<div id="breakpoints"></div>
+<div class="mockup-label">Page 7 — Breakpoint Strategy</div>
+<p class="mockup-desc">
+    How the responsive behavior breaks down across device sizes.
+</p>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 1200px; margin: 0 auto 16px;">
+    <!-- Sidebar Close-up -->
+    <div style="background: var(--surface-header); border-radius: 12px; overflow: hidden; border: 1px solid var(--border);">
+        <div class="sidebar" style="width: 100%; height: auto; border-right: none;">
+            <div class="sidebar-logo">
+                <div class="logo-circle">B</div>
+                <div class="logo-text">Budget Guy</div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#">
+                    <span class="nav-icon">💳</span> Accounts
+                </a>
+                <a href="#" class="active">
+                    <span class="nav-icon">🧮</span> Budget
+                </a>
+                <a href="#">
+                    <span class="nav-icon">📋</span> Transactions
+                </a>
+                <a href="#">
+                    <span class="nav-icon">📊</span> Plan
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="#">⚙️ Settings</a>
+            </div>
+        </div>
+    </div>
+
+    <div style="padding: 20px;">
+        <h3 style="font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 16px;">Breakpoint Strategy</h3>
+
+        <div style="margin-bottom: 20px;">
+            <div style="font-size: 12px; font-weight: 600; color: var(--warning); text-transform: uppercase; margin-bottom: 6px;">Mobile (&lt; 768px) — No Changes</div>
+            <div style="font-size: 13px; color: var(--text-muted); line-height: 1.6;">
+                Bottom tab bar. Full-width content. BottomSheets for pickers.<br>
+                Card-based transactions. Single month budget view. FAB above nav.
+            </div>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <div style="font-size: 12px; font-weight: 600; color: var(--info); text-transform: uppercase; margin-bottom: 6px;">Tablet (768px – 1023px)</div>
+            <div style="font-size: 13px; color: var(--text-muted); line-height: 1.6;">
+                Bottom tab bar still. Content gets wider padding.<br>
+                Budget shows <strong>2 months</strong> side-by-side.<br>
+                Transactions stay as cards but with more info visible.<br>
+                BottomSheets become centered modals. Account cards in 2-col grid.
+            </div>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <div style="font-size: 12px; font-weight: 600; color: var(--primary); text-transform: uppercase; margin-bottom: 6px;">Desktop (1024px+)</div>
+            <div style="font-size: 13px; color: var(--text-muted); line-height: 1.6;">
+                Sidebar nav (200px) replaces bottom tabs.<br>
+                Budget shows <strong>3 months</strong> side-by-side.<br>
+                Plan shows <strong>3 projection months</strong> + defaults column.<br>
+                Transactions switch to table view. Category detail goes side-by-side.<br>
+                Forms centered at max-w-lg. Toolbar buttons replace 3-dot menus.
+            </div>
+        </div>
+
+        <div style="background: var(--surface); border-radius: 8px; padding: 12px 16px; border-left: 3px solid var(--warning);">
+            <div style="font-size: 12px; font-weight: 600; color: var(--warning); margin-bottom: 4px;">KEY PRINCIPLE</div>
+            <div style="font-size: 13px; color: var(--text-muted);">
+                Mobile stays untouched. All desktop changes use Tailwind <code style="background: var(--surface-overlay); padding: 1px 4px; border-radius: 3px;">md:</code> and <code style="background: var(--surface-overlay); padding: 1px 4px; border-radius: 3px;">lg:</code> prefixes.
+                The multi-month view is <strong>the reason</strong> to use the desktop version — not just "wider mobile."
+            </div>
+        </div>
+
+        <div style="background: var(--surface); border-radius: 8px; padding: 12px 16px; border-left: 3px solid var(--info); margin-top: 12px;">
+            <div style="font-size: 12px; font-weight: 600; color: var(--info); margin-bottom: 4px;">BACKEND IMPACT</div>
+            <div style="font-size: 13px; color: var(--text-muted);">
+                Budget controller currently returns data for 1 month. Multi-month view needs a new endpoint or parameter
+                (<code style="background: var(--surface-overlay); padding: 1px 4px; border-radius: 3px;">?months=3</code>)
+                that returns data for adjacent months. Same query logic, just run 3x.
+                Plan projections schema already supports multiple indices — just need UI.
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
