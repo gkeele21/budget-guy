@@ -329,7 +329,7 @@ Rules:
 - Default type is "expense" unless the user explicitly says income words like "got paid", "received", "earned", "paycheck", "income", "deposit", or transfer words like "transferred", "moved", "deposited cash".
 - Default date is today: {$today}. If the user says "yesterday", use the previous day. Parse specific dates like "Feb 12" or "January 3rd" relative to the current year. Apply a spoken date to ALL transactions in the utterance unless different dates are specified.
 - Amount must always be a positive number. The system handles the sign based on type.
-- Match payee names to existing payees using phonetic/fuzzy matching — speech recognition often misspells names (e.g. "Macys" for "Macey's", "Costco" for "CostCo"). Always prefer an existing payee name when the spoken name sounds similar. Use the spoken name only if no existing payee sounds close. Transfers have no payee.
+- Match payee names to existing payees using phonetic/fuzzy matching — speech recognition often misspells names (e.g. "Macys" for "Macey's", "Costco" for "CostCo"). Always prefer an existing payee name when the spoken name sounds similar. If no existing payee sounds close, use the spoken name exactly as-is — a new payee will be created automatically. NEVER ask for clarification about payees. Payees are not a valid clarification field. Transfers have no payee.
 - Match category names to existing categories when clearly the same (fuzzy match). If no match but the matched payee has a default_category_id, use that default. If still no match, set category_id to null (it will be "Unassigned") — do NOT flag for clarification. Transfers have no category.
 - Match account names to existing accounts when mentioned. If no account is mentioned and there is exactly {$accountCount} account(s), use the first one. If multiple accounts exist and none is mentioned, set account_id to null and flag for clarification.
 - For transfers: account_id is the source ("from") account, to_account_id is the destination ("to") account. Both must be resolved.
@@ -382,7 +382,7 @@ Transaction field rules:
 - splits format (when used instead of category_id): [{"category_id": 1, "amount": 50.00}, ...]. Set category_id to null when using splits.
 
 If status is "success", all transaction fields must be fully resolved (no nulls for account_id). category_id may be null (meaning "Unassigned") if no category was spoken and the payee has no default — this is fine, do not flag for clarification.
-If status is "clarification_needed", include partial transactions and the clarifications array describing what needs user input.
+If status is "clarification_needed", include partial transactions and the clarifications array describing what needs user input. ONLY use clarification for: account_id, category_id, or to_account_id. NEVER clarify payee_name — just use whatever name the user said.
 If status is "error", include error_message explaining why.
 PROMPT;
     }

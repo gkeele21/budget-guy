@@ -135,11 +135,23 @@ async function sendToBackend(text) {
             reviewItems.value.push(...newItems);
             state.value = 'review';
         } else if (data.status === 'clarification_needed') {
-            state.value = 'clarification';
-            clarifications.value = data.clarifications;
-            sessionContext.value = data.session_context;
-            currentClarificationIndex.value = 0;
-            clarificationAnswers.value = [];
+            // Filter to only supported clarification fields with valid options
+            const validFields = ['account_id', 'category_id', 'to_account_id'];
+            const validClarifications = (data.clarifications || []).filter(
+                c => validFields.includes(c.field) && c.options?.length > 0
+            );
+
+            if (validClarifications.length === 0) {
+                // AI asked about something we can't handle (e.g. payee) — treat as error
+                state.value = 'error';
+                errorMessage.value = "Couldn't fully understand that. Try again with more detail.";
+            } else {
+                state.value = 'clarification';
+                clarifications.value = validClarifications;
+                sessionContext.value = data.session_context;
+                currentClarificationIndex.value = 0;
+                clarificationAnswers.value = [];
+            }
         } else {
             state.value = 'error';
             errorMessage.value = data.message || "Couldn't understand that.";
