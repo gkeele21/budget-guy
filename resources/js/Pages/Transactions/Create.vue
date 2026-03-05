@@ -25,10 +25,18 @@ const props = defineProps({
     payees: Array,
 });
 
+// Use account from URL query param if present, otherwise first account
+const urlParams = new URLSearchParams(window.location.search);
+const defaultAccountId = (() => {
+    const paramId = parseInt(urlParams.get('account'));
+    if (paramId && props.accounts.some(a => a.id === paramId)) return paramId;
+    return props.accounts[0]?.id || '';
+})();
+
 const form = useForm({
     type: 'expense',
     amount: '',
-    account_id: props.accounts[0]?.id || '',
+    account_id: defaultAccountId,
     category_id: '',
     payee_name: '',
     date: new Date().toISOString().split('T')[0],

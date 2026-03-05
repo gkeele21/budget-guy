@@ -731,7 +731,7 @@ const formatNextDate = (dateStr, frequency) => {
                     </svg>
                 </span>
             </button>
-            <FAB :href="viewMode === 'all' ? route('transactions.create') : route('recurring.create')" />
+            <FAB :href="viewMode === 'all' ? route('transactions.create', currentAccountId ? { account: currentAccountId } : {}) : route('recurring.create')" />
         </template>
     </AppLayout>
 </template>

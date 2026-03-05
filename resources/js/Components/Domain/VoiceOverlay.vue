@@ -570,7 +570,7 @@ const groupedReviewItems = computed(() => {
                         </div>
                     </div>
 
-                    <div class="space-y-2">
+                    <div class="space-y-2 max-h-60 overflow-y-auto">
                         <button
                             v-for="option in currentClarification()?.options"
                             :key="option.id"
