@@ -47,7 +47,7 @@ const hasUncleared = computed(() => {
 
 <template>
     <Link
-        :href="route('accounts.edit', account.id)"
+        :href="route('transactions.index', { account: account.id })"
         :class="[
             'flex items-start justify-between p-4 bg-surface rounded-card hover:bg-surface-overlay transition-colors',
             'border-l-4',
