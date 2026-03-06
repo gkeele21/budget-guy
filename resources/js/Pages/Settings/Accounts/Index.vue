@@ -235,6 +235,7 @@ const closeModal = () => {
                         color="text-secondary"
                         placeholder="0.00"
                         :border-bottom="false"
+                        allow-negative
                     />
                 </div>
 

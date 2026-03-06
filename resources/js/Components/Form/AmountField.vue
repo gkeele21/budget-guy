@@ -14,6 +14,8 @@ const props = defineProps({
     borderBottom: { type: Boolean, default: true },
     // Override color class (e.g. 'text-secondary', 'text-body'). When empty, derives from transactionType.
     color: { type: String, default: '' },
+    // Show a +/− toggle for negative values (mobile keyboards lack minus key)
+    allowNegative: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(['update:modelValue', 'blur']);
@@ -46,6 +48,19 @@ const displayValue = computed(() => {
     }
     return '';
 });
+
+const isNegative = computed(() => inputValue.value.startsWith('-'));
+
+const toggleSign = () => {
+    if (inputValue.value.startsWith('-')) {
+        inputValue.value = inputValue.value.slice(1);
+    } else if (inputValue.value) {
+        inputValue.value = '-' + inputValue.value;
+    } else {
+        inputValue.value = '-';
+    }
+    emit('update:modelValue', inputValue.value);
+};
 
 const startEditing = () => {
     if (props.disabled) return;
@@ -112,7 +127,16 @@ watch(() => props.modelValue, (newVal) => {
 <template>
     <!-- With label: FormRow wrapped -->
     <FormRow v-if="label" :label="label" :border-bottom="borderBottom" :error="error">
-        <div class="flex items-center justify-end">
+        <div class="flex items-center justify-end gap-1.5">
+            <button
+                v-if="allowNegative && isEditing"
+                type="button"
+                @mousedown.prevent="toggleSign"
+                :class="[
+                    'text-xs font-bold px-1.5 py-0.5 rounded transition-colors select-none',
+                    isNegative ? 'bg-danger/15 text-danger' : 'bg-surface-inset text-subtle',
+                ]"
+            >+/&minus;</button>
             <input
                 v-if="isEditing"
                 ref="inputRef"

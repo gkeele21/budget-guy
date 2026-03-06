@@ -139,6 +139,7 @@ const deleteAccount = () => {
                     label="Starting Balance"
                     color="text-secondary"
                     :border-bottom="false"
+                    allow-negative
                 />
             </div>
 
