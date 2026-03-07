@@ -209,7 +209,18 @@ const incomeTransactions = computed(() => {
     const all = [];
     for (const dayTxs of Object.values(props.transactions)) {
         for (const tx of dayTxs) {
-            if (tx.type === 'income' && !tx.category_id && !tx.is_split) all.push(tx);
+            if (tx.type !== 'income') continue;
+            if (tx.is_split) {
+                // Include split income transactions that have uncategorized lines
+                const uncategorizedAmount = tx.splits
+                    .filter(s => !s.category_id)
+                    .reduce((sum, s) => sum + s.amount, 0);
+                if (uncategorizedAmount !== 0) {
+                    all.push({ ...tx, amount: uncategorizedAmount });
+                }
+            } else if (!tx.category_id) {
+                all.push(tx);
+            }
         }
     }
     return all;

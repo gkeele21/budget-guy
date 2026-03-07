@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Budget;
 use App\Models\MonthlyBudget;
+use App\Models\SplitTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -213,26 +214,34 @@ class BudgetController extends Controller
 
         $carriedForward = $totalStartingBalances + $priorIncome - $priorBudgeted;
 
-        // This month's income: earned (uncategorized) vs assigned (categorized)
-        $earnedIncome = $budget->transactions()
+        // This month's total income
+        $thisMonthIncome = $budget->transactions()
             ->where('type', 'income')
-            ->whereNull('category_id')
+            ->whereBetween('date', [$monthStart, $monthEnd])
+            ->sum('amount');
+
+        // Assigned income = categorized simple income + categorized split lines on income transactions
+        $assignedIncomeSimple = $budget->transactions()
+            ->where('type', 'income')
+            ->whereNotNull('category_id')
             ->whereDoesntHave('splits')
             ->whereBetween('date', [$monthStart, $monthEnd])
             ->sum('amount');
 
-        $assignedIncome = $budget->transactions()
-            ->where('type', 'income')
-            ->where(function ($q) {
-                $q->whereNotNull('category_id')->orWhereHas('splits');
+        $assignedIncomeSplits = SplitTransaction::whereNotNull('category_id')
+            ->whereHas('transaction', function ($q) use ($budget, $monthStart, $monthEnd) {
+                $q->where('budget_id', $budget->id)
+                    ->where('type', 'income')
+                    ->whereBetween('date', [$monthStart, $monthEnd]);
             })
-            ->whereBetween('date', [$monthStart, $monthEnd])
             ->sum('amount');
 
-        $thisMonthIncome = $earnedIncome + $assignedIncome;
+        $assignedIncome = $assignedIncomeSimple + $assignedIncomeSplits;
+        $earnedIncome = $thisMonthIncome - $assignedIncome;
 
         // Earned income transactions for the popover
-        $incomeTransactions = $budget->transactions()
+        // 1. Simple non-split income with no category
+        $simpleIncomeTransactions = $budget->transactions()
             ->where('type', 'income')
             ->whereNull('category_id')
             ->whereDoesntHave('splits')
@@ -240,6 +249,21 @@ class BudgetController extends Controller
             ->with(['payee', 'account'])
             ->orderBy('date', 'desc')
             ->get();
+
+        // 2. Split income transactions with uncategorized lines
+        $splitIncomeTransactions = $budget->transactions()
+            ->where('type', 'income')
+            ->whereHas('splits', function ($q) {
+                $q->whereNull('category_id');
+            })
+            ->whereBetween('date', [$monthStart, $monthEnd])
+            ->with(['payee', 'account', 'splits' => function ($q) {
+                $q->whereNull('category_id');
+            }])
+            ->orderBy('date', 'desc')
+            ->get();
+
+        $incomeTransactions = $simpleIncomeTransactions->concat($splitIncomeTransactions)->sortByDesc('date');
 
         // This month's budgeted (already have as $totalBudgeted)
 
@@ -276,7 +300,9 @@ class BudgetController extends Controller
                 'id' => $t->id,
                 'payee' => $t->payee?->name ?? 'Unknown',
                 'account' => $t->account->name,
-                'amount' => (float) $t->amount,
+                'amount' => (float) ($t->relationLoaded('splits') && $t->splits->isNotEmpty()
+                    ? $t->splits->sum('amount')
+                    : $t->amount),
                 'date' => $t->date->format('Y-m-d'),
             ]),
         ]);
