@@ -29,6 +29,7 @@ class TransactionController extends Controller
         $clearedFilter = $request->get('cleared'); // 'all', 'cleared', 'uncleared'
         $recurringFilter = $request->get('recurring'); // 'all', 'recurring'
         $unassignedFilter = $request->boolean('unassigned');
+        $typeFilter = $request->get('type'); // 'expense', 'income', 'transfer'
         $monthFilter = $request->get('month'); // format: 'YYYY-MM'
 
         // Month filter overrides date range
@@ -72,6 +73,28 @@ class TransactionController extends Controller
         // Recurring filter
         if ($recurringFilter === 'recurring') {
             $query->whereNotNull('recurring_id');
+        }
+
+        // Type filter
+        if ($typeFilter && in_array($typeFilter, ['expense', 'income', 'transfer'])) {
+            if ($typeFilter === 'income') {
+                // Show only earned (uncategorized) income:
+                // - Simple income with no category and no splits
+                // - Split income that has at least one uncategorized split line
+                $query->where('type', 'income')
+                    ->where(function ($q) {
+                        $q->where(function ($q2) {
+                            // Simple uncategorized income (no splits)
+                            $q2->whereNull('category_id')
+                                ->whereDoesntHave('splits');
+                        })->orWhereHas('splits', function ($sq) {
+                            // Split income with at least one uncategorized line
+                            $sq->whereNull('category_id');
+                        });
+                    });
+            } else {
+                $query->where('type', $typeFilter);
+            }
         }
 
         // Unassigned filter
@@ -186,6 +209,7 @@ class TransactionController extends Controller
             'clearedFilter' => $clearedFilter ?? 'all',
             'recurringFilter' => $recurringFilter ?? 'all',
             'unassignedFilter' => $unassignedFilter,
+            'typeFilter' => $typeFilter ?? 'all',
             'recurring' => $recurringTransactions,
             'monthFilter' => $monthFilter,
             'summary' => [

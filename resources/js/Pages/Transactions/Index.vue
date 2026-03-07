@@ -30,6 +30,7 @@ const props = defineProps({
     unassignedFilter: Boolean,
     recurring: Array,
     monthFilter: String,
+    typeFilter: String,
     summary: Object,
 });
 
@@ -42,6 +43,7 @@ const localEndDate = ref(props.endDate || '');
 const localClearedFilter = ref(props.clearedFilter || 'all');
 const localRecurringFilter = ref('all');
 const localUnassignedFilter = ref(!!props.unassignedFilter);
+const localTypeFilter = ref(props.typeFilter || 'all');
 const localMonthFilter = ref(props.monthFilter || '');
 const searchInputRef = ref(null);
 const monthChipsRef = ref(null);
@@ -76,6 +78,7 @@ const buildParams = () => {
         params.cleared = localClearedFilter.value;
     }
     if (localUnassignedFilter.value) params.unassigned = '1';
+    if (localTypeFilter.value && localTypeFilter.value !== 'all') params.type = localTypeFilter.value;
     return params;
 };
 
@@ -124,6 +127,7 @@ const clearFilters = () => {
     localClearedFilter.value = 'all';
     localRecurringFilter.value = 'all';
     localUnassignedFilter.value = false;
+    localTypeFilter.value = 'all';
     router.get(route('transactions.index'), buildParams(), {
         preserveState: true,
         preserveScroll: true,
@@ -145,7 +149,8 @@ const hasActiveFilters = computed(() => {
     return localMonthFilter.value ||
            localStartDate.value || localEndDate.value ||
            (localClearedFilter.value && localClearedFilter.value !== 'all') ||
-           localUnassignedFilter.value;
+           localUnassignedFilter.value ||
+           (localTypeFilter.value && localTypeFilter.value !== 'all');
 });
 
 const formatCurrency = (amount) => {
@@ -306,6 +311,9 @@ const activeFilterDescription = computed(() => {
     }
     if (localUnassignedFilter.value) {
         parts.push('unassigned only');
+    }
+    if (localTypeFilter.value && localTypeFilter.value !== 'all') {
+        parts.push(`${localTypeFilter.value} only`);
     }
     return parts.length > 0 ? parts.join(', ') : '';
 });
@@ -622,6 +630,21 @@ onMounted(() => {
                                     { value: 'all', label: 'All' },
                                     { value: 'cleared', label: 'Cleared' },
                                     { value: 'uncleared', label: 'Uncleared' },
+                                ]"
+                                size="sm"
+                            />
+                        </div>
+
+                        <!-- Type Filter -->
+                        <div class="px-4 py-3 border-t border-border">
+                            <label class="block text-xs text-subtle mb-2">Type</label>
+                            <SegmentedControl
+                                v-model="localTypeFilter"
+                                :options="[
+                                    { value: 'all', label: 'All' },
+                                    { value: 'expense', label: 'Expense' },
+                                    { value: 'income', label: 'Income' },
+                                    { value: 'transfer', label: 'Transfer' },
                                 ]"
                                 size="sm"
                             />
