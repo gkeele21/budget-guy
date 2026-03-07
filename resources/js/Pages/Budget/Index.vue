@@ -71,7 +71,7 @@ const getGroupTotals = (group) => {
     return {
         budgeted,
         spent,
-        available: budgeted - spent,
+        available: categories.reduce((sum, cat) => sum + getAvailable(cat), 0),
     };
 };
 
@@ -160,8 +160,8 @@ const saveAmount = (categoryId) => {
 const isOverspent = (available) => available < 0;
 
 const getAvailable = (category) => {
-    const budgeted = budgetAmounts[category.id] || 0;
-    return budgeted - category.spent;
+    const budgetedDiff = (budgetAmounts[category.id] || 0) - (category.budgeted || 0);
+    return category.available + budgetedDiff;
 };
 
 // Check if any budget amounts exist for the current month

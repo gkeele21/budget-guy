@@ -144,7 +144,7 @@ class BudgetController extends Controller
                     'categories' => $group->categories->map(function ($category) use ($month, $avgSpentMap) {
                         $budgeted = $category->getBudgetedForMonth($month);
                         $spent = $category->getSpentForMonth($month);
-                        $available = $budgeted - $spent;
+                        $available = $category->getAvailableForMonth($month);
 
                         return [
                             'id' => $category->id,
@@ -635,7 +635,7 @@ class BudgetController extends Controller
         // Get budget amounts
         $budgeted = $categoryModel->getBudgetedForMonth($month);
         $spent = $categoryModel->getSpentForMonth($month);
-        $available = $budgeted - $spent;
+        $available = $categoryModel->getAvailableForMonth($month);
 
         // Get transactions for this category in this month
         $transactions = $budget->transactions()

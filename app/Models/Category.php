@@ -61,14 +61,49 @@ class Category extends Model
         $startDate = $month . '-01';
         $endDate = date('Y-m-t', strtotime($startDate));
 
-        return (float) abs($this->transactions()
+        $directSpent = (float) abs($this->transactions()
             ->where('type', 'expense')
             ->whereBetween('date', [$startDate, $endDate])
             ->sum('amount'));
+
+        $splitSpent = (float) abs($this->splitTransactions()
+            ->whereHas('transaction', function ($query) use ($startDate, $endDate) {
+                $query->where('type', 'expense')
+                    ->whereBetween('date', [$startDate, $endDate]);
+            })
+            ->sum('amount'));
+
+        return $directSpent + $splitSpent;
+    }
+
+    public function getCumulativeBudgetedThrough(string $month): float
+    {
+        return (float) $this->monthlyBudgets()
+            ->where('month', '<=', $month)
+            ->sum('budgeted_amount');
+    }
+
+    public function getCumulativeSpentThrough(string $month): float
+    {
+        $endDate = date('Y-m-t', strtotime($month . '-01'));
+
+        $directSpent = (float) abs($this->transactions()
+            ->where('type', 'expense')
+            ->where('date', '<=', $endDate)
+            ->sum('amount'));
+
+        $splitSpent = (float) abs($this->splitTransactions()
+            ->whereHas('transaction', function ($query) use ($endDate) {
+                $query->where('type', 'expense')
+                    ->where('date', '<=', $endDate);
+            })
+            ->sum('amount'));
+
+        return $directSpent + $splitSpent;
     }
 
     public function getAvailableForMonth(string $month): float
     {
-        return $this->getBudgetedForMonth($month) - $this->getSpentForMonth($month);
+        return $this->getCumulativeBudgetedThrough($month) - $this->getCumulativeSpentThrough($month);
     }
 }
