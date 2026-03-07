@@ -213,11 +213,33 @@ class BudgetController extends Controller
 
         $carriedForward = $totalStartingBalances + $priorIncome - $priorBudgeted;
 
-        // This month's income
-        $thisMonthIncome = $budget->transactions()
+        // This month's income: earned (uncategorized) vs assigned (categorized)
+        $earnedIncome = $budget->transactions()
             ->where('type', 'income')
+            ->whereNull('category_id')
+            ->whereDoesntHave('splits')
             ->whereBetween('date', [$monthStart, $monthEnd])
             ->sum('amount');
+
+        $assignedIncome = $budget->transactions()
+            ->where('type', 'income')
+            ->where(function ($q) {
+                $q->whereNotNull('category_id')->orWhereHas('splits');
+            })
+            ->whereBetween('date', [$monthStart, $monthEnd])
+            ->sum('amount');
+
+        $thisMonthIncome = $earnedIncome + $assignedIncome;
+
+        // Earned income transactions for the popover
+        $incomeTransactions = $budget->transactions()
+            ->where('type', 'income')
+            ->whereNull('category_id')
+            ->whereDoesntHave('splits')
+            ->whereBetween('date', [$monthStart, $monthEnd])
+            ->with(['payee', 'account'])
+            ->orderBy('date', 'desc')
+            ->get();
 
         // This month's budgeted (already have as $totalBudgeted)
 
@@ -244,10 +266,19 @@ class BudgetController extends Controller
                 'available' => (float) $totalAvailable,
                 'carriedForward' => (float) $carriedForward,
                 'thisMonthIncome' => (float) $thisMonthIncome,
+                'earnedIncome' => (float) $earnedIncome,
+                'assignedIncome' => (float) $assignedIncome,
                 'isFirstMonth' => !$hasPriorActivity,
             ],
             'earliestMonth' => $earliestMonth,
             'unassignedSpending' => $unassignedSpending,
+            'incomeTransactions' => $incomeTransactions->map(fn($t) => [
+                'id' => $t->id,
+                'payee' => $t->payee?->name ?? 'Unknown',
+                'account' => $t->account->name,
+                'amount' => (float) $t->amount,
+                'date' => $t->date->format('Y-m-d'),
+            ]),
         ]);
     }
 

@@ -30,7 +30,7 @@ const form = useForm({
     category_id: parseIntOrDefault(query.get('category_id'), ''),
     payee_name: query.get('payee_name') || '',
     frequency: 'monthly',
-    next_date: new Date().toISOString().split('T')[0],
+    next_date: (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })(),
     end_date: '',
 });
 

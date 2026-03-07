@@ -109,9 +109,10 @@ class TransactionController extends Controller
         }
 
         // Compute summary stats from the same filtered query
+        // Income = earned only (uncategorized, no splits) for the stat card
         $summaryStats = DB::query()
             ->fromSub((clone $query)->reorder()->toBase(), 'filtered')
-            ->selectRaw("COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0) as income")
+            ->selectRaw("COALESCE(SUM(CASE WHEN type = 'income' AND category_id IS NULL AND NOT EXISTS (SELECT 1 FROM split_transactions WHERE split_transactions.transaction_id = filtered.id) THEN amount ELSE 0 END), 0) as income")
             ->selectRaw("COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0) as spent")
             ->selectRaw("COALESCE(SUM(CASE WHEN type != 'transfer' THEN amount ELSE 0 END), 0) as net")
             ->first();

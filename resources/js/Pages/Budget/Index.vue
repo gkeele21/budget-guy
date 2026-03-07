@@ -15,6 +15,7 @@ const props = defineProps({
     summary: Object,
     earliestMonth: String,
     unassignedSpending: Object,
+    incomeTransactions: Array,
 });
 
 // Track budget amounts reactively for each category
@@ -34,6 +35,8 @@ let moveToastTimeout = null;
 // Context menu state
 const showContextMenu = ref(false);
 const showBreakdown = ref(false);
+const showIncomePopover = ref(false);
+const showAssignedIncomeInfo = ref(false);
 
 // Confirmation modal state
 const confirmModal = ref({ show: false, title: '', message: '', action: null });
@@ -460,10 +463,42 @@ const showMoveToast = (amount, from, to, remaining = null) => {
 
             <!-- Summary Stats -->
             <div class="grid grid-cols-2 gap-2">
-                <div class="bg-surface rounded-card px-3 py-2 text-center">
-                    <div class="text-xs text-subtle uppercase">Income</div>
-                    <div class="font-semibold text-success">
-                        {{ formatCurrency(summary.thisMonthIncome ?? 0) }}
+                <div class="bg-surface rounded-card px-3 py-2 text-center relative">
+                    <button
+                        @click="showIncomePopover = !showIncomePopover"
+                        class="w-full"
+                    >
+                        <div class="text-xs text-subtle uppercase">Income</div>
+                        <div class="font-semibold text-success">
+                            {{ formatCurrency(summary.earnedIncome ?? 0) }}
+                        </div>
+                    </button>
+                    <!-- Income popover backdrop -->
+                    <div
+                        v-if="showIncomePopover"
+                        class="fixed inset-0 z-40"
+                        @click="showIncomePopover = false"
+                    ></div>
+                    <!-- Income transactions popover -->
+                    <div
+                        v-if="showIncomePopover"
+                        class="absolute left-0 top-full mt-1 z-50 bg-surface rounded-card shadow-lg border border-border p-4 min-w-[300px] text-left"
+                    >
+                        <div class="text-xs text-subtle uppercase mb-2">Income</div>
+                        <div v-if="incomeTransactions?.length" class="space-y-2 text-sm max-h-[300px] overflow-y-auto">
+                            <div v-for="tx in incomeTransactions" :key="tx.id" class="flex justify-between gap-3">
+                                <div class="min-w-0">
+                                    <div class="text-body truncate">{{ tx.payee }}</div>
+                                    <div class="text-xs text-muted">{{ new Date(tx.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) }} · {{ tx.account }}</div>
+                                </div>
+                                <span class="font-medium text-success whitespace-nowrap font-mono">{{ formatCurrency(tx.amount) }}</span>
+                            </div>
+                            <div class="border-t border-border pt-2 flex justify-between font-semibold">
+                                <span class="text-body">Total</span>
+                                <span class="text-success font-mono">{{ formatCurrency(summary.earnedIncome ?? 0) }}</span>
+                            </div>
+                        </div>
+                        <div v-else class="text-sm text-muted">No income this month</div>
                     </div>
                 </div>
                 <div class="bg-surface rounded-card px-3 py-2 text-center">
@@ -492,20 +527,38 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                 <div
                     v-if="showBreakdown"
                     class="fixed inset-0 z-40"
-                    @click="showBreakdown = false"
+                    @click="showBreakdown = false; showAssignedIncomeInfo = false"
                 ></div>
                 <div
                     v-if="showBreakdown"
                     class="absolute left-3 top-12 z-50 bg-surface rounded-card shadow-lg border border-border p-4 min-w-[300px]"
                 >
-                    <div class="space-y-2 text-sm">
+                    <div class="space-y-1 text-sm">
                         <div class="flex justify-between gap-4">
                             <span class="text-muted">{{ summary.isFirstMonth ? 'Starting account balances' : 'Carried forward' }}</span>
                             <span class="font-medium text-body">{{ formatCurrency(summary.carriedForward ?? 0) }}</span>
                         </div>
                         <div class="flex justify-between gap-4">
-                            <span class="text-muted">+ {{ shortMonthName }} income</span>
-                            <span class="font-medium text-success">{{ formatCurrency(summary.thisMonthIncome ?? 0) }}</span>
+                            <span class="text-muted">+ Income</span>
+                            <span class="font-medium text-success">{{ formatCurrency(summary.earnedIncome ?? 0) }}</span>
+                        </div>
+                        <div v-if="(summary.assignedIncome ?? 0) !== 0" class="flex items-center justify-between gap-4 relative">
+                            <span class="text-muted flex items-center gap-1">
+                                + Assigned income
+                                <button @click.stop="showAssignedIncomeInfo = !showAssignedIncomeInfo" class="text-subtle hover:text-muted">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </button>
+                            </span>
+                            <span class="font-medium text-success">{{ formatCurrency(summary.assignedIncome ?? 0) }}</span>
+                            <!-- Assigned income info tooltip -->
+                            <div
+                                v-if="showAssignedIncomeInfo"
+                                class="absolute left-0 top-full mt-1 z-[60] bg-surface-overlay rounded-card shadow-lg border border-border p-3 text-xs text-muted max-w-[260px]"
+                            >
+                                Income assigned to a category, such as refunds, reimbursements, cash back, or insurance payouts.
+                            </div>
                         </div>
                         <div class="flex justify-between gap-4">
                             <span class="text-muted">− {{ shortMonthName }} assigned</span>

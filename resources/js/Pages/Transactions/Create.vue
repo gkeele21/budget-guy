@@ -39,7 +39,7 @@ const form = useForm({
     account_id: defaultAccountId,
     category_id: '',
     payee_name: '',
-    date: new Date().toISOString().split('T')[0],
+    date: (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })(),
     cleared: false,
     memo: '',
     to_account_id: '',
