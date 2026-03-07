@@ -1,7 +1,6 @@
 <script setup>
 import { computed, ref, watch, nextTick } from 'vue';
 import FormRow from './FormRow.vue';
-import SignToggle from './SignToggle.vue';
 
 const props = defineProps({
     modelValue: { type: [String, Number], default: '' },
@@ -30,6 +29,7 @@ function formatInitialValue() {
     if (props.modelValue === '' || props.modelValue === null || props.modelValue === undefined) {
         return '';
     }
+    if (String(props.modelValue) === '-') return '-';
     const num = parseFloat(props.modelValue);
     return isNaN(num) ? '' : num.toFixed(2);
 }
@@ -50,8 +50,6 @@ const displayValue = computed(() => {
     return '';
 });
 
-const isNegative = computed(() => inputValue.value.startsWith('-'));
-
 const toggleSign = () => {
     if (inputValue.value.startsWith('-')) {
         inputValue.value = inputValue.value.slice(1);
@@ -65,11 +63,18 @@ const toggleSign = () => {
 
 const startEditing = () => {
     if (props.disabled) return;
+    // Auto-insert negative sign for expense types on empty fields
+    if (props.allowNegative && props.transactionType === 'expense' && !inputValue.value) {
+        inputValue.value = '-';
+        emit('update:modelValue', '-');
+    }
     isEditing.value = true;
     nextTick(() => {
         if (inputRef.value) {
             inputRef.value.focus();
-            inputRef.value.select();
+            if (inputValue.value !== '-') {
+                inputRef.value.select();
+            }
         }
     });
 };
@@ -78,9 +83,9 @@ const onInput = (e) => {
     let value = e.target.value;
 
     // Strip $ and any non-numeric chars except decimal and minus
-    const isNegative = value.includes('-');
+    const hadNegative = value.includes('-');
     value = value.replace(/[^\d.]/g, '');
-    if (isNegative) value = '-' + value;
+    if (hadNegative) value = '-' + value;
 
     // Ensure only one decimal point
     const parts = value.split('.');
@@ -116,6 +121,12 @@ watch(() => props.modelValue, (newVal) => {
         inputValue.value = '';
         return;
     }
+    if (String(newVal) === '-') {
+        if (inputValue.value !== '-' && !isEditing.value) {
+            inputValue.value = '-';
+        }
+        return;
+    }
     const num = parseFloat(newVal);
     const formatted = isNaN(num) ? '' : num.toFixed(2);
     // Only update if different and not currently editing
@@ -128,12 +139,7 @@ watch(() => props.modelValue, (newVal) => {
 <template>
     <!-- With label: FormRow wrapped -->
     <FormRow v-if="label" :label="label" :border-bottom="borderBottom" :error="error">
-        <div class="flex items-center justify-end gap-1.5">
-            <SignToggle
-                v-if="allowNegative && isEditing"
-                :negative="isNegative"
-                @toggle="toggleSign"
-            />
+        <div class="flex items-center justify-end">
             <input
                 v-if="isEditing"
                 ref="inputRef"
@@ -142,6 +148,7 @@ watch(() => props.modelValue, (newVal) => {
                 :value="inputValue ? displayValue : '$'"
                 @input="onInput"
                 @blur="onBlur"
+                @click="allowNegative ? toggleSign() : null"
                 @keyup.enter="$event.target.blur()"
                 :class="[
                     'bg-transparent focus:outline-none text-base font-medium text-right w-28',
@@ -162,27 +169,22 @@ watch(() => props.modelValue, (newVal) => {
         </div>
     </FormRow>
     <!-- Without label: bare inline, editing -->
-    <div v-else-if="isEditing" class="flex items-center gap-1">
-        <SignToggle
-            v-if="allowNegative"
-            :negative="isNegative"
-            @toggle="toggleSign"
-        />
-        <input
-            ref="inputRef"
-            type="text"
-            inputmode="decimal"
-            :value="inputValue ? displayValue : '$'"
-            @input="onInput"
-            @blur="onBlur"
-            @keyup.enter="$event.target.blur()"
-            :class="[
-                'bg-transparent focus:outline-none font-semibold text-right flex-1 min-w-0 origin-right',
-                colorClass,
-            ]"
-            style="font-size: 16px; transform: scale(0.875); transform-origin: right center;"
-        />
-    </div>
+    <input
+        v-else-if="isEditing"
+        ref="inputRef"
+        type="text"
+        inputmode="decimal"
+        :value="inputValue ? displayValue : '$'"
+        @input="onInput"
+        @blur="onBlur"
+        @click="allowNegative ? toggleSign() : null"
+        @keyup.enter="$event.target.blur()"
+        :class="[
+            'bg-transparent focus:outline-none font-semibold text-right min-w-0 origin-right',
+            colorClass,
+        ]"
+        style="font-size: 16px; transform: scale(0.875); transform-origin: right center;"
+    />
     <!-- Without label: bare inline, display -->
     <div
         v-else

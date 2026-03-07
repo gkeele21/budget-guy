@@ -37,7 +37,7 @@ class BudgetController extends Controller
 
         // Single query to get total spent per category in the date range
         $spentData = \App\Models\Transaction::whereIn('category_id', $categoryIds)
-            ->where('type', 'expense')
+            ->whereIn('type', ['expense', 'transfer'])
             ->whereBetween('date', [$startDate, $endDate])
             ->selectRaw('category_id, SUM(ABS(amount)) as total_spent, COUNT(DISTINCT DATE_FORMAT(date, "%Y-%m")) as months_with_data')
             ->groupBy('category_id')

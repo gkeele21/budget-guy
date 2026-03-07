@@ -31,6 +31,7 @@ class TransactionController extends Controller
         $unassignedFilter = $request->boolean('unassigned');
         $typeFilter = $request->get('type'); // 'expense', 'income', 'transfer'
         $monthFilter = $request->get('month'); // format: 'YYYY-MM'
+        $payeeFilter = $request->get('payee'); // payee ID
 
         // Month filter overrides date range
         if ($monthFilter) {
@@ -43,6 +44,10 @@ class TransactionController extends Controller
             ->with(['account', 'category', 'payee', 'splits.category', 'transferPair.account'])
             ->orderBy('date', 'desc')
             ->orderBy('created_at', 'desc');
+
+        if ($payeeFilter) {
+            $query->where('payee_id', $payeeFilter);
+        }
 
         if ($accountFilter) {
             $query->where('account_id', $accountFilter);
@@ -182,27 +187,60 @@ class TransactionController extends Controller
             ->orderBy('sort_order')
             ->get(['id', 'name', 'type']);
 
+        $payees = $budget->payees()
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
         // Load recurring transactions for the "Recurring" tab
+        $categoryNames = $budget->categoryGroups()
+            ->with('categories')
+            ->get()
+            ->pluck('categories')
+            ->flatten()
+            ->pluck('name', 'id');
+
         $recurringTransactions = $budget->recurringTransactions()
-            ->with(['account', 'category', 'payee'])
+            ->with(['account', 'payee'])
             ->orderBy('next_date')
             ->get()
-            ->map(fn($r) => [
-                'id' => $r->id,
-                'payee' => $r->payee?->name ?? 'Unknown',
-                'account' => $r->account->name,
-                'category' => $r->category?->name,
-                'amount' => (float) $r->amount,
-                'type' => $r->type,
-                'frequency' => $r->frequency,
-                'next_date' => $r->next_date->format('Y-m-d'),
-                'is_active' => $r->is_active,
-            ]);
+            ->map(function ($r) use ($categoryNames) {
+                $categories = $r->categories ?? [];
+                $isSplit = $r->isSplit();
+
+                if ($isSplit) {
+                    $categoryDisplay = 'Split (' . count($categories) . ')';
+                } elseif (!empty($categories)) {
+                    $categoryDisplay = $categoryNames[$categories[0]['category_id']] ?? null;
+                } else {
+                    $categoryDisplay = null;
+                }
+
+                $splits = $isSplit ? collect($categories)->map(fn($c) => [
+                    'category' => $categoryNames[$c['category_id']] ?? 'Unknown',
+                    'amount' => (float) $c['amount'],
+                ]) : null;
+
+                return [
+                    'id' => $r->id,
+                    'payee' => $r->payee?->name ?? 'Unknown',
+                    'account' => $r->account->name,
+                    'category' => $categoryDisplay,
+                    'is_split' => $isSplit,
+                    'splits' => $splits,
+                    'amount' => (float) $r->amount,
+                    'type' => $r->type,
+                    'frequency' => $r->frequency,
+                    'next_date' => $r->next_date->format('Y-m-d'),
+                    'is_active' => $r->is_active,
+                ];
+            });
 
         return Inertia::render('Transactions/Index', [
             'transactions' => $groupedTransactions,
             'accounts' => $accounts,
+            'payees' => $payees,
             'currentAccountId' => $accountFilter ? (int) $accountFilter : null,
+            'currentPayeeId' => $payeeFilter ? (int) $payeeFilter : null,
             'searchQuery' => $searchQuery,
             'startDate' => $startDate,
             'endDate' => $endDate,
@@ -320,7 +358,7 @@ class TransactionController extends Controller
             $fromTransaction = Transaction::create([
                 'budget_id' => $budget->id,
                 'account_id' => $validated['account_id'],
-                'category_id' => null,
+                'category_id' => $validated['category_id'] ?? null,
                 'payee_id' => null,
                 'amount' => -abs($validated['amount']),
                 'type' => 'transfer',
@@ -364,17 +402,10 @@ class TransactionController extends Controller
                 // Create split transactions if this is a split
                 if (($validated['is_split'] ?? false) && !empty($validated['splits'])) {
                     foreach ($validated['splits'] as $split) {
-                        if ($validated['type'] === 'income') {
-                            // Income splits preserve sign (positive = income, negative = deduction)
-                            $splitAmount = $split['amount'];
-                        } else {
-                            $splitAmount = -abs($split['amount']);
-                        }
-
                         SplitTransaction::create([
                             'transaction_id' => $transaction->id,
                             'category_id' => $split['category_id'] ?: null,
-                            'amount' => $splitAmount,
+                            'amount' => $split['amount'],
                         ]);
                     }
                 }
@@ -425,6 +456,8 @@ class TransactionController extends Controller
                 // User opened the inflow side — swap so "from" is the outflow
                 $toAccountId = $transaction->account_id;
                 $transaction->account_id = $pair?->account_id ?? $transaction->account_id;
+                // Category lives on the outflow (from) side
+                $transaction->category_id = $pair?->category_id;
             }
         }
 
@@ -444,7 +477,7 @@ class TransactionController extends Controller
                 'is_split' => $transaction->isSplit(),
                 'splits' => $transaction->splits->map(fn($s) => [
                     'category_id' => $s->category_id,
-                    'amount' => abs((float) $s->amount),
+                    'amount' => (float) $s->amount,
                 ]),
             ],
             'accounts' => $accounts,
@@ -503,6 +536,7 @@ class TransactionController extends Controller
 
                 $fromTransaction->update([
                     'account_id' => $validated['account_id'],
+                    'category_id' => $validated['category_id'] ?? null,
                     'amount' => -abs($validated['amount']),
                     'date' => $validated['date'],
                     'cleared' => $validated['cleared'] ?? false,
@@ -535,16 +569,10 @@ class TransactionController extends Controller
                 // Create new splits if this is a split transaction
                 if (($validated['is_split'] ?? false) && !empty($validated['splits'])) {
                     foreach ($validated['splits'] as $split) {
-                        if ($validated['type'] === 'income') {
-                            $splitAmount = $split['amount'];
-                        } else {
-                            $splitAmount = -abs($split['amount']);
-                        }
-
                         SplitTransaction::create([
                             'transaction_id' => $transaction->id,
                             'category_id' => $split['category_id'] ?: null,
-                            'amount' => $splitAmount,
+                            'amount' => $split['amount'],
                         ]);
                     }
                 }

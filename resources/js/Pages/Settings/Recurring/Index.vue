@@ -15,6 +15,11 @@ const formatCurrency = (amount) => {
     }).format(Math.abs(amount));
 };
 
+const formatFullDate = (dateStr) => {
+    const date = new Date(dateStr + 'T00:00:00');
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+};
+
 const formatNextDate = (dateStr, frequency) => {
     const date = new Date(dateStr + 'T00:00:00');
 
@@ -113,8 +118,20 @@ const toggleActive = (id) => {
                                         {{ item.payee }}
                                         <span class="text-subtle font-normal">({{ formatNextDate(item.next_date, item.frequency) }})</span>
                                     </div>
-                                    <div v-if="item.category" class="text-xs text-subtle mt-0.5 truncate">
+                                    <!-- Split categories with amounts -->
+                                    <div v-if="item.is_split && item.splits" class="mt-0.5 grid grid-cols-[auto_auto] gap-x-1 gap-y-0.5 text-xs text-subtle w-fit">
+                                        <template v-for="(split, idx) in item.splits" :key="idx">
+                                            <span>{{ split.category }}:</span>
+                                            <span>{{ formatCurrency(split.amount) }}</span>
+                                        </template>
+                                    </div>
+                                    <!-- Single category -->
+                                    <div v-else-if="item.category" class="text-xs text-subtle mt-0.5 truncate">
                                         {{ item.category }}
+                                    </div>
+                                    <!-- Next due date -->
+                                    <div class="text-xs text-muted mt-0.5">
+                                        Next: {{ formatFullDate(item.next_date) }}
                                     </div>
                                 </div>
                                 <!-- Right: Amount, Account -->

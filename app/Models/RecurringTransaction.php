@@ -14,7 +14,7 @@ class RecurringTransaction extends Model
     protected $fillable = [
         'budget_id',
         'account_id',
-        'category_id',
+        'categories',
         'payee_id',
         'amount',
         'type',
@@ -29,6 +29,7 @@ class RecurringTransaction extends Model
     {
         return [
             'amount' => 'decimal:2',
+            'categories' => 'array',
             'next_date' => 'date',
             'end_date' => 'date',
             'is_active' => 'boolean',
@@ -45,11 +46,6 @@ class RecurringTransaction extends Model
         return $this->belongsTo(Account::class);
     }
 
-    public function category(): BelongsTo
-    {
-        return $this->belongsTo(Category::class);
-    }
-
     public function payee(): BelongsTo
     {
         return $this->belongsTo(Payee::class);
@@ -58,5 +54,19 @@ class RecurringTransaction extends Model
     public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class, 'recurring_id');
+    }
+
+    public function isSplit(): bool
+    {
+        return is_array($this->categories) && count($this->categories) > 1;
+    }
+
+    public function primaryCategoryId(): ?int
+    {
+        if (!is_array($this->categories) || empty($this->categories)) {
+            return null;
+        }
+
+        return $this->categories[0]['category_id'] ?? null;
     }
 }

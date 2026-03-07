@@ -8,9 +8,9 @@ import PickerField from '@/Components/Form/PickerField.vue';
 import DateField from '@/Components/Form/DateField.vue';
 import ToggleField from '@/Components/Form/ToggleField.vue';
 import AutocompleteField from '@/Components/Form/AutocompleteField.vue';
-import SelectInput from '@/Components/Form/SelectInput.vue';
 import Button from '@/Components/Base/Button.vue';
 import Modal from '@/Components/Base/Modal.vue';
+import BottomSheet from '@/Components/Base/BottomSheet.vue';
 import VoiceOverlay from '@/Components/Domain/VoiceOverlay.vue';
 import { useSpeechRecognition } from '@/Composables/useSpeechRecognition.js';
 import { useTheme } from '@/Composables/useTheme.js';
@@ -54,6 +54,18 @@ const selectedPayeeForUpdate = ref(null);
 // Split transaction state
 const showSplitModal = ref(false);
 const splitItems = ref([{ category_id: '', amount: '' }]);
+const splitCategorySheetIndex = ref(null);
+
+const getSplitCategoryDisplay = (categoryId) => {
+    if (!categoryId) return null;
+    const cat = flatCategories.value.find(c => c.id === categoryId);
+    return cat ? (cat.icon ? `${cat.icon} ${cat.name}` : cat.name) : null;
+};
+
+const selectSplitCategory = (index, categoryId) => {
+    splitItems.value[index].category_id = categoryId;
+    splitCategorySheetIndex.value = null;
+};
 
 // Type toggle options
 const typeOptions = [
@@ -108,7 +120,8 @@ const openSplitModal = () => {
     if (form.splits.length > 0) {
         splitItems.value = form.splits.map(s => ({ ...s }));
     } else if (form.category_id && form.amount) {
-        splitItems.value = [{ category_id: form.category_id, amount: form.amount }];
+        const amt = form.type === 'expense' ? '-' + form.amount : form.amount;
+        splitItems.value = [{ category_id: form.category_id, amount: amt }];
     } else {
         splitItems.value = [{ category_id: '', amount: '' }];
     }
@@ -126,7 +139,8 @@ const removeSplitItem = (index) => {
 };
 
 const totalSplitAmount = computed(() => {
-    return splitItems.value.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+    const sum = splitItems.value.reduce((s, item) => s + (parseFloat(item.amount) || 0), 0);
+    return Math.abs(sum);
 });
 
 const remainingAmount = computed(() => {
@@ -136,11 +150,9 @@ const remainingAmount = computed(() => {
 const isSplitBalanced = computed(() => Math.abs(remainingAmount.value) < 0.01);
 
 const splitItemColor = (item) => {
-    if (form.type === 'income') {
-        const amt = parseFloat(item.amount);
-        if (!isNaN(amt) && amt < 0) return 'expense';
-        return 'income';
-    }
+    const amt = parseFloat(item.amount);
+    if (!isNaN(amt) && amt < 0) return 'expense';
+    if (!isNaN(amt) && amt > 0) return 'income';
     return form.type;
 };
 
@@ -234,6 +246,29 @@ const handleVoiceCreated = ({ batchId }) => {
 
             <!-- Fields Card -->
             <div class="mx-3 mt-3 bg-surface rounded-xl overflow-hidden">
+                <!-- Date -->
+                <DateField
+                    v-model="form.date"
+                    label="Date"
+                />
+
+                <!-- Account / From -->
+                <PickerField
+                    v-model="form.account_id"
+                    :label="form.type === 'transfer' ? 'From' : 'Account'"
+                    :options="accounts"
+                    placeholder="Select account"
+                />
+
+                <!-- To Account (transfers only) -->
+                <PickerField
+                    v-if="form.type === 'transfer'"
+                    v-model="form.to_account_id"
+                    label="To"
+                    :options="toAccountOptions"
+                    placeholder="Select destination"
+                />
+
                 <!-- Payee (not for transfers) -->
                 <AutocompleteField
                     v-if="form.type !== 'transfer'"
@@ -252,7 +287,7 @@ const handleVoiceCreated = ({ batchId }) => {
                     :error="form.errors.amount"
                 />
 
-                <!-- Category (not for transfers) -->
+                <!-- Category -->
                 <template v-if="form.type !== 'transfer'">
                     <!-- Split display -->
                     <div v-if="form.is_split" class="flex items-center justify-between px-4 py-3.5 border-b border-border">
@@ -281,28 +316,17 @@ const handleVoiceCreated = ({ batchId }) => {
                         @action="openSplitModal"
                     />
                 </template>
-
-                <!-- Account / From -->
-                <PickerField
-                    v-model="form.account_id"
-                    :label="form.type === 'transfer' ? 'From' : 'Account'"
-                    :options="accounts"
-                    placeholder="Select account"
-                />
-
-                <!-- To Account (transfers only) -->
+                <!-- Optional category for transfers (deducts from budget envelope) -->
                 <PickerField
                     v-if="form.type === 'transfer'"
-                    v-model="form.to_account_id"
-                    label="To"
-                    :options="toAccountOptions"
-                    placeholder="Select destination"
-                />
-
-                <!-- Date -->
-                <DateField
-                    v-model="form.date"
-                    label="Date"
+                    v-model="form.category_id"
+                    label="Category"
+                    :options="categories"
+                    placeholder="None (optional)"
+                    grouped
+                    group-items-key="categories"
+                    searchable
+                    :null-option="{ label: 'None' }"
                 />
 
                 <!-- Cleared (not for transfers) -->
@@ -338,7 +362,7 @@ const handleVoiceCreated = ({ batchId }) => {
 
             <!-- Transfer hint -->
             <p v-if="form.type === 'transfer'" class="text-xs text-subtle text-center mt-3 px-4">
-                Creates linked transactions in both accounts
+                {{ form.category_id ? 'Transfer will also deduct from the selected budget category' : 'Creates linked transactions in both accounts' }}
             </p>
 
             <!-- Spacer -->
@@ -372,22 +396,22 @@ const handleVoiceCreated = ({ batchId }) => {
                         class="flex items-center px-4 py-3.5 border-b border-border last:border-b-0"
                     >
                         <div class="flex-1 min-w-0">
-                            <SelectInput
-                                v-model="item.category_id"
-                                :options="categories"
-                                placeholder="Select category"
-                                variant="minimal"
-                                grouped
-                                value-key="id"
-                                label-key="name"
-                                group-label-key="name"
-                                group-options-key="categories"
-                            />
+                            <button
+                                type="button"
+                                @click="splitCategorySheetIndex = index"
+                                class="flex items-center gap-1 text-sm font-medium"
+                                :class="item.category_id ? 'text-secondary' : 'text-subtle'"
+                            >
+                                <span class="truncate">{{ getSplitCategoryDisplay(item.category_id) || 'Select category' }}</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-subtle shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
                         </div>
                         <AmountField
                             v-model="item.amount"
                             :transaction-type="splitItemColor(item)"
-                            :allow-negative="form.type === 'income'"
+                            allow-negative
                             class="w-20 ml-3"
                         />
                         <button
@@ -447,6 +471,30 @@ const handleVoiceCreated = ({ batchId }) => {
                 </div>
             </template>
         </Modal>
+
+        <!-- Split Category Picker -->
+        <BottomSheet :show="splitCategorySheetIndex !== null" title="Category" @close="splitCategorySheetIndex = null">
+            <div class="py-2">
+                <div v-for="group in categories" :key="group.name">
+                    <div class="px-4 py-2 text-xs font-semibold text-subtle uppercase tracking-wide bg-surface-header">
+                        {{ group.name }}
+                    </div>
+                    <button
+                        v-for="cat in group.categories"
+                        :key="cat.id"
+                        type="button"
+                        @click="selectSplitCategory(splitCategorySheetIndex, cat.id)"
+                        class="w-full px-4 py-3 text-left text-sm hover:bg-surface-overlay flex items-center justify-between"
+                        :class="splitCategorySheetIndex !== null && splitItems[splitCategorySheetIndex]?.category_id === cat.id ? 'text-secondary font-medium' : 'text-body'"
+                    >
+                        <span>{{ cat.icon ? `${cat.icon} ${cat.name}` : cat.name }}</span>
+                        <svg v-if="splitCategorySheetIndex !== null && splitItems[splitCategorySheetIndex]?.category_id === cat.id" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-secondary" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </BottomSheet>
 
         <!-- Voice Overlay -->
         <VoiceOverlay

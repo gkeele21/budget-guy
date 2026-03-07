@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Payee;
 use App\Models\RecurringTransaction;
+use App\Models\SplitTransaction;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,21 +20,49 @@ class RecurringTransactionController extends Controller
             return redirect()->route('onboarding.setup');
         }
 
+        // Preload all category names for resolving from JSON
+        $categoryNames = $budget->categoryGroups()
+            ->with('categories')
+            ->get()
+            ->pluck('categories')
+            ->flatten()
+            ->pluck('name', 'id');
+
         $recurring = $budget->recurringTransactions()
-            ->with(['account', 'category', 'payee'])
+            ->with(['account', 'payee'])
             ->orderBy('next_date')
             ->get()
-            ->map(fn($r) => [
-                'id' => $r->id,
-                'payee' => $r->payee?->name ?? 'Unknown',
-                'account' => $r->account->name,
-                'category' => $r->category?->name,
-                'amount' => (float) $r->amount,
-                'type' => $r->type,
-                'frequency' => $r->frequency,
-                'next_date' => $r->next_date->format('Y-m-d'),
-                'is_active' => $r->is_active,
-            ]);
+            ->map(function ($r) use ($categoryNames) {
+                $categories = $r->categories ?? [];
+                $isSplit = $r->isSplit();
+
+                if ($isSplit) {
+                    $categoryDisplay = 'Split (' . count($categories) . ')';
+                } elseif (!empty($categories)) {
+                    $categoryDisplay = $categoryNames[$categories[0]['category_id']] ?? null;
+                } else {
+                    $categoryDisplay = null;
+                }
+
+                $splits = $isSplit ? collect($categories)->map(fn($c) => [
+                    'category' => $categoryNames[$c['category_id']] ?? 'Unknown',
+                    'amount' => (float) $c['amount'],
+                ]) : null;
+
+                return [
+                    'id' => $r->id,
+                    'payee' => $r->payee?->name ?? 'Unknown',
+                    'account' => $r->account->name,
+                    'category' => $categoryDisplay,
+                    'is_split' => $isSplit,
+                    'splits' => $splits,
+                    'amount' => (float) $r->amount,
+                    'type' => $r->type,
+                    'frequency' => $r->frequency,
+                    'next_date' => $r->next_date->format('Y-m-d'),
+                    'is_active' => $r->is_active,
+                ];
+            });
 
         return Inertia::render('Settings/Recurring/Index', [
             'recurring' => $recurring,
@@ -88,7 +117,9 @@ class RecurringTransactionController extends Controller
             'type' => 'required|in:expense,income',
             'amount' => 'required|numeric|min:0.01',
             'account_id' => 'required|exists:accounts,id',
-            'category_id' => 'nullable|exists:categories,id',
+            'categories' => 'nullable|array',
+            'categories.*.category_id' => 'nullable|exists:categories,id',
+            'categories.*.amount' => 'required_with:categories|numeric',
             'payee_name' => 'nullable|string|max:255',
             'frequency' => 'required|in:daily,weekly,biweekly,monthly,yearly',
             'next_date' => 'required|date',
@@ -97,10 +128,11 @@ class RecurringTransactionController extends Controller
 
         // Handle payee
         $payeeId = null;
+        $defaultCategoryId = !empty($validated['categories']) ? $validated['categories'][0]['category_id'] : null;
         if ($validated['payee_name']) {
             $payee = Payee::firstOrCreate(
                 ['budget_id' => $budget->id, 'name' => $validated['payee_name']],
-                ['default_category_id' => $validated['category_id']]
+                ['default_category_id' => $defaultCategoryId]
             );
             $payeeId = $payee->id;
         }
@@ -108,7 +140,7 @@ class RecurringTransactionController extends Controller
         RecurringTransaction::create([
             'budget_id' => $budget->id,
             'account_id' => $validated['account_id'],
-            'category_id' => $validated['category_id'],
+            'categories' => $validated['categories'] ?? null,
             'payee_id' => $payeeId,
             'amount' => $validated['amount'],
             'type' => $validated['type'],
@@ -156,7 +188,7 @@ class RecurringTransactionController extends Controller
                 'type' => $recurring->type,
                 'amount' => abs((float) $recurring->amount),
                 'account_id' => $recurring->account_id,
-                'category_id' => $recurring->category_id,
+                'categories' => $recurring->categories,
                 'payee_name' => $recurring->payee?->name,
                 'frequency' => $recurring->frequency,
                 'next_date' => $recurring->next_date->format('Y-m-d'),
@@ -181,7 +213,9 @@ class RecurringTransactionController extends Controller
             'type' => 'required|in:expense,income',
             'amount' => 'required|numeric|min:0.01',
             'account_id' => 'required|exists:accounts,id',
-            'category_id' => 'nullable|exists:categories,id',
+            'categories' => 'nullable|array',
+            'categories.*.category_id' => 'nullable|exists:categories,id',
+            'categories.*.amount' => 'required_with:categories|numeric',
             'payee_name' => 'nullable|string|max:255',
             'frequency' => 'required|in:daily,weekly,biweekly,monthly,yearly',
             'next_date' => 'required|date',
@@ -191,17 +225,18 @@ class RecurringTransactionController extends Controller
 
         // Handle payee
         $payeeId = null;
+        $defaultCategoryId = !empty($validated['categories']) ? $validated['categories'][0]['category_id'] : null;
         if ($validated['payee_name']) {
             $payee = Payee::firstOrCreate(
                 ['budget_id' => $budget->id, 'name' => $validated['payee_name']],
-                ['default_category_id' => $validated['category_id']]
+                ['default_category_id' => $defaultCategoryId]
             );
             $payeeId = $payee->id;
         }
 
         $recurring->update([
             'account_id' => $validated['account_id'],
-            'category_id' => $validated['category_id'],
+            'categories' => $validated['categories'] ?? null,
             'payee_id' => $payeeId,
             'amount' => $validated['amount'],
             'type' => $validated['type'],
@@ -296,10 +331,13 @@ class RecurringTransactionController extends Controller
         // Capture date before advancing (Carbon is mutable)
         $transactionDate = $recurring->next_date->copy();
 
-        Transaction::create([
+        // Determine category_id: null if split, otherwise first category
+        $categoryId = $recurring->isSplit() ? null : $recurring->primaryCategoryId();
+
+        $transaction = Transaction::create([
             'budget_id' => $recurring->budget_id,
             'account_id' => $recurring->account_id,
-            'category_id' => $recurring->category_id,
+            'category_id' => $categoryId,
             'payee_id' => $recurring->payee_id,
             'amount' => $amount,
             'type' => $recurring->type,
@@ -308,6 +346,21 @@ class RecurringTransactionController extends Controller
             'recurring_id' => $recurring->id,
             'created_by' => $recurring->budget->owner_id,
         ]);
+
+        // Create split transactions if split
+        if ($recurring->isSplit()) {
+            foreach ($recurring->categories as $split) {
+                $splitAmount = $recurring->type === 'expense'
+                    ? -abs($split['amount'])
+                    : abs($split['amount']);
+
+                SplitTransaction::create([
+                    'transaction_id' => $transaction->id,
+                    'category_id' => $split['category_id'] ?: null,
+                    'amount' => $splitAmount,
+                ]);
+            }
+        }
 
         // Calculate next date
         $nextDate = match ($recurring->frequency) {
@@ -343,46 +396,9 @@ class RecurringTransactionController extends Controller
             })
             ->get();
 
+        $controller = new self();
         foreach ($dueRecurring as $recurring) {
-            // Create the transaction
-            $amount = $recurring->type === 'expense'
-                ? -abs($recurring->amount)
-                : abs($recurring->amount);
-
-            // Auto-clear cash account transactions
-            $cleared = $recurring->account->type === 'cash';
-
-            $transactionDate = $recurring->next_date->copy();
-
-            Transaction::create([
-                'budget_id' => $recurring->budget_id,
-                'account_id' => $recurring->account_id,
-                'category_id' => $recurring->category_id,
-                'payee_id' => $recurring->payee_id,
-                'amount' => $amount,
-                'type' => $recurring->type,
-                'date' => $transactionDate,
-                'cleared' => $cleared,
-                'recurring_id' => $recurring->id,
-                'created_by' => $recurring->budget->owner_id,
-            ]);
-
-            // Calculate next date
-            $nextDate = match ($recurring->frequency) {
-                'daily' => $recurring->next_date->copy()->addDay(),
-                'weekly' => $recurring->next_date->copy()->addWeek(),
-                'biweekly' => $recurring->next_date->copy()->addWeeks(2),
-                'monthly' => $recurring->next_date->copy()->addMonth(),
-                'yearly' => $recurring->next_date->copy()->addYear(),
-            };
-
-            // Check if we should deactivate due to end_date
-            if ($recurring->end_date && $nextDate->gt($recurring->end_date)) {
-                $recurring->update(['is_active' => false, 'next_date' => $nextDate]);
-            } else {
-                $recurring->update(['next_date' => $nextDate]);
-            }
-
+            $controller->createTransactionFromRecurring($recurring);
             $count++;
         }
 

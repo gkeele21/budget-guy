@@ -7,6 +7,7 @@ import SwipeableRow from '@/Components/Base/SwipeableRow.vue';
 import SegmentedControl from '@/Components/Form/SegmentedControl.vue';
 import SearchField from '@/Components/Form/SearchField.vue';
 import DateField from '@/Components/Form/DateField.vue';
+import PickerField from '@/Components/Form/PickerField.vue';
 import Button from '@/Components/Base/Button.vue';
 import Toggle from '@/Components/Base/Toggle.vue';
 import { useSpeechRecognition } from '@/Composables/useSpeechRecognition.js';
@@ -22,7 +23,9 @@ const aiEnabled = page.props.auth.user.ai_enabled;
 const props = defineProps({
     transactions: Object,
     accounts: Array,
+    payees: Array,
     currentAccountId: Number,
+    currentPayeeId: Number,
     searchQuery: String,
     startDate: String,
     endDate: String,
@@ -44,6 +47,7 @@ const localClearedFilter = ref(props.clearedFilter || 'all');
 const localRecurringFilter = ref('all');
 const localUnassignedFilter = ref(!!props.unassignedFilter);
 const localTypeFilter = ref(props.typeFilter || 'all');
+const localPayeeFilter = ref(props.currentPayeeId || null);
 const localMonthFilter = ref(props.monthFilter || '');
 const searchInputRef = ref(null);
 const monthChipsRef = ref(null);
@@ -79,6 +83,7 @@ const buildParams = () => {
     }
     if (localUnassignedFilter.value) params.unassigned = '1';
     if (localTypeFilter.value && localTypeFilter.value !== 'all') params.type = localTypeFilter.value;
+    if (localPayeeFilter.value) params.payee = localPayeeFilter.value;
     return params;
 };
 
@@ -128,6 +133,7 @@ const clearFilters = () => {
     localRecurringFilter.value = 'all';
     localUnassignedFilter.value = false;
     localTypeFilter.value = 'all';
+    localPayeeFilter.value = null;
     router.get(route('transactions.index'), buildParams(), {
         preserveState: true,
         preserveScroll: true,
@@ -150,7 +156,8 @@ const hasActiveFilters = computed(() => {
            localStartDate.value || localEndDate.value ||
            (localClearedFilter.value && localClearedFilter.value !== 'all') ||
            localUnassignedFilter.value ||
-           (localTypeFilter.value && localTypeFilter.value !== 'all');
+           (localTypeFilter.value && localTypeFilter.value !== 'all') ||
+           localPayeeFilter.value;
 });
 
 const formatCurrency = (amount) => {
@@ -314,6 +321,10 @@ const activeFilterDescription = computed(() => {
     }
     if (localTypeFilter.value && localTypeFilter.value !== 'all') {
         parts.push(`${localTypeFilter.value} only`);
+    }
+    if (localPayeeFilter.value) {
+        const payee = props.payees?.find(p => p.id === Number(localPayeeFilter.value));
+        if (payee) parts.push(`payee: ${payee.name}`);
     }
     return parts.length > 0 ? parts.join(', ') : '';
 });
@@ -650,6 +661,20 @@ onMounted(() => {
                             />
                         </div>
 
+                        <!-- Payee Filter -->
+                        <div class="border-t border-border">
+                            <PickerField
+                                :modelValue="localPayeeFilter"
+                                @update:modelValue="localPayeeFilter = $event"
+                                label="Payee"
+                                :options="props.payees || []"
+                                placeholder="All payees"
+                                searchable
+                                :nullOption="{ label: 'All payees' }"
+                                :border-bottom="false"
+                            />
+                        </div>
+
                         <!-- Unassigned Filter -->
                         <div class="px-4 py-3 border-t border-border flex items-center justify-between">
                             <label class="text-xs text-subtle">Unassigned only</label>
@@ -896,7 +921,15 @@ onMounted(() => {
                                         <div class="font-medium text-body truncate">
                                             {{ item.payee }}
                                         </div>
-                                        <div class="text-xs text-subtle mt-0.5 truncate">
+                                        <!-- Split categories with amounts -->
+                                        <div v-if="item.is_split && item.splits" class="mt-0.5 grid grid-cols-[auto_auto] gap-x-1 gap-y-0.5 text-xs text-subtle w-fit">
+                                            <template v-for="(split, idx) in item.splits" :key="idx">
+                                                <span>{{ split.category }}:</span>
+                                                <span>{{ formatCurrency(Math.abs(split.amount)) }}</span>
+                                            </template>
+                                        </div>
+                                        <!-- Single category -->
+                                        <div v-else class="text-xs text-subtle mt-0.5 truncate">
                                             <span v-if="item.category">{{ item.category }} &middot; </span>
                                             {{ formatDate(item.next_date) }}
                                         </div>
@@ -941,7 +974,15 @@ onMounted(() => {
                                             {{ item.payee }}
                                             <span class="text-subtle font-normal">({{ formatNextDate(item.next_date, item.frequency) }})</span>
                                         </div>
-                                        <div v-if="item.category" class="text-xs text-subtle mt-0.5 truncate">
+                                        <!-- Split categories with amounts -->
+                                        <div v-if="item.is_split && item.splits" class="mt-0.5 grid grid-cols-[auto_auto] gap-x-1 gap-y-0.5 text-xs text-subtle w-fit">
+                                            <template v-for="(split, idx) in item.splits" :key="idx">
+                                                <span>{{ split.category }}:</span>
+                                                <span>{{ formatCurrency(Math.abs(split.amount)) }}</span>
+                                            </template>
+                                        </div>
+                                        <!-- Single category -->
+                                        <div v-else-if="item.category" class="text-xs text-subtle mt-0.5 truncate">
                                             {{ item.category }}
                                         </div>
                                     </div>
