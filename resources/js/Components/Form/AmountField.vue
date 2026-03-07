@@ -18,7 +18,7 @@ const props = defineProps({
     allowNegative: { type: Boolean, default: false },
 });
 
-const emit = defineEmits(['update:modelValue', 'blur']);
+const emit = defineEmits(['update:modelValue', 'blur', 'toggle-sign']);
 
 // Local input value for display
 const inputValue = ref(formatInitialValue());
@@ -36,6 +36,10 @@ function formatInitialValue() {
 
 const colorClass = computed(() => {
     if (props.color) return props.color;
+    // When allowNegative, derive color from the actual sign of the value
+    if (props.allowNegative && inputValue.value) {
+        return inputValue.value.startsWith('-') ? 'text-danger' : 'text-success';
+    }
     switch (props.transactionType) {
         case 'income': return 'text-success';
         case 'transfer': return 'text-info';
@@ -59,6 +63,7 @@ const toggleSign = () => {
         inputValue.value = '-';
     }
     emit('update:modelValue', inputValue.value);
+    emit('toggle-sign', inputValue.value.startsWith('-') ? 'expense' : 'income');
 };
 
 const startEditing = () => {
@@ -149,7 +154,7 @@ watch(() => props.modelValue, (newVal) => {
                 @input="onInput"
                 @blur="onBlur"
                 @click="allowNegative ? toggleSign() : null"
-                @keyup.enter="$event.target.blur()"
+                @keydown.enter.prevent="$event.target.blur()"
                 :class="[
                     'bg-transparent focus:outline-none text-base font-medium text-right w-28',
                     colorClass,
@@ -178,7 +183,7 @@ watch(() => props.modelValue, (newVal) => {
         @input="onInput"
         @blur="onBlur"
         @click="allowNegative ? toggleSign() : null"
-        @keyup.enter="$event.target.blur()"
+        @keydown.enter.prevent="$event.target.blur()"
         :class="[
             'bg-transparent focus:outline-none font-semibold text-right min-w-0 origin-right',
             colorClass,

@@ -121,7 +121,7 @@ const toggleActive = (id) => {
                                     <!-- Split categories with amounts -->
                                     <div v-if="item.is_split && item.splits" class="mt-0.5 grid grid-cols-[auto_auto] gap-x-1 gap-y-0.5 text-xs text-subtle w-fit">
                                         <template v-for="(split, idx) in item.splits" :key="idx">
-                                            <span>{{ split.category }}:</span>
+                                            <span :class="{ 'text-warning italic': !split.category && split.amount <= 0 }">{{ split.category || (split.amount > 0 ? 'Income' : 'Unassigned') }}:</span>
                                             <span>{{ formatCurrency(split.amount) }}</span>
                                         </template>
                                     </div>

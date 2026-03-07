@@ -59,6 +59,20 @@ const selectPayee = (payee) => {
     }
 };
 
+// Sync type when amount sign is toggled
+const handleToggleSign = (newType) => {
+    form.type = newType;
+};
+
+// When type changes via SegmentedControl, flip the amount sign to match
+watch(() => form.type, (newType, oldType) => {
+    if (!oldType || newType === oldType) return;
+    const num = parseFloat(form.amount);
+    if (isNaN(num) || num === 0) return;
+    if (newType === 'expense' && num > 0) form.amount = (-num).toFixed(2);
+    if (newType === 'income' && num < 0) form.amount = (-num).toFixed(2);
+});
+
 const submit = () => {
     form.put(route('recurring.update', props.recurring.id));
 };
@@ -131,8 +145,7 @@ const openSplitModal = () => {
     if (isSplit.value && form.categories.length > 0) {
         splitItems.value = form.categories.map(s => ({ ...s }));
     } else if (singleCategoryId.value && form.amount) {
-        const amt = form.type === 'expense' ? '-' + form.amount : form.amount;
-        splitItems.value = [{ category_id: singleCategoryId.value, amount: amt }];
+        splitItems.value = [{ category_id: singleCategoryId.value, amount: form.amount }];
     } else {
         splitItems.value = [{ category_id: '', amount: '' }];
     }
@@ -155,7 +168,7 @@ const totalSplitAmount = computed(() => {
 });
 
 const remainingAmount = computed(() => {
-    return (parseFloat(form.amount) || 0) - totalSplitAmount.value;
+    return Math.abs(parseFloat(form.amount) || 0) - totalSplitAmount.value;
 });
 
 const isSplitBalanced = computed(() => Math.abs(remainingAmount.value) < 0.01);
@@ -171,8 +184,7 @@ const saveSplit = () => {
     const validSplits = splitItems.value.filter(s => {
         const amt = parseFloat(s.amount);
         if (isNaN(amt) || amt === 0) return false;
-        if (form.type === 'income') return true;
-        return !!s.category_id;
+        return true;
     });
 
     if (validSplits.length === 0) {
@@ -267,6 +279,8 @@ const clearSplit = () => {
                     label="Amount"
                     :transaction-type="form.type"
                     :error="form.errors.amount"
+                    allow-negative
+                    @toggle-sign="handleToggleSign"
                 />
 
                 <!-- Category -->
@@ -293,6 +307,7 @@ const clearSplit = () => {
                         group-items-key="categories"
                         searchable
                         :action-option="{ label: 'Split Transaction...' }"
+                        :null-option="{ label: 'Unassigned' }"
                         @action="openSplitModal"
                     />
                 </template>
@@ -424,7 +439,7 @@ const clearSplit = () => {
                             'bg-danger': !isSplitBalanced,
                             'bg-success': isSplitBalanced,
                         }"
-                        :style="{ width: `${Math.min(100, (totalSplitAmount / (parseFloat(form.amount) || 1)) * 100)}%` }"
+                        :style="{ width: `${Math.min(100, (totalSplitAmount / (Math.abs(parseFloat(form.amount)) || 1)) * 100)}%` }"
                     ></div>
                 </div>
             </div>
@@ -440,6 +455,17 @@ const clearSplit = () => {
         <!-- Split Category Picker -->
         <BottomSheet :show="splitCategorySheetIndex !== null" title="Category" @close="splitCategorySheetIndex = null">
             <div class="py-2">
+                <button
+                    type="button"
+                    @click="selectSplitCategory(splitCategorySheetIndex, null)"
+                    class="w-full px-4 py-3 text-left text-sm hover:bg-surface-overlay flex items-center justify-between border-b border-border"
+                    :class="splitCategorySheetIndex !== null && !splitItems[splitCategorySheetIndex]?.category_id ? 'text-secondary font-medium' : 'text-body'"
+                >
+                    <span>Unassigned</span>
+                    <svg v-if="splitCategorySheetIndex !== null && !splitItems[splitCategorySheetIndex]?.category_id" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-secondary" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                </button>
                 <div v-for="group in categories" :key="group.name">
                     <div class="px-4 py-2 text-xs font-semibold text-subtle uppercase tracking-wide bg-surface-header">
                         {{ group.name }}

@@ -45,7 +45,7 @@ class RecurringTransactionController extends Controller
                 }
 
                 $splits = $isSplit ? collect($categories)->map(fn($c) => [
-                    'category' => $categoryNames[$c['category_id']] ?? 'Unknown',
+                    'category' => $c['category_id'] ? ($categoryNames[$c['category_id']] ?? null) : null,
                     'amount' => (float) $c['amount'],
                 ]) : null;
 
@@ -115,7 +115,7 @@ class RecurringTransactionController extends Controller
 
         $validated = $request->validate([
             'type' => 'required|in:expense,income',
-            'amount' => 'required|numeric|min:0.01',
+            'amount' => 'required|numeric|not_in:0',
             'account_id' => 'required|exists:accounts,id',
             'categories' => 'nullable|array',
             'categories.*.category_id' => 'nullable|exists:categories,id',
@@ -142,7 +142,7 @@ class RecurringTransactionController extends Controller
             'account_id' => $validated['account_id'],
             'categories' => $validated['categories'] ?? null,
             'payee_id' => $payeeId,
-            'amount' => $validated['amount'],
+            'amount' => (float) $validated['amount'],
             'type' => $validated['type'],
             'frequency' => $validated['frequency'],
             'next_date' => $validated['next_date'],
@@ -186,7 +186,7 @@ class RecurringTransactionController extends Controller
             'recurring' => [
                 'id' => $recurring->id,
                 'type' => $recurring->type,
-                'amount' => abs((float) $recurring->amount),
+                'amount' => (float) $recurring->amount,
                 'account_id' => $recurring->account_id,
                 'categories' => $recurring->categories,
                 'payee_name' => $recurring->payee?->name,
@@ -211,7 +211,7 @@ class RecurringTransactionController extends Controller
 
         $validated = $request->validate([
             'type' => 'required|in:expense,income',
-            'amount' => 'required|numeric|min:0.01',
+            'amount' => 'required|numeric|not_in:0',
             'account_id' => 'required|exists:accounts,id',
             'categories' => 'nullable|array',
             'categories.*.category_id' => 'nullable|exists:categories,id',
@@ -238,7 +238,7 @@ class RecurringTransactionController extends Controller
             'account_id' => $validated['account_id'],
             'categories' => $validated['categories'] ?? null,
             'payee_id' => $payeeId,
-            'amount' => $validated['amount'],
+            'amount' => (float) $validated['amount'],
             'type' => $validated['type'],
             'frequency' => $validated['frequency'],
             'next_date' => $validated['next_date'],
@@ -321,9 +321,7 @@ class RecurringTransactionController extends Controller
      */
     private function createTransactionFromRecurring(RecurringTransaction $recurring): void
     {
-        $amount = $recurring->type === 'expense'
-            ? -abs($recurring->amount)
-            : abs($recurring->amount);
+        $amount = (float) $recurring->amount;
 
         // Auto-clear only cash account transactions
         $cleared = $recurring->account->type === 'cash';
@@ -350,14 +348,10 @@ class RecurringTransactionController extends Controller
         // Create split transactions if split
         if ($recurring->isSplit()) {
             foreach ($recurring->categories as $split) {
-                $splitAmount = $recurring->type === 'expense'
-                    ? -abs($split['amount'])
-                    : abs($split['amount']);
-
                 SplitTransaction::create([
                     'transaction_id' => $transaction->id,
                     'category_id' => $split['category_id'] ?: null,
-                    'amount' => $splitAmount,
+                    'amount' => (float) $split['amount'],
                 ]);
             }
         }

@@ -216,7 +216,7 @@ class TransactionController extends Controller
                 }
 
                 $splits = $isSplit ? collect($categories)->map(fn($c) => [
-                    'category' => $categoryNames[$c['category_id']] ?? 'Unknown',
+                    'category' => $c['category_id'] ? ($categoryNames[$c['category_id']] ?? null) : null,
                     'amount' => (float) $c['amount'],
                 ]) : null;
 
@@ -306,7 +306,7 @@ class TransactionController extends Controller
 
         $validated = $request->validate([
             'type' => 'required|in:expense,income,transfer',
-            'amount' => 'required|numeric|min:0.01',
+            'amount' => 'required|numeric|not_in:0',
             'account_id' => 'required|exists:accounts,id',
             'category_id' => 'nullable|exists:categories,id',
             'payee_name' => 'nullable|string|max:255',
@@ -316,7 +316,7 @@ class TransactionController extends Controller
             'to_account_id' => 'required_if:type,transfer|nullable|exists:accounts,id',
             'is_split' => 'boolean',
             'splits' => 'array',
-            'splits.*.category_id' => ($request->type === 'income' ? 'nullable' : 'required_with:splits') . '|exists:categories,id',
+            'splits.*.category_id' => 'nullable|exists:categories,id',
             'splits.*.amount' => 'required_with:splits|numeric',
             'update_payee_default' => 'boolean',
         ]);
@@ -339,11 +339,8 @@ class TransactionController extends Controller
             }
         }
 
-        // Calculate amount (negative for expenses)
-        $amount = $validated['amount'];
-        if ($validated['type'] === 'expense') {
-            $amount = -abs($amount);
-        }
+        // Amount arrives already signed from frontend (negative for expenses)
+        $amount = (float) $validated['amount'];
 
         // Auto-clear cash account transactions
         $account = Account::find($validated['account_id']);
@@ -360,7 +357,7 @@ class TransactionController extends Controller
                 'account_id' => $validated['account_id'],
                 'category_id' => $validated['category_id'] ?? null,
                 'payee_id' => null,
-                'amount' => -abs($validated['amount']),
+                'amount' => -abs((float) $validated['amount']),
                 'type' => 'transfer',
                 'date' => $validated['date'],
                 'cleared' => $fromCleared,
@@ -373,7 +370,7 @@ class TransactionController extends Controller
                 'account_id' => $validated['to_account_id'],
                 'category_id' => null,
                 'payee_id' => null,
-                'amount' => abs($validated['amount']),
+                'amount' => abs((float) $validated['amount']),
                 'type' => 'transfer',
                 'date' => $validated['date'],
                 'cleared' => $toCleared,
@@ -465,7 +462,7 @@ class TransactionController extends Controller
             'transaction' => [
                 'id' => $transaction->id,
                 'type' => $transaction->type,
-                'amount' => abs((float) $transaction->amount),
+                'amount' => (float) $transaction->amount,
                 'account_id' => $transaction->account_id,
                 'to_account_id' => $toAccountId,
                 'category_id' => $transaction->category_id,
@@ -494,7 +491,7 @@ class TransactionController extends Controller
 
         $validated = $request->validate([
             'type' => 'required|in:expense,income,transfer',
-            'amount' => 'required|numeric|min:0.01',
+            'amount' => 'required|numeric|not_in:0',
             'account_id' => 'required|exists:accounts,id',
             'to_account_id' => 'nullable|exists:accounts,id|different:account_id',
             'category_id' => 'nullable|exists:categories,id',
@@ -504,7 +501,7 @@ class TransactionController extends Controller
             'memo' => 'nullable|string|max:500',
             'is_split' => 'boolean',
             'splits' => 'array',
-            'splits.*.category_id' => ($request->type === 'income' ? 'nullable' : 'required_with:splits') . '|exists:categories,id',
+            'splits.*.category_id' => 'nullable|exists:categories,id',
             'splits.*.amount' => 'required_with:splits|numeric',
         ]);
 
@@ -519,11 +516,8 @@ class TransactionController extends Controller
             $payeeId = $payee->id;
         }
 
-        // Calculate amount
-        $amount = $validated['amount'];
-        if ($validated['type'] === 'expense') {
-            $amount = -abs($amount);
-        }
+        // Amount arrives already signed from frontend
+        $amount = (float) $validated['amount'];
 
         DB::transaction(function () use ($validated, $transaction, $payeeId, $amount) {
             // For transfers, update both sides of the pair
@@ -537,7 +531,7 @@ class TransactionController extends Controller
                 $fromTransaction->update([
                     'account_id' => $validated['account_id'],
                     'category_id' => $validated['category_id'] ?? null,
-                    'amount' => -abs($validated['amount']),
+                    'amount' => -abs((float) $validated['amount']),
                     'date' => $validated['date'],
                     'cleared' => $validated['cleared'] ?? false,
                     'memo' => $validated['memo'],
@@ -546,7 +540,7 @@ class TransactionController extends Controller
                 if ($toTransaction) {
                     $toTransaction->update([
                         'account_id' => $validated['to_account_id'] ?? $toTransaction->account_id,
-                        'amount' => abs($validated['amount']),
+                        'amount' => abs((float) $validated['amount']),
                         'date' => $validated['date'],
                         'memo' => $validated['memo'],
                     ]);
