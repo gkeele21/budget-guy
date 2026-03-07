@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref, watch, nextTick } from 'vue';
 import FormRow from './FormRow.vue';
+import SignToggle from './SignToggle.vue';
 
 const props = defineProps({
     modelValue: { type: [String, Number], default: '' },
@@ -128,15 +129,11 @@ watch(() => props.modelValue, (newVal) => {
     <!-- With label: FormRow wrapped -->
     <FormRow v-if="label" :label="label" :border-bottom="borderBottom" :error="error">
         <div class="flex items-center justify-end gap-1.5">
-            <button
+            <SignToggle
                 v-if="allowNegative && isEditing"
-                type="button"
-                @mousedown.prevent="toggleSign"
-                :class="[
-                    'text-xs font-bold px-1.5 py-0.5 rounded transition-colors select-none',
-                    isNegative ? 'bg-danger/15 text-danger' : 'bg-surface-inset text-subtle',
-                ]"
-            >+/&minus;</button>
+                :negative="isNegative"
+                @toggle="toggleSign"
+            />
             <input
                 v-if="isEditing"
                 ref="inputRef"
@@ -165,20 +162,26 @@ watch(() => props.modelValue, (newVal) => {
         </div>
     </FormRow>
     <!-- Without label: bare inline, editing -->
-    <input
-        v-else-if="isEditing"
-        ref="inputRef"
-        type="text"
-        inputmode="decimal"
-        :value="inputValue ? displayValue : '$'"
-        @input="onInput"
-        @blur="onBlur"
-        @keyup.enter="$event.target.blur()"
-        :class="[
-            'bg-transparent focus:outline-none font-semibold text-right text-sm',
-            colorClass,
-        ]"
-    />
+    <div v-else-if="isEditing" class="flex items-center gap-1">
+        <SignToggle
+            v-if="allowNegative"
+            :negative="isNegative"
+            @toggle="toggleSign"
+        />
+        <input
+            ref="inputRef"
+            type="text"
+            inputmode="decimal"
+            :value="inputValue ? displayValue : '$'"
+            @input="onInput"
+            @blur="onBlur"
+            @keyup.enter="$event.target.blur()"
+            :class="[
+                'bg-transparent focus:outline-none font-semibold text-right text-sm flex-1 min-w-0',
+                colorClass,
+            ]"
+        />
+    </div>
     <!-- Without label: bare inline, display -->
     <div
         v-else

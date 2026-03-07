@@ -115,8 +115,22 @@ const remainingAmount = computed(() => {
 
 const isSplitBalanced = computed(() => Math.abs(remainingAmount.value) < 0.01);
 
+const splitItemColor = (item) => {
+    if (form.type === 'income') {
+        const amt = parseFloat(item.amount);
+        if (!isNaN(amt) && amt < 0) return 'expense';
+        return 'income';
+    }
+    return form.type;
+};
+
 const saveSplit = () => {
-    const validSplits = splitItems.value.filter(s => s.category_id && parseFloat(s.amount) > 0);
+    const validSplits = splitItems.value.filter(s => {
+        const amt = parseFloat(s.amount);
+        if (isNaN(amt) || amt === 0) return false;
+        if (form.type === 'income') return true;
+        return !!s.category_id;
+    });
 
     if (validSplits.length === 0) {
         form.is_split = false;
@@ -195,7 +209,7 @@ const getSaveButtonVariant = () => {
                     v-if="form.type !== 'transfer'"
                     v-model="form.payee_name"
                     label="Payee"
-                    placeholder="Who did you pay?"
+                    :placeholder="form.type === 'income' ? 'Who paid you?' : 'Who did you pay?'"
                     :suggestions="payees"
                     @select="selectPayee"
                 />
@@ -375,7 +389,8 @@ const getSaveButtonVariant = () => {
                         </div>
                         <AmountField
                             v-model="item.amount"
-                            transaction-type="expense"
+                            :transaction-type="splitItemColor(item)"
+                            :allow-negative="form.type === 'income'"
                             class="w-20 ml-3"
                         />
                         <button
@@ -430,7 +445,7 @@ const getSaveButtonVariant = () => {
 
             <template #footer>
                 <div class="flex gap-2">
-                    <Button variant="secondary" @click="clearSplit" class="flex-1">Clear</Button>
+                    <Button variant="secondary" @click="clearSplit" class="flex-1">Cancel</Button>
                     <Button :disabled="!isSplitBalanced" @click="saveSplit" class="flex-1">Save Split</Button>
                 </div>
             </template>

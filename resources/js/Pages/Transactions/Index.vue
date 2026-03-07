@@ -721,7 +721,7 @@ onMounted(() => {
                                         <!-- Split categories with amounts -->
                                         <div v-if="transaction.is_split && transaction.splits" class="mt-0.5 grid grid-cols-[auto_auto] gap-x-1 gap-y-0.5 text-xs text-subtle w-fit">
                                             <template v-for="split in transaction.splits" :key="split.id">
-                                                <span>{{ split.category }}:</span>
+                                                <span>{{ split.category || 'Income' }}:</span>
                                                 <span>{{ formatCurrency(Math.abs(split.amount)) }}</span>
                                             </template>
                                         </div>
@@ -730,7 +730,7 @@ onMounted(() => {
                                             {{ transaction.category }}
                                         </div>
                                         <!-- Unassigned (not transfers, not splits) -->
-                                        <div v-else-if="transaction.type !== 'transfer' && !transaction.is_split" class="text-xs text-subtle mt-0.5 truncate italic">
+                                        <div v-else-if="transaction.type !== 'transfer' && !transaction.is_split" :class="['text-xs mt-0.5 truncate italic', transaction.type === 'income' ? 'text-subtle' : 'text-warning']">
                                             {{ transaction.type === 'income' ? 'Income' : 'Unassigned' }}
                                         </div>
                                         <!-- Memo -->

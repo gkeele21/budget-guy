@@ -246,8 +246,8 @@ class TransactionController extends Controller
             'to_account_id' => 'required_if:type,transfer|nullable|exists:accounts,id',
             'is_split' => 'boolean',
             'splits' => 'array',
-            'splits.*.category_id' => 'required_with:splits|exists:categories,id',
-            'splits.*.amount' => 'required_with:splits|numeric|min:0.01',
+            'splits.*.category_id' => ($request->type === 'income' ? 'nullable' : 'required_with:splits') . '|exists:categories,id',
+            'splits.*.amount' => 'required_with:splits|numeric',
             'update_payee_default' => 'boolean',
         ]);
 
@@ -332,13 +332,16 @@ class TransactionController extends Controller
                 // Create split transactions if this is a split
                 if (($validated['is_split'] ?? false) && !empty($validated['splits'])) {
                     foreach ($validated['splits'] as $split) {
-                        $splitAmount = $validated['type'] === 'expense'
-                            ? -abs($split['amount'])
-                            : abs($split['amount']);
+                        if ($validated['type'] === 'income') {
+                            // Income splits preserve sign (positive = income, negative = deduction)
+                            $splitAmount = $split['amount'];
+                        } else {
+                            $splitAmount = -abs($split['amount']);
+                        }
 
                         SplitTransaction::create([
                             'transaction_id' => $transaction->id,
-                            'category_id' => $split['category_id'],
+                            'category_id' => $split['category_id'] ?: null,
                             'amount' => $splitAmount,
                         ]);
                     }
@@ -436,8 +439,8 @@ class TransactionController extends Controller
             'memo' => 'nullable|string|max:500',
             'is_split' => 'boolean',
             'splits' => 'array',
-            'splits.*.category_id' => 'required_with:splits|exists:categories,id',
-            'splits.*.amount' => 'required_with:splits|numeric|min:0.01',
+            'splits.*.category_id' => ($request->type === 'income' ? 'nullable' : 'required_with:splits') . '|exists:categories,id',
+            'splits.*.amount' => 'required_with:splits|numeric',
         ]);
 
         // Handle payee
@@ -500,13 +503,15 @@ class TransactionController extends Controller
                 // Create new splits if this is a split transaction
                 if (($validated['is_split'] ?? false) && !empty($validated['splits'])) {
                     foreach ($validated['splits'] as $split) {
-                        $splitAmount = $validated['type'] === 'expense'
-                            ? -abs($split['amount'])
-                            : abs($split['amount']);
+                        if ($validated['type'] === 'income') {
+                            $splitAmount = $split['amount'];
+                        } else {
+                            $splitAmount = -abs($split['amount']);
+                        }
 
                         SplitTransaction::create([
                             'transaction_id' => $transaction->id,
-                            'category_id' => $split['category_id'],
+                            'category_id' => $split['category_id'] ?: null,
                             'amount' => $splitAmount,
                         ]);
                     }
