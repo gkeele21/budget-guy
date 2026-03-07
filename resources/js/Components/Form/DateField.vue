@@ -29,6 +29,9 @@ const monthWheelRef = ref(null);
 const dayWheelRef = ref(null);
 const yearWheelRef = ref(null);
 
+// Guard against scroll events during programmatic scrolling
+let isSettingScroll = false;
+
 const months = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
@@ -97,6 +100,7 @@ const confirm = () => {
 const ITEM_HEIGHT = 44;
 
 const scrollToSelected = () => {
+    isSettingScroll = true;
     if (monthWheelRef.value) {
         const monthIndex = tempMonth.value;
         monthWheelRef.value.scrollTop = monthIndex * ITEM_HEIGHT;
@@ -109,9 +113,15 @@ const scrollToSelected = () => {
         const yearIndex = years.value.indexOf(tempYear.value);
         yearWheelRef.value.scrollTop = yearIndex * ITEM_HEIGHT;
     }
+    // Allow scroll events again after browser has applied positions
+    requestAnimationFrame(() => {
+        isSettingScroll = false;
+    });
 };
 
 const handleScroll = (wheel, type) => {
+    if (isSettingScroll) return;
+
     const scrollTop = wheel.scrollTop;
     const index = Math.round(scrollTop / ITEM_HEIGHT);
 
@@ -125,6 +135,16 @@ const handleScroll = (wheel, type) => {
         const clampedIndex = Math.max(0, Math.min(index, years.value.length - 1));
         tempYear.value = years.value[clampedIndex];
     }
+};
+
+// Debounced snap — replaces @scrollend for iOS Safari compatibility
+const scrollTimers = {};
+const handleScrollEnd = (wheel, type) => {
+    if (isSettingScroll) return;
+    clearTimeout(scrollTimers[type]);
+    scrollTimers[type] = setTimeout(() => {
+        snapToItem(wheel, type);
+    }, 120);
 };
 
 const snapToItem = (wheel, type) => {
@@ -243,10 +263,9 @@ const tempDisplayValue = computed(() => {
                 <!-- Month wheel -->
                 <div
                     ref="monthWheelRef"
-                    class="flex-1 overflow-y-auto scroll-smooth hide-scrollbar"
+                    class="flex-1 overflow-y-auto hide-scrollbar"
                     style="scroll-snap-type: y mandatory;"
-                    @scroll="handleScroll($event.target, 'month')"
-                    @scrollend="snapToItem($event.target, 'month')"
+                    @scroll="handleScroll($event.target, 'month'); handleScrollEnd($event.target, 'month')"
                 >
                     <!-- Top padding -->
                     <div style="height: 88px;" />
@@ -271,10 +290,9 @@ const tempDisplayValue = computed(() => {
                 <!-- Day wheel -->
                 <div
                     ref="dayWheelRef"
-                    class="w-16 overflow-y-auto scroll-smooth hide-scrollbar"
+                    class="w-16 overflow-y-auto hide-scrollbar"
                     style="scroll-snap-type: y mandatory;"
-                    @scroll="handleScroll($event.target, 'day')"
-                    @scrollend="snapToItem($event.target, 'day')"
+                    @scroll="handleScroll($event.target, 'day'); handleScrollEnd($event.target, 'day')"
                 >
                     <!-- Top padding -->
                     <div style="height: 88px;" />
@@ -299,10 +317,9 @@ const tempDisplayValue = computed(() => {
                 <!-- Year wheel -->
                 <div
                     ref="yearWheelRef"
-                    class="w-20 overflow-y-auto scroll-smooth hide-scrollbar"
+                    class="w-20 overflow-y-auto hide-scrollbar"
                     style="scroll-snap-type: y mandatory;"
-                    @scroll="handleScroll($event.target, 'year')"
-                    @scrollend="snapToItem($event.target, 'year')"
+                    @scroll="handleScroll($event.target, 'year'); handleScrollEnd($event.target, 'year')"
                 >
                     <!-- Top padding -->
                     <div style="height: 88px;" />
