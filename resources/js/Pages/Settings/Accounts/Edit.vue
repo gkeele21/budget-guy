@@ -149,8 +149,8 @@ const deleteAccount = () => {
                 <ToggleField
                     v-model="form.is_on_budget"
                     label="Track in Budget"
-                    on-label="Budgeted"
-                    off-label="Tracking Only"
+                    on-label="Yes"
+                    off-label="No"
                     variant="switch"
                     :border-bottom="false"
                 />
