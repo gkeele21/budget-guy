@@ -215,29 +215,6 @@ const transactionCount = computed(() => {
     return Object.values(props.transactions).reduce((sum, day) => sum + day.length, 0);
 });
 
-// Income popover state
-const showIncomePopover = ref(false);
-const incomeTransactions = computed(() => {
-    const all = [];
-    for (const dayTxs of Object.values(props.transactions)) {
-        for (const tx of dayTxs) {
-            if (tx.type !== 'income') continue;
-            if (tx.is_split) {
-                // Include split income transactions that have uncategorized lines
-                const uncategorizedAmount = tx.splits
-                    .filter(s => !s.category_id)
-                    .reduce((sum, s) => sum + s.amount, 0);
-                if (uncategorizedAmount !== 0) {
-                    all.push({ ...tx, amount: uncategorizedAmount });
-                }
-            } else if (!tx.category_id) {
-                all.push(tx);
-            }
-        }
-    }
-    return all;
-});
-
 // Toast state for cleared notifications
 const toast = ref({ show: false, message: '', payee: '', transactionId: null, wasCleared: false });
 let toastTimeout = null;
@@ -704,51 +681,6 @@ onMounted(() => {
                 <div v-if="hasActiveFilters && !showFilters" class="text-xs text-subtle px-1">
                     Filtered: {{ activeFilterDescription }}
                     <button @click="clearFilters" class="text-primary ml-2">Clear</button>
-                </div>
-
-                <!-- Income / Spent / Net Summary (only when a single month is selected) -->
-                <div v-if="summary && localMonthFilter" class="bg-surface rounded-card px-4 py-2.5 flex items-center justify-center gap-0 text-sm tabular-nums relative">
-                    <button class="text-center flex-1" @click="showIncomePopover = !showIncomePopover">
-                        <div class="text-xs text-subtle">Income</div>
-                        <div class="font-semibold text-success font-mono">{{ formatCurrency(summary.income) }}</div>
-                    </button>
-                    <div class="w-px h-8 bg-border"></div>
-                    <div class="text-center flex-1">
-                        <div class="text-xs text-subtle">Spent</div>
-                        <div class="font-semibold text-danger font-mono">{{ formatCurrency(summary.spent) }}</div>
-                    </div>
-                    <div class="w-px h-8 bg-border"></div>
-                    <div class="text-center flex-1">
-                        <div class="text-xs text-subtle">Net</div>
-                        <div class="font-semibold font-mono" :class="summary.net >= 0 ? 'text-success' : 'text-danger'">{{ formatCurrency(summary.net) }}</div>
-                    </div>
-                    <!-- Income popover backdrop -->
-                    <div
-                        v-if="showIncomePopover"
-                        class="fixed inset-0 z-40"
-                        @click="showIncomePopover = false"
-                    ></div>
-                    <!-- Income transactions popover -->
-                    <div
-                        v-if="showIncomePopover"
-                        class="absolute left-3 right-3 top-full mt-1 z-50 bg-surface rounded-card shadow-lg border border-border p-4 text-left"
-                    >
-                        <div class="text-xs text-subtle uppercase mb-2">Income</div>
-                        <div v-if="incomeTransactions.length" class="space-y-2 text-sm max-h-[300px] overflow-y-auto">
-                            <div v-for="tx in incomeTransactions" :key="tx.id" class="flex justify-between gap-3">
-                                <div class="min-w-0">
-                                    <div class="text-body truncate">{{ tx.payee }}</div>
-                                    <div class="text-xs text-muted">{{ formatDate(tx.date) }} · {{ tx.account }}</div>
-                                </div>
-                                <span class="font-medium text-success whitespace-nowrap font-mono">{{ formatCurrency(tx.amount) }}</span>
-                            </div>
-                            <div class="border-t border-border pt-2 flex justify-between font-semibold">
-                                <span class="text-body">Total</span>
-                                <span class="text-success font-mono">{{ formatCurrency(summary.income) }}</span>
-                            </div>
-                        </div>
-                        <div v-else class="text-sm text-muted">No income this month</div>
-                    </div>
                 </div>
 
                 <!-- Account Filter -->

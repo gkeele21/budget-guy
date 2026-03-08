@@ -724,7 +724,7 @@ const showMoveToast = (amount, from, to, remaining = null) => {
 
                             <!-- Spent -->
                             <div class="text-right text-sm text-subtle">
-                                ${{ formatNumber(category.spent) }}
+                                ${{ formatNumber(-category.spent) }}
                             </div>
 
                             <!-- Balance/Available (Clickable if overspent) -->
@@ -764,7 +764,7 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                             ${{ formatNumber(getGroupTotals(group).budgeted) }}
                         </div>
                         <div class="text-right text-subtle">
-                            ${{ formatNumber(getGroupTotals(group).spent) }}
+                            ${{ formatNumber(-getGroupTotals(group).spent) }}
                         </div>
                         <div
                             class="text-right"
@@ -784,7 +784,7 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                         ${{ formatNumber(summary.budgeted) }}
                     </div>
                     <div class="text-right text-subtle">
-                        ${{ formatNumber(summary.spent) }}
+                        ${{ formatNumber(-summary.spent) }}
                     </div>
                     <div
                         class="text-right"

@@ -204,12 +204,30 @@ class BudgetController extends Controller
             ->pluck('id')
             ->toArray();
 
-        // Prior months: starting balances + income - budgeted
+        // Prior months: starting balances + unassigned income - budgeted
         // Expenses don't affect Ready to Assign — they come out of category envelopes
-        $priorIncome = $budget->transactions()
+        // Assigned income (income with a category) goes directly into envelopes, not Ready to Assign
+        $priorIncomeTotal = $budget->transactions()
             ->where('type', 'income')
             ->where('date', '<', $monthStart)
             ->sum('amount');
+
+        $priorAssignedIncomeSimple = $budget->transactions()
+            ->where('type', 'income')
+            ->whereNotNull('category_id')
+            ->whereDoesntHave('splits')
+            ->where('date', '<', $monthStart)
+            ->sum('amount');
+
+        $priorAssignedIncomeSplits = SplitTransaction::whereNotNull('category_id')
+            ->whereHas('transaction', function ($q) use ($budget, $monthStart) {
+                $q->where('budget_id', $budget->id)
+                    ->where('type', 'income')
+                    ->where('date', '<', $monthStart);
+            })
+            ->sum('amount');
+
+        $priorIncome = $priorIncomeTotal - $priorAssignedIncomeSimple - $priorAssignedIncomeSplits;
 
         $priorBudgeted = MonthlyBudget::whereIn('category_id', $budgetCategoryIds)
             ->where('month', '<', $month)
@@ -273,8 +291,8 @@ class BudgetController extends Controller
         // Is this the first month? (no prior income or budgets)
         $hasPriorActivity = $priorIncome != 0 || $priorBudgeted != 0;
 
-        // Ready to assign = carried forward + this month's income - this month's budgeted
-        $toBudget = $carriedForward + $thisMonthIncome - $totalBudgeted;
+        // Ready to assign = carried forward + this month's unassigned income - this month's budgeted
+        $toBudget = $carriedForward + $earnedIncome - $totalBudgeted;
 
         // Earliest month: user-set start month, or fallback to first account creation
         $earliestMonth = $budget->start_month;
