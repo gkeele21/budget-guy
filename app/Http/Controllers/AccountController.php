@@ -82,6 +82,7 @@ class AccountController extends Controller
                 'icon' => $account->icon,
                 'starting_balance' => (float) $account->starting_balance,
                 'is_closed' => $account->is_closed,
+                'is_on_budget' => $account->is_on_budget,
             ],
             'emojiGrid' => config('emoji.accounts'),
         ]);
@@ -97,6 +98,7 @@ class AccountController extends Controller
             'icon' => 'nullable|string|max:10',
             'starting_balance' => 'nullable|numeric',
             'is_closed' => 'boolean',
+            'is_on_budget' => 'boolean',
         ]);
 
         $validated['starting_balance'] = $validated['starting_balance'] ?? 0;

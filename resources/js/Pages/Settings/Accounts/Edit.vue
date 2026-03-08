@@ -17,6 +17,7 @@ const form = useForm({
     type: props.account.type,
     icon: props.account.icon || '',
     starting_balance: parseFloat(props.account.starting_balance).toFixed(2),
+    is_on_budget: props.account.is_on_budget,
     is_closed: props.account.is_closed,
 });
 
@@ -141,6 +142,21 @@ const deleteAccount = () => {
                     :border-bottom="false"
                     allow-negative
                 />
+            </div>
+
+            <!-- Track in Budget Toggle -->
+            <div class="bg-surface rounded-card overflow-hidden">
+                <ToggleField
+                    v-model="form.is_on_budget"
+                    label="Track in Budget"
+                    on-label="Budgeted"
+                    off-label="Tracking Only"
+                    variant="switch"
+                    :border-bottom="false"
+                />
+                <p class="px-4 pb-3 text-xs text-subtle">
+                    Budgeted accounts track spending against your category envelopes. Turn off for accounts you want to track the balance of without budgeting (e.g., investments, mortgages).
+                </p>
             </div>
 
             <!-- Close Account Toggle -->

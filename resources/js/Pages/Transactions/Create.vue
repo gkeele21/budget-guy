@@ -55,6 +55,20 @@ const selectedPayeeForUpdate = ref(null);
 const showSplitModal = ref(false);
 const splitItems = ref([{ category_id: '', amount: '' }]);
 const splitCategorySheetIndex = ref(null);
+const splitCategorySearch = ref('');
+
+const filteredSplitCategories = computed(() => {
+    const query = splitCategorySearch.value.toLowerCase().trim();
+    if (!query) return props.categories;
+    return props.categories
+        .map(group => ({
+            ...group,
+            categories: group.categories.filter(cat =>
+                cat.name.toLowerCase().includes(query) || group.name.toLowerCase().includes(query)
+            ),
+        }))
+        .filter(group => group.categories.length > 0);
+});
 
 const getSplitCategoryDisplay = (categoryId) => {
     if (!categoryId) return null;
@@ -65,6 +79,7 @@ const getSplitCategoryDisplay = (categoryId) => {
 const selectSplitCategory = (index, categoryId) => {
     splitItems.value[index].category_id = categoryId;
     splitCategorySheetIndex.value = null;
+    splitCategorySearch.value = '';
 };
 
 // Type toggle options
@@ -93,13 +108,6 @@ const selectPayee = (payee) => {
     form.payee_name = payee.name;
     if (payee.default_category_id && !form.is_split) {
         form.category_id = payee.default_category_id;
-    }
-};
-
-// Sync type when amount sign is toggled
-const handleToggleSign = (newType) => {
-    if (form.type !== 'transfer') {
-        form.type = newType;
     }
 };
 
@@ -298,8 +306,6 @@ const handleVoiceCreated = ({ batchId }) => {
                     label="Amount"
                     :transaction-type="form.type"
                     :error="form.errors.amount"
-                    allow-negative
-                    @toggle-sign="handleToggleSign"
                 />
 
                 <!-- Category -->
@@ -488,9 +494,33 @@ const handleVoiceCreated = ({ batchId }) => {
         </Modal>
 
         <!-- Split Category Picker -->
-        <BottomSheet :show="splitCategorySheetIndex !== null" title="Category" @close="splitCategorySheetIndex = null">
+        <BottomSheet :show="splitCategorySheetIndex !== null" title="Category" @close="splitCategorySheetIndex = null; splitCategorySearch = ''">
+            <div class="px-4 pt-3 pb-2 border-b border-border">
+                <div class="relative">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-subtle" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <input
+                        v-model="splitCategorySearch"
+                        type="text"
+                        placeholder="Search..."
+                        class="w-full pl-9 pr-8 py-2 text-sm bg-surface-inset border border-border rounded-lg text-body placeholder:text-subtle focus-glow"
+                    />
+                    <button
+                        v-if="splitCategorySearch"
+                        type="button"
+                        @click="splitCategorySearch = ''"
+                        class="absolute right-2.5 top-1/2 -translate-y-1/2 text-subtle hover:text-body"
+                    >
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
             <div class="py-2">
                 <button
+                    v-if="!splitCategorySearch"
                     type="button"
                     @click="selectSplitCategory(splitCategorySheetIndex, null)"
                     class="w-full px-4 py-3 text-left text-sm hover:bg-surface-overlay flex items-center justify-between border-b border-border"
@@ -501,7 +531,7 @@ const handleVoiceCreated = ({ batchId }) => {
                         <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
                     </svg>
                 </button>
-                <div v-for="group in categories" :key="group.name">
+                <div v-for="group in filteredSplitCategories" :key="group.name">
                     <div class="px-4 py-2 text-xs font-semibold text-subtle uppercase tracking-wide bg-surface-header">
                         {{ group.name }}
                     </div>
