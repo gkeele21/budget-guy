@@ -8,6 +8,7 @@ import PickerField from '@/Components/Form/PickerField.vue';
 import AutocompleteField from '@/Components/Form/AutocompleteField.vue';
 import AmountField from '@/Components/Form/AmountField.vue';
 import ToggleField from '@/Components/Form/ToggleField.vue';
+import SegmentedControl from '@/Components/Form/SegmentedControl.vue';
 
 const props = defineProps({
     show: { type: Boolean, default: false },
@@ -81,9 +82,6 @@ const flatCategories = computed(() =>
     )
 );
 
-const editingItem = computed(() =>
-    editingItemId.value ? reviewItems.value.find(i => i.id === editingItemId.value) : null
-);
 
 const splitTotal = computed(() => {
     if (!editDraft.value?.splits) return 0;
@@ -133,6 +131,8 @@ function openEdit(itemId) {
         account_id: item.data.account_id,
         cleared: item.data.cleared,
         splits: item.data.splits ?? null,
+        type: item.display.type || 'expense',
+        to_account_id: item.data.to_account_id ?? null,
     }));
 }
 
@@ -141,6 +141,25 @@ function closeEdit() {
     editDraft.value = null;
     splitTotalMismatch.value = false;
 }
+
+const editTypeOptions = [
+    { value: 'expense', label: 'Expense', color: 'expense' },
+    { value: 'income', label: 'Income', color: 'income' },
+    { value: 'transfer', label: 'Transfer', color: 'transfer' },
+];
+
+const editToAccountOptions = computed(() =>
+    props.accounts.filter(a => a.id !== parseInt(editDraft.value?.account_id))
+);
+
+// When type changes via SegmentedControl, flip the amount sign to match
+watch(() => editDraft.value?.type, (newType, oldType) => {
+    if (!oldType || newType === oldType || !editDraft.value || newType === 'transfer' || oldType === 'transfer') return;
+    const num = parseFloat(editDraft.value.amount);
+    if (isNaN(num) || num === 0) return;
+    if (newType === 'expense' && num > 0) editDraft.value.amount = (-num).toFixed(2);
+    if (newType === 'income' && num < 0) editDraft.value.amount = (-num).toFixed(2);
+});
 
 function commitEdit() {
     if (!editDraft.value || !editingItemId.value) return;
@@ -162,6 +181,8 @@ function commitEdit() {
         date: draft.date,
         account_id: parseInt(draft.account_id),
         cleared: draft.cleared,
+        type: draft.type,
+        to_account_id: draft.type === 'transfer' ? parseInt(draft.to_account_id) : null,
     };
 
     const account = props.accounts.find(a => a.id === parseInt(draft.account_id));
@@ -169,6 +190,7 @@ function commitEdit() {
     newDisplay.payee_name = draft.payee_name || null;
     newDisplay.amount = parseFloat(draft.amount);
     newDisplay.date = draft.date;
+    newDisplay.type = draft.type;
     if (account) newDisplay.account_name = account.name;
 
     if (draft.splits) {
@@ -771,6 +793,14 @@ const groupedReviewItems = computed(() => {
                             <!-- Scrollable fields -->
                             <div class="overflow-y-auto pb-8" style="max-height: calc(85vh - 72px);">
 
+                                <!-- Type toggle -->
+                                <div class="mx-3 mt-2">
+                                    <SegmentedControl
+                                        v-model="editDraft.type"
+                                        :options="editTypeOptions"
+                                    />
+                                </div>
+
                                 <!-- Fields card — same style as Transactions/Create -->
                                 <div class="mx-3 mt-2 bg-surface rounded-xl overflow-hidden">
                                     <!-- Date -->
@@ -779,21 +809,29 @@ const groupedReviewItems = computed(() => {
                                         label="Date"
                                     />
 
-                                    <!-- Account (not for transfers) -->
+                                    <!-- Account / From -->
                                     <PickerField
-                                        v-if="editingItem?.display?.type !== 'transfer'"
                                         v-model="editDraft.account_id"
-                                        label="Account"
+                                        :label="editDraft.type === 'transfer' ? 'From' : 'Account'"
                                         :options="accounts"
                                         placeholder="Select account"
                                     />
 
+                                    <!-- To Account (transfers only) -->
+                                    <PickerField
+                                        v-if="editDraft.type === 'transfer'"
+                                        v-model="editDraft.to_account_id"
+                                        label="To"
+                                        :options="editToAccountOptions"
+                                        placeholder="Select destination"
+                                    />
+
                                     <!-- Payee (not for transfers) -->
                                     <AutocompleteField
-                                        v-if="editingItem?.display?.type !== 'transfer'"
+                                        v-if="editDraft.type !== 'transfer'"
                                         v-model="editDraft.payee_name"
                                         label="Payee"
-                                        :placeholder="editingItem?.display?.type === 'income' ? 'Who paid you?' : 'Who did you pay?'"
+                                        :placeholder="editDraft.type === 'income' ? 'Who paid you?' : 'Who did you pay?'"
                                         :suggestions="payees"
                                     />
 
@@ -801,7 +839,7 @@ const groupedReviewItems = computed(() => {
                                     <AmountField
                                         v-model="editDraft.amount"
                                         label="Amount"
-                                        :transaction-type="editingItem?.display?.type || 'expense'"
+                                        :transaction-type="editDraft.type || 'expense'"
                                     />
 
                                     <!-- Splits editor: one category + one amount row per split -->
@@ -820,7 +858,7 @@ const groupedReviewItems = computed(() => {
                                             <AmountField
                                                 v-model="editDraft.splits[si].amount"
                                                 label="Amount"
-                                                :transaction-type="editingItem?.display?.type || 'expense'"
+                                                :transaction-type="editDraft.type || 'expense'"
                                             />
                                         </template>
                                         <!-- Split total row -->
@@ -839,7 +877,7 @@ const groupedReviewItems = computed(() => {
 
                                     <!-- Single category (not for transfers) -->
                                     <PickerField
-                                        v-else-if="editingItem?.display?.type !== 'transfer'"
+                                        v-else-if="editDraft.type !== 'transfer'"
                                         v-model="editDraft.category_id"
                                         label="Category"
                                         :options="categories"
