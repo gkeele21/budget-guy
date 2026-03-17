@@ -41,7 +41,11 @@ const unclearedBalance = computed(() => {
 });
 
 const hasUncleared = computed(() => {
-    return Math.abs(unclearedBalance.value) >= 0.01;
+    return props.account.type !== 'cash' && Math.abs(unclearedBalance.value) >= 0.01;
+});
+
+const clearedLabel = computed(() => {
+    return props.account.type === 'credit' ? 'Cleared' : 'Bank Cleared';
 });
 </script>
 
@@ -71,7 +75,7 @@ const hasUncleared = computed(() => {
                 {{ formatCurrency(account.balance) }}
             </div>
             <div v-if="hasUncleared" class="text-xs text-subtle">
-                {{ formatCurrency(account.cleared_balance) }}
+                {{ clearedLabel }}: {{ formatCurrency(account.cleared_balance) }}
             </div>
         </div>
     </Link>

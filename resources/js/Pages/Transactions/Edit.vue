@@ -44,6 +44,8 @@ const typeOptions = computed(() => [
     { value: 'transfer', label: 'Transfer', color: 'transfer', disabled: true },
 ]);
 
+const selectedAccount = computed(() => props.accounts.find(a => a.id === form.account_id));
+
 const selectPayee = (payee) => {
     form.payee_name = payee.name;
     if (payee.default_category_id && !form.category_id && !form.is_split) {
@@ -239,8 +241,9 @@ const getSaveButtonVariant = () => {
                     :null-option="{ label: 'None' }"
                 />
 
-                <!-- Cleared -->
+                <!-- Cleared (not for cash accounts) -->
                 <ToggleField
+                    v-if="selectedAccount?.type !== 'cash'"
                     v-model="form.cleared"
                     label="Cleared"
                     on-label="Cleared"

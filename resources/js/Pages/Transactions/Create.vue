@@ -86,6 +86,15 @@ const typeOptions = [
     { value: 'transfer', label: 'Transfer', color: 'transfer' },
 ];
 
+const selectedAccount = computed(() => props.accounts.find(a => a.id === form.account_id));
+
+// Auto-clear cash account transactions
+watch(() => form.account_id, () => {
+    if (selectedAccount.value?.type === 'cash') {
+        form.cleared = true;
+    }
+});
+
 // Filter accounts for "To" picker (exclude selected "From" account)
 const toAccountOptions = computed(() => {
     return props.accounts.filter(a => a.id !== form.account_id);
@@ -300,9 +309,9 @@ const handleVoiceCreated = ({ batchId }) => {
                     :null-option="{ label: 'None' }"
                 />
 
-                <!-- Cleared (not for transfers) -->
+                <!-- Cleared (not for transfers or cash accounts) -->
                 <ToggleField
-                    v-if="form.type !== 'transfer'"
+                    v-if="form.type !== 'transfer' && selectedAccount?.type !== 'cash'"
                     v-model="form.cleared"
                     label="Cleared"
                     on-label="Cleared"
