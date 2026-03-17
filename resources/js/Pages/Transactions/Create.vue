@@ -13,10 +13,36 @@ import SplitModal from '@/Components/Domain/SplitModal.vue';
 import VoiceOverlay from '@/Components/Domain/VoiceOverlay.vue';
 import { useSpeechRecognition } from '@/Composables/useSpeechRecognition.js';
 import { useTheme } from '@/Composables/useTheme.js';
+import TutorialOverlay from '@/Components/Tutorial/TutorialOverlay.vue';
+import { useTutorial } from '@/Composables/useTutorial.js';
 
 const { isSupported: voiceSupported } = useSpeechRecognition();
 const { voiceInputEnabled } = useTheme();
 const aiEnabled = usePage().props.auth.user.ai_enabled;
+const tutorial = useTutorial();
+
+const handleTutorialPrimary = () => {
+    const step = tutorial.currentStep.value;
+    if (step?.id === 'complete') {
+        router.post('/tutorial/complete', { track: tutorial.track.value }, {
+            onSuccess: () => router.visit('/transactions'),
+        });
+    } else {
+        tutorial.advance();
+    }
+};
+
+const handleTutorialSecondary = () => {
+    router.post('/tutorial/complete', { track: tutorial.track.value }, {
+        onSuccess: () => router.visit('/transactions'),
+    });
+};
+
+const handleTutorialExit = () => {
+    router.post('/tutorial/complete', { track: tutorial.track.value }, {
+        onSuccess: () => router.visit('/transactions'),
+    });
+};
 
 const props = defineProps({
     accounts: Array,
@@ -176,9 +202,9 @@ const handleVoiceCreated = ({ batchId }) => {
             </div>
         </div>
 
-        <form @submit.prevent="submit" class="flex-1 flex flex-col">
+        <form data-tutorial="transaction-form" @submit.prevent="submit" class="flex-1 flex flex-col">
             <!-- Type Toggle -->
-            <div class="mx-3 mt-3">
+            <div data-tutorial="transaction-type" class="mx-3 mt-3">
                 <SegmentedControl
                     v-model="form.type"
                     :options="typeOptions"
@@ -218,6 +244,7 @@ const handleVoiceCreated = ({ batchId }) => {
                     :placeholder="form.type === 'income' ? 'Who paid you?' : 'Who did you pay?'"
                     :suggestions="payees"
                     @select="selectPayee"
+                    data-tutorial="transaction-payee"
                 />
 
                 <!-- Amount -->
@@ -226,12 +253,13 @@ const handleVoiceCreated = ({ batchId }) => {
                     label="Amount"
                     :transaction-type="form.type"
                     :error="form.errors.amount"
+                    data-tutorial="transaction-amount"
                 />
 
                 <!-- Category -->
                 <template v-if="form.type !== 'transfer'">
                     <!-- Split display -->
-                    <div v-if="form.is_split" class="flex items-center justify-between px-4 py-3.5 border-b border-border">
+                    <div v-if="form.is_split" data-tutorial="transaction-category" class="flex items-center justify-between px-4 py-3.5 border-b border-border">
                         <span class="text-sm text-subtle">Category</span>
                         <button
                             type="button"
@@ -255,6 +283,8 @@ const handleVoiceCreated = ({ batchId }) => {
                         :null-option="{ label: 'Unassigned' }"
                         :error="form.errors.category_id"
                         @action="openSplitModal"
+                        data-tutorial="transaction-category"
+                        data-tutorial-split="transaction-split-btn"
                     />
                 </template>
                 <!-- Optional category for transfers (deducts from budget envelope) -->
@@ -339,6 +369,7 @@ const handleVoiceCreated = ({ batchId }) => {
             :show="showVoiceOverlay"
             :accounts="accounts"
             :categories="categories"
+            :payees="payees"
             @close="showVoiceOverlay = false"
             @created="handleVoiceCreated"
         />
@@ -376,6 +407,18 @@ const handleVoiceCreated = ({ batchId }) => {
                 </div>
             </Transition>
         </Teleport>
+
+        <!-- Tutorial Overlay (transactions + splits tracks) -->
+        <TutorialOverlay
+            v-if="tutorial.isActive.value && (tutorial.track.value === 'transactions' || tutorial.track.value === 'splits')"
+            :active="tutorial.isActive.value"
+            :track="tutorial.track.value"
+            :step="tutorial.currentStepId.value"
+            :steps="tutorial.steps.value"
+            @primary="handleTutorialPrimary"
+            @secondary="handleTutorialSecondary"
+            @exit="handleTutorialExit"
+        />
     </div>
 </template>
 

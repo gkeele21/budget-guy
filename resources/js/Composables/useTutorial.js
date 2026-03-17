@@ -1,6 +1,6 @@
 import { computed, watch } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
-import { learnSteps, setupSteps } from '@/Config/tutorialSteps.js';
+import { learnSteps, setupSteps, planSteps, transactionsSteps, splitsSteps, recurringSteps } from '@/Config/tutorialSteps.js';
 
 export function useTutorial() {
     const page = usePage();
@@ -12,6 +12,10 @@ export function useTutorial() {
     const steps = computed(() => {
         if (track.value === 'learn') return learnSteps;
         if (track.value === 'setup') return setupSteps;
+        if (track.value === 'plan') return planSteps;
+        if (track.value === 'transactions') return transactionsSteps;
+        if (track.value === 'splits') return splitsSteps;
+        if (track.value === 'recurring') return recurringSteps;
         return [];
     });
 

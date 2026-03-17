@@ -2,7 +2,7 @@ export const learnSteps = [
     {
         id: 'welcome',
         title: 'Ready to Assign',
-        message: `This is your <strong>Ready to Assign</strong> balance — it's all the money you have that hasn't been given a job yet. Right now you have <span class="font-mono">$4,200</span> to work with. Your goal? <strong>Give every dollar a job</strong> by assigning it to categories. Let's try it!`,
+        message: `This is your <strong>Ready to Assign</strong> balance — money waiting to be assigned. Right now you have <span class="font-mono">$4,200</span> to work with. Your goal? <strong>Assign every dollar to a category</strong> so you know exactly where your money is going. Let's try it!`,
         target: '[data-tutorial="ready-to-assign"]',
         primaryAction: 'Got It →',
         secondaryAction: 'Skip Tutorial',
@@ -24,28 +24,25 @@ export const learnSteps = [
     {
         id: 'assign_rent',
         title: 'Assign to Rent',
-        message: `Let's start with the most important bill. Tap on <strong>Rent</strong> and assign <span class="font-mono">$1,300</span>. Always budget your needs first!`,
+        message: `Let's start with the most important bill. Tap the <strong>Budgeted</strong> column next to Rent and type <span class="font-mono">$1,300</span>. (Don't tap the category name — that opens a different view!) Always budget your needs first.`,
         target: '[data-tutorial="category-rent"]',
-        primaryAction: 'Tap Rent to continue ☝',
+        primaryAction: 'Enter an amount above ☝',
         secondaryAction: null,
         autoAdvance: true,
         actionType: 'assign_category',
         actionCheck: (props) => {
             const groups = props.categoryGroups || [];
             return groups.some((group) =>
-                (group.categories || []).some((cat) => {
-                    const mb = cat.monthly_budgets?.[0];
-                    return mb && parseFloat(mb.budgeted) !== 0;
-                }),
+                (group.categories || []).some((cat) => parseFloat(cat.budgeted) !== 0),
             );
         },
     },
     {
         id: 'assign_groceries',
         title: 'Assign to Groceries',
-        message: `Nice — you assigned money to Rent! See how <strong>Ready to Assign</strong> went down? Now tap on <strong>Groceries</strong> and assign <span class="font-mono">$500</span>. Think about how much you actually spend each month.`,
+        message: `Nice — you assigned money to Rent! See how <strong>Ready to Assign</strong> went down? Now tap the <strong>Budgeted</strong> column next to Groceries and enter <span class="font-mono">$500</span>. Think about how much you actually spend each month.`,
         target: '[data-tutorial="category-groceries"]',
-        primaryAction: 'Tap Groceries to continue ☝',
+        primaryAction: 'Enter an amount above ☝',
         secondaryAction: null,
         autoAdvance: true,
         actionType: 'assign_category',
@@ -54,10 +51,7 @@ export const learnSteps = [
             let assignedCount = 0;
             groups.forEach((group) => {
                 (group.categories || []).forEach((cat) => {
-                    const mb = cat.monthly_budgets?.[0];
-                    if (mb && parseFloat(mb.budgeted) !== 0) {
-                        assignedCount++;
-                    }
+                    if (parseFloat(cat.budgeted) !== 0) assignedCount++;
                 });
             });
             return assignedCount >= 2;
@@ -73,30 +67,85 @@ export const learnSteps = [
         autoAdvance: true,
         actionType: 'assign_category',
         actionCheck: (props) => {
-            const readyToAssign = parseFloat(props.readyToAssign ?? props.ready_to_assign ?? 0);
+            const readyToAssign = parseFloat(props.summary?.toBudget ?? 0);
             return Math.abs(readyToAssign) < 1;
         },
     },
     {
-        id: 'record_transaction',
-        title: 'Record a Purchase',
-        message: `Now let's spend some money! Tap the <strong>+</strong> button to record a grocery purchase. Try entering <span class="font-mono">$68</span> at the grocery store.`,
-        target: '[data-tutorial="fab-button"]',
-        primaryAction: 'Tap + to continue ☝',
+        id: 'complete',
+        title: "You've Got It!",
+        message: `You've got the basics! When you spend money, it comes out of the <strong>category envelope</strong> — not your total balance. You always know exactly how much is left to spend. Ready to set up your own real budget?`,
+        target: null,
+        primaryAction: 'Back to Home →',
         secondaryAction: null,
-        autoAdvance: true,
-        actionType: 'create_transaction',
-        actionCheck: (props) => {
-            const transactions = props.transactions?.data || props.transactions || [];
-            return transactions.length > 0;
-        },
+        autoAdvance: false,
+        actionType: null,
+        actionCheck: null,
+    },
+];
+
+export const planSteps = [
+    {
+        id: 'welcome',
+        title: 'Plan Your Budget',
+        message: `The <strong>Plan</strong> page is your scratchpad for thinking ahead. Set your expected income, project what each category will need, and see if the numbers balance — before the month begins.`,
+        target: '[data-tutorial="plan-header"]',
+        primaryAction: 'Show Me Around →',
+        secondaryAction: 'Skip Tour',
+        autoAdvance: false,
+        actionType: null,
+        actionCheck: null,
     },
     {
-        id: 'see_the_effect',
-        title: 'See the Effect',
-        message: `You just spent <span class="font-mono">$68</span> on groceries. See how Groceries Available went from <span class="font-mono">$500</span> → <span class="font-mono">$432</span>? That's the magic — spending comes out of the <strong>category envelope</strong>, not your total balance. You always know exactly how much you have left.`,
-        target: '[data-tutorial="category-groceries"]',
-        primaryAction: "That's Cool! →",
+        id: 'income',
+        title: 'Set Expected Income',
+        message: `Enter your <strong>expected monthly income</strong> here. This is the total you expect to bring in — salary, freelance, whatever. It's used to calculate how much you have left to allocate.`,
+        target: '[data-tutorial="plan-income"]',
+        primaryAction: 'Got It →',
+        secondaryAction: null,
+        autoAdvance: false,
+        actionType: null,
+        actionCheck: null,
+    },
+    {
+        id: 'defaults',
+        title: 'Default Amounts',
+        message: `The <strong>Default</strong> column shows each category's saved typical amount — what you normally budget for it. Use the menu to copy all defaults into Projected as a quick starting point.`,
+        target: '[data-tutorial="plan-defaults-col"]',
+        primaryAction: 'Got It →',
+        secondaryAction: null,
+        autoAdvance: false,
+        actionType: null,
+        actionCheck: null,
+    },
+    {
+        id: 'projected',
+        title: 'Projected Amounts',
+        message: `The <strong>Projected</strong> column is where you adjust for this specific month. Expecting a big grocery run? Bump it up. Skipping the gym? Zero it out. Changes save automatically.`,
+        target: '[data-tutorial="plan-projected-col"]',
+        primaryAction: 'Got It →',
+        secondaryAction: null,
+        autoAdvance: false,
+        actionType: null,
+        actionCheck: null,
+    },
+    {
+        id: 'left_to_allocate',
+        title: 'Left to Allocate',
+        message: `This shows <strong>Income minus Total Projected</strong>. A positive number means you haven't planned all your money yet. Aim to get this to <span class="font-mono text-success">$0.00</span> so every dollar has a job.`,
+        target: '[data-tutorial="plan-left-to-allocate"]',
+        primaryAction: 'Got It →',
+        secondaryAction: null,
+        autoAdvance: false,
+        actionType: null,
+        actionCheck: null,
+    },
+    {
+        id: 'menu',
+        title: 'Powerful Actions',
+        message: `Tap the <strong>three-dot menu</strong> for shortcuts: copy your defaults to projected, apply these projections directly to your current month's budget, or save projections back as your new defaults.`,
+        target: '[data-tutorial="plan-menu"]',
+        primaryAction: 'Got It →',
         secondaryAction: null,
         autoAdvance: false,
         actionType: null,
@@ -104,11 +153,218 @@ export const learnSteps = [
     },
     {
         id: 'complete',
-        title: "You've Got It!",
-        message: `You've got the basics! You know how to <strong>assign money to envelopes</strong> and how <strong>spending affects them</strong>. Ready to set up your own real budget?`,
+        title: 'Ready to Plan!',
+        message: `Now you know how the Plan page works. Use it each month to project spending before assigning money to your budget. When you're happy with the numbers, apply them with one tap.`,
         target: null,
-        primaryAction: 'Set Up My Budget →',
-        secondaryAction: 'Explore on My Own',
+        primaryAction: 'Done →',
+        secondaryAction: null,
+        autoAdvance: false,
+        actionType: null,
+        actionCheck: null,
+    },
+];
+
+export const transactionsSteps = [
+    {
+        id: 'welcome',
+        title: 'Recording Transactions',
+        message: `This is where you record money moving in or out. Every transaction pulls from a <strong>category envelope</strong> — so you always know exactly what's left to spend.`,
+        target: '[data-tutorial="transaction-form"]',
+        primaryAction: 'Walk Me Through It →',
+        secondaryAction: 'Skip Tour',
+        autoAdvance: false,
+        actionType: null,
+        actionCheck: null,
+    },
+    {
+        id: 'type',
+        title: 'Transaction Type',
+        message: `Choose <strong>Expense</strong> for money going out, <strong>Income</strong> for money coming in, or <strong>Transfer</strong> to move money between your accounts.`,
+        target: '[data-tutorial="transaction-type"]',
+        primaryAction: 'Got It →',
+        secondaryAction: null,
+        autoAdvance: false,
+        actionType: null,
+        actionCheck: null,
+    },
+    {
+        id: 'payee',
+        title: 'Payee',
+        message: `Enter <strong>who you paid</strong> (or who paid you). Budget Guy remembers payees and can auto-fill the category next time — so recording gets faster the more you use it.`,
+        target: '[data-tutorial="transaction-payee"]',
+        primaryAction: 'Got It →',
+        secondaryAction: null,
+        autoAdvance: false,
+        actionType: null,
+        actionCheck: null,
+    },
+    {
+        id: 'amount',
+        title: 'Amount',
+        message: `Enter the <strong>transaction amount</strong>. For expenses, this comes out of your category's envelope. For income, it adds to your Ready to Assign balance.`,
+        target: '[data-tutorial="transaction-amount"]',
+        primaryAction: 'Got It →',
+        secondaryAction: null,
+        autoAdvance: false,
+        actionType: null,
+        actionCheck: null,
+    },
+    {
+        id: 'category',
+        title: 'Category',
+        message: `Pick the <strong>budget category</strong> this transaction belongs to. This is what actually drains your envelope — not your bank balance. If it doesn't fit one category, you can split it!`,
+        target: '[data-tutorial="transaction-category"]',
+        primaryAction: 'Got It →',
+        secondaryAction: null,
+        autoAdvance: false,
+        actionType: null,
+        actionCheck: null,
+    },
+    {
+        id: 'complete',
+        title: 'That\'s All There Is!',
+        message: `Hit <strong>Save</strong> at the top right to record it. The habit of logging transactions as they happen is what makes envelope budgeting powerful — you always know where you stand.`,
+        target: null,
+        primaryAction: 'Done →',
+        secondaryAction: null,
+        autoAdvance: false,
+        actionType: null,
+        actionCheck: null,
+    },
+];
+
+export const splitsSteps = [
+    {
+        id: 'welcome',
+        title: 'Split Transactions',
+        message: `Ever buy groceries <em>and</em> household supplies in one trip? A <strong>split transaction</strong> lets you divide a single purchase across multiple budget categories.`,
+        target: '[data-tutorial="transaction-form"]',
+        primaryAction: 'Show Me How →',
+        secondaryAction: 'Skip Tour',
+        autoAdvance: false,
+        actionType: null,
+        actionCheck: null,
+    },
+    {
+        id: 'fill_details',
+        title: 'Fill in the Basics First',
+        message: `Start a transaction normally — enter the <strong>payee and total amount</strong>. The full amount will be divided between categories in the next step.`,
+        target: '[data-tutorial="transaction-amount"]',
+        primaryAction: 'Got It →',
+        secondaryAction: null,
+        autoAdvance: false,
+        actionType: null,
+        actionCheck: null,
+    },
+    {
+        id: 'open_split',
+        title: 'Open the Category Picker',
+        message: `Tap the <strong>Category</strong> field. At the bottom of the list you'll see <em>"Split Transaction…"</em> — tap it to open the split editor.`,
+        target: '[data-tutorial="transaction-category"]',
+        primaryAction: 'Got It →',
+        secondaryAction: null,
+        autoAdvance: false,
+        actionType: null,
+        actionCheck: null,
+    },
+    {
+        id: 'split_editor',
+        title: 'Divide the Amount',
+        message: `In the split editor, add a row for each category and enter the portion that belongs to it. The amounts must add up to the total — Budget Guy will keep track of the remainder for you.`,
+        target: '[data-tutorial="transaction-split-btn"]',
+        primaryAction: 'Got It →',
+        secondaryAction: null,
+        autoAdvance: false,
+        actionType: null,
+        actionCheck: null,
+    },
+    {
+        id: 'complete',
+        title: 'Splits Made Easy!',
+        message: `Once saved, the transaction shows as a single item in your list but correctly drains each category envelope. Perfect for Costco runs, Amazon orders, or anywhere your money crosses categories.`,
+        target: null,
+        primaryAction: 'Done →',
+        secondaryAction: null,
+        autoAdvance: false,
+        actionType: null,
+        actionCheck: null,
+    },
+];
+
+export const recurringSteps = [
+    {
+        id: 'welcome',
+        title: 'Recurring Transactions',
+        message: `Set up bills and income that repeat on a schedule — rent, subscriptions, paychecks. Budget Guy tracks them so you're never caught off guard by a bill you forgot.`,
+        target: '[data-tutorial="recurring-form"]',
+        primaryAction: 'Walk Me Through It →',
+        secondaryAction: 'Skip Tour',
+        autoAdvance: false,
+        actionType: null,
+        actionCheck: null,
+    },
+    {
+        id: 'type',
+        title: 'Type',
+        message: `Choose <strong>Expense</strong> for recurring bills (rent, Netflix), <strong>Income</strong> for recurring deposits (paycheck, freelance retainer), or <strong>Transfer</strong> for scheduled moves between accounts.`,
+        target: '[data-tutorial="recurring-type"]',
+        primaryAction: 'Got It →',
+        secondaryAction: null,
+        autoAdvance: false,
+        actionType: null,
+        actionCheck: null,
+    },
+    {
+        id: 'payee',
+        title: 'Payee / Name',
+        message: `Enter the <strong>name of the bill or income source</strong> — "Rent", "Netflix", "Employer". This is how it will appear in your upcoming bills list.`,
+        target: '[data-tutorial="recurring-payee"]',
+        primaryAction: 'Got It →',
+        secondaryAction: null,
+        autoAdvance: false,
+        actionType: null,
+        actionCheck: null,
+    },
+    {
+        id: 'amount',
+        title: 'Expected Amount',
+        message: `Enter the <strong>usual amount</strong>. If it varies (like a utility bill), enter your typical amount — you can adjust it when you actually record the transaction.`,
+        target: '[data-tutorial="recurring-amount"]',
+        primaryAction: 'Got It →',
+        secondaryAction: null,
+        autoAdvance: false,
+        actionType: null,
+        actionCheck: null,
+    },
+    {
+        id: 'frequency',
+        title: 'How Often?',
+        message: `Set the <strong>frequency</strong> — weekly, monthly, yearly, etc. Budget Guy uses this to calculate when it's next due and show it in your upcoming bills list.`,
+        target: '[data-tutorial="recurring-frequency"]',
+        primaryAction: 'Got It →',
+        secondaryAction: null,
+        autoAdvance: false,
+        actionType: null,
+        actionCheck: null,
+    },
+    {
+        id: 'next_date',
+        title: 'Next Due Date',
+        message: `Set the <strong>next date</strong> this bill is due or expected. Budget Guy will count down to it and remind you to record the transaction when it's coming up.`,
+        target: '[data-tutorial="recurring-next-date"]',
+        primaryAction: 'Got It →',
+        secondaryAction: null,
+        autoAdvance: false,
+        actionType: null,
+        actionCheck: null,
+    },
+    {
+        id: 'complete',
+        title: 'Set It and Forget It!',
+        message: `Save the recurring bill and it will appear in your upcoming bills list. When the date arrives, you can record the actual transaction with one tap — all the details pre-filled.`,
+        target: null,
+        primaryAction: 'Done →',
+        secondaryAction: null,
         autoAdvance: false,
         actionType: null,
         actionCheck: null,
@@ -159,15 +415,7 @@ export const setupSteps = [
         autoAdvance: true,
         actionType: 'assign_category',
         actionCheck: (props) => {
-            const readyToAssign = parseFloat(props.readyToAssign ?? props.ready_to_assign ?? 0);
-            const groups = props.categoryGroups || [];
-            const totalBudgeted = groups.reduce((sum, group) => {
-                return sum + (group.categories || []).reduce((catSum, cat) => {
-                    const mb = cat.monthly_budgets?.[0];
-                    return catSum + (mb ? parseFloat(mb.budgeted) : 0);
-                }, 0);
-            }, 0);
-            return totalBudgeted > 0;
+            return parseFloat(props.summary?.budgeted ?? 0) > 0;
         },
     },
     {

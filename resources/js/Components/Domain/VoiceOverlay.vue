@@ -2,11 +2,18 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useSpeechRecognition } from '@/Composables/useSpeechRecognition.js';
 import Button from '@/Components/Base/Button.vue';
+import TransactionCard from '@/Components/Domain/TransactionCard.vue';
+import DateField from '@/Components/Form/DateField.vue';
+import PickerField from '@/Components/Form/PickerField.vue';
+import AutocompleteField from '@/Components/Form/AutocompleteField.vue';
+import AmountField from '@/Components/Form/AmountField.vue';
+import ToggleField from '@/Components/Form/ToggleField.vue';
 
 const props = defineProps({
     show: { type: Boolean, default: false },
     accounts: { type: Array, default: () => [] },
     categories: { type: Array, default: () => [] },
+    payees: { type: Array, default: () => [] },
 });
 
 const emit = defineEmits(['close', 'created']);
@@ -62,6 +69,125 @@ const sessionContext = ref('');
 const currentClarificationIndex = ref(0);
 const clarificationAnswers = ref([]);
 
+// Edit state
+const editingItemId = ref(null);
+const editDraft = ref(null);
+const splitTotalMismatch = ref(false);
+
+// Flat category list with group names
+const flatCategories = computed(() =>
+    (props.categories || []).flatMap(g =>
+        (g.categories || []).map(c => ({ id: c.id, name: c.name, group_name: g.name }))
+    )
+);
+
+const editingItem = computed(() =>
+    editingItemId.value ? reviewItems.value.find(i => i.id === editingItemId.value) : null
+);
+
+const splitTotal = computed(() => {
+    if (!editDraft.value?.splits) return 0;
+    return editDraft.value.splits.reduce((sum, s) => sum + (parseFloat(s.amount) || 0), 0);
+});
+
+const splitValid = computed(() => {
+    if (!editDraft.value?.splits) return true;
+    return Math.abs(splitTotal.value - (parseFloat(editDraft.value.amount) || 0)) <= 0.01;
+});
+
+// Cleared helpers
+const clearedCount = computed(() => reviewItems.value.filter(i => i.data.cleared).length);
+const allCleared = computed(() => reviewItems.value.length > 0 && clearedCount.value === reviewItems.value.length);
+
+function initCleared(txData) {
+    const account = props.accounts.find(a => a.id === txData.account_id);
+    return account?.type === 'cash' ?? false;
+}
+
+function toggleCleared(itemId) {
+    const idx = reviewItems.value.findIndex(i => i.id === itemId);
+    if (idx !== -1) {
+        const item = reviewItems.value[idx];
+        reviewItems.value[idx] = { ...item, data: { ...item.data, cleared: !item.data.cleared } };
+    }
+}
+
+function markAllCleared() {
+    const target = !allCleared.value;
+    reviewItems.value = reviewItems.value.map(i => ({
+        ...i,
+        data: { ...i.data, cleared: target },
+    }));
+}
+
+function openEdit(itemId) {
+    const item = reviewItems.value.find(i => i.id === itemId);
+    if (!item) return;
+    splitTotalMismatch.value = false;
+    editingItemId.value = itemId;
+    editDraft.value = JSON.parse(JSON.stringify({
+        payee_name: item.data.payee_name,
+        category_id: item.data.category_id,
+        amount: item.data.amount,
+        date: item.data.date,
+        account_id: item.data.account_id,
+        cleared: item.data.cleared,
+        splits: item.data.splits ?? null,
+    }));
+}
+
+function closeEdit() {
+    editingItemId.value = null;
+    editDraft.value = null;
+    splitTotalMismatch.value = false;
+}
+
+function commitEdit() {
+    if (!editDraft.value || !editingItemId.value) return;
+    if (editDraft.value.splits && !splitValid.value) {
+        splitTotalMismatch.value = true;
+        return;
+    }
+    const idx = reviewItems.value.findIndex(i => i.id === editingItemId.value);
+    if (idx === -1) return;
+
+    const item = reviewItems.value[idx];
+    const draft = editDraft.value;
+
+    const newData = {
+        ...item.data,
+        payee_name: draft.payee_name || null,
+        category_id: draft.category_id ? parseInt(draft.category_id) : null,
+        amount: parseFloat(draft.amount),
+        date: draft.date,
+        account_id: parseInt(draft.account_id),
+        cleared: draft.cleared,
+    };
+
+    const account = props.accounts.find(a => a.id === parseInt(draft.account_id));
+    const newDisplay = { ...item.display };
+    newDisplay.payee_name = draft.payee_name || null;
+    newDisplay.amount = parseFloat(draft.amount);
+    newDisplay.date = draft.date;
+    if (account) newDisplay.account_name = account.name;
+
+    if (draft.splits) {
+        newData.splits = draft.splits.map(s => ({
+            category_id: s.category_id ? parseInt(s.category_id) : null,
+            amount: parseFloat(s.amount),
+        }));
+        newDisplay.splits = newData.splits.map(s => ({
+            category: flatCategories.value.find(c => c.id === s.category_id)?.name ?? null,
+            amount: s.amount,
+        }));
+    } else {
+        newDisplay.category_name = flatCategories.value.find(c => c.id === parseInt(draft.category_id))?.name ?? null;
+    }
+
+    reviewItems.value[idx] = { ...item, data: newData, display: newDisplay };
+    closeEdit();
+}
+
 // Start listening when overlay opens
 watch(() => props.show, (isOpen) => {
     if (isOpen) {
@@ -78,6 +204,8 @@ watch(() => props.show, (isOpen) => {
         sessionContext.value = '';
         currentClarificationIndex.value = 0;
         clarificationAnswers.value = [];
+        editingItemId.value = null;
+        editDraft.value = null;
         reset();
     }
 });
@@ -85,6 +213,10 @@ watch(() => props.show, (isOpen) => {
 // Handle escape key — don't close if user has accumulated data
 const closeOnEscape = (e) => {
     if (e.key === 'Escape' && props.show) {
+        if (editingItemId.value) {
+            closeEdit();
+            return;
+        }
         if (state.value === 'review' || state.value === 'creating') return;
         if (state.value === 'processing') {
             cancelProcessing();
@@ -131,6 +263,7 @@ async function sendToBackend(text) {
             const newItems = data.transactions.map(tx => ({
                 ...tx,
                 id: crypto.randomUUID(),
+                data: { ...tx.data, cleared: initCleared(tx.data) },
             }));
             reviewItems.value.push(...newItems);
             state.value = 'review';
@@ -191,6 +324,7 @@ async function selectClarification(option) {
             const newItems = data.transactions.map(tx => ({
                 ...tx,
                 id: crypto.randomUUID(),
+                data: { ...tx.data, cleared: initCleared(tx.data) },
             }));
             reviewItems.value.push(...newItems);
             state.value = 'review';
@@ -413,77 +547,54 @@ const groupedReviewItems = computed(() => {
                             <p class="text-body font-semibold text-sm">
                                 {{ reviewItems.length }} transaction{{ reviewItems.length !== 1 ? 's' : '' }} ready
                             </p>
-                            <p class="text-muted text-xs">Add more or create them all</p>
+                            <p class="text-muted text-xs">Review, edit, then create them all</p>
                         </div>
                     </div>
 
                     <!-- Transaction list grouped by date -->
-                    <div class="space-y-3 max-h-60 overflow-y-auto mb-4">
+                    <div class="space-y-3 max-h-60 overflow-y-auto mb-3">
                         <div v-for="group in groupedReviewItems" :key="group.date" class="space-y-1.5">
                             <h3 class="text-sm font-semibold text-warning px-1">{{ group.label }}</h3>
-                            <div
+                            <TransactionCard
                                 v-for="item in group.items"
                                 :key="item.id"
-                                class="bg-surface rounded-card p-3 shadow-sm border-l-4"
-                                :class="{
-                                    'border-danger': item.display.type === 'expense',
-                                    'border-success': item.display.type === 'income',
-                                    'border-info': item.display.type === 'transfer',
+                                :transaction="{
+                                    type: item.display.type,
+                                    payee: item.display.type === 'transfer'
+                                        ? `Transfer to ${item.display.to_account_name}`
+                                        : item.display.payee_name,
+                                    category: item.display.category_name ?? null,
+                                    account: item.display.account_name,
+                                    amount: item.display.type === 'expense'
+                                        ? -item.display.amount
+                                        : item.display.amount,
+                                    cleared: item.data.cleared,
+                                    is_split: !!item.display.splits,
+                                    splits: item.display.splits,
+                                    memo: null,
+                                    recurring_id: null,
                                 }"
-                            >
-                                <div class="flex items-start justify-between">
-                                    <!-- Left: Payee + Category -->
-                                    <div class="min-w-0 flex-1">
-                                        <div class="flex items-center gap-1.5">
-                                            <span class="font-medium text-body truncate">
-                                                <template v-if="item.display.type === 'transfer'">
-                                                    <span class="text-info">↔</span>
-                                                    Transfer to {{ item.display.to_account_name }}
-                                                </template>
-                                                <template v-else>{{ item.display.payee_name }}</template>
-                                            </span>
-                                        </div>
-                                        <!-- Split categories with amounts -->
-                                        <div v-if="item.display.splits" class="mt-0.5 grid grid-cols-[auto_auto] gap-x-1 gap-y-0.5 text-xs text-subtle w-fit">
-                                            <template v-for="(split, si) in item.display.splits" :key="si">
-                                                <span>{{ split.category }}:</span>
-                                                <span>${{ split.amount.toFixed(2) }}</span>
-                                            </template>
-                                        </div>
-                                        <!-- Single category -->
-                                        <div v-else-if="item.display.category_name" class="text-xs text-subtle mt-0.5 truncate">
-                                            {{ item.display.category_name }}
-                                        </div>
-                                        <!-- Unassigned -->
-                                        <div v-else-if="item.display.type !== 'transfer'" class="text-xs text-subtle mt-0.5 truncate italic">
-                                            Unassigned
-                                        </div>
-                                    </div>
-                                    <!-- Right: Amount + Account + Remove -->
-                                    <div class="flex items-start gap-2 flex-shrink-0 ml-3">
-                                        <div class="text-right">
-                                            <div :class="[
-                                                'font-medium',
-                                                item.display.type === 'expense' ? 'text-danger' : item.display.type === 'transfer' ? 'text-info' : 'text-success'
-                                            ]">
-                                                {{ item.display.type === 'expense' ? '-' : item.display.type === 'income' ? '+' : '' }}${{ item.display.amount.toFixed(2) }}
-                                            </div>
-                                            <div v-if="item.display.type !== 'transfer'" class="text-xs text-subtle mt-0.5">
-                                                {{ item.display.account_name }}
-                                            </div>
-                                        </div>
-                                        <button
-                                            @click="removeReviewItem(item.id)"
-                                            class="flex-shrink-0 p-1 mt-0.5 text-subtle hover:text-danger transition-colors"
-                                        >
-                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
+                                dismissable
+                                :highlighted="editingItemId === item.id"
+                                @click="openEdit(item.id)"
+                                @toggle-cleared="toggleCleared(item.id)"
+                                @dismiss="removeReviewItem(item.id)"
+                            />
                         </div>
+                    </div>
+
+                    <!-- Cleared bar -->
+                    <div class="flex items-center justify-between px-1 py-2 mb-3 border-t border-b border-border">
+                        <span class="text-xs text-subtle">
+                            <template v-if="allCleared">All cleared ✓</template>
+                            <template v-else>{{ clearedCount }} of {{ reviewItems.length }} cleared</template>
+                        </span>
+                        <button
+                            @click="markAllCleared"
+                            class="text-xs font-semibold text-primary"
+                        >
+                            {{ allCleared ? 'Unmark all' : 'Mark all cleared' }}
+                        </button>
                     </div>
 
                     <!-- Action buttons -->
@@ -625,6 +736,138 @@ const groupedReviewItems = computed(() => {
                     </div>
                     <Button v-else variant="muted" full-width @click="handleClose">Close</Button>
                 </div>
+
+                <!-- EDIT BOTTOM SHEET -->
+                <Transition
+                    enter-active-class="transition ease-out duration-200"
+                    enter-from-class="translate-y-full opacity-0"
+                    enter-to-class="translate-y-0 opacity-100"
+                    leave-active-class="transition ease-in duration-150"
+                    leave-from-class="translate-y-0 opacity-100"
+                    leave-to-class="translate-y-full opacity-0"
+                >
+                    <div v-if="editingItemId && editDraft" class="absolute inset-0 flex items-end z-10">
+                        <!-- Dim backdrop — tap to cancel -->
+                        <div class="absolute inset-0 bg-black/50" @click="closeEdit" />
+
+                        <!-- Sheet -->
+                        <div class="relative w-full bg-surface rounded-t-2xl overflow-hidden" style="max-height: 85vh;">
+                            <!-- Handle -->
+                            <div class="flex justify-center pt-3 pb-1">
+                                <div class="w-9 h-1 bg-border-strong rounded-full"></div>
+                            </div>
+
+                            <!-- Header -->
+                            <div class="flex items-center justify-between px-4 py-2.5">
+                                <button @click="closeEdit" class="text-subtle text-sm py-1 px-1">Cancel</button>
+                                <span class="font-semibold text-body text-sm">Edit Transaction</span>
+                                <button
+                                    @click="commitEdit"
+                                    :disabled="editDraft.splits !== null && !splitValid"
+                                    class="text-primary font-semibold text-sm py-1 px-1 disabled:opacity-40"
+                                >Done</button>
+                            </div>
+
+                            <!-- Scrollable fields -->
+                            <div class="overflow-y-auto pb-8" style="max-height: calc(85vh - 72px);">
+
+                                <!-- Fields card — same style as Transactions/Create -->
+                                <div class="mx-3 mt-2 bg-surface rounded-xl overflow-hidden">
+                                    <!-- Date -->
+                                    <DateField
+                                        v-model="editDraft.date"
+                                        label="Date"
+                                    />
+
+                                    <!-- Account (not for transfers) -->
+                                    <PickerField
+                                        v-if="editingItem?.display?.type !== 'transfer'"
+                                        v-model="editDraft.account_id"
+                                        label="Account"
+                                        :options="accounts"
+                                        placeholder="Select account"
+                                    />
+
+                                    <!-- Payee (not for transfers) -->
+                                    <AutocompleteField
+                                        v-if="editingItem?.display?.type !== 'transfer'"
+                                        v-model="editDraft.payee_name"
+                                        label="Payee"
+                                        :placeholder="editingItem?.display?.type === 'income' ? 'Who paid you?' : 'Who did you pay?'"
+                                        :suggestions="payees"
+                                    />
+
+                                    <!-- Amount -->
+                                    <AmountField
+                                        v-model="editDraft.amount"
+                                        label="Amount"
+                                        :transaction-type="editingItem?.display?.type || 'expense'"
+                                    />
+
+                                    <!-- Splits editor: one category + one amount row per split -->
+                                    <template v-if="editDraft.splits">
+                                        <template v-for="(split, si) in editDraft.splits" :key="si">
+                                            <PickerField
+                                                v-model="editDraft.splits[si].category_id"
+                                                :label="`Split ${si + 1}`"
+                                                :options="categories"
+                                                placeholder="Unassigned"
+                                                grouped
+                                                group-items-key="categories"
+                                                searchable
+                                                :null-option="{ label: 'Unassigned' }"
+                                            />
+                                            <AmountField
+                                                v-model="editDraft.splits[si].amount"
+                                                label="Amount"
+                                                :transaction-type="editingItem?.display?.type || 'expense'"
+                                            />
+                                        </template>
+                                        <!-- Split total row -->
+                                        <div
+                                            class="flex items-center justify-between px-4 py-3.5"
+                                            :class="splitValid ? 'bg-success/5' : 'bg-danger/5'"
+                                        >
+                                            <span class="text-sm text-subtle">Total</span>
+                                            <span class="text-sm font-mono font-semibold" :class="splitValid ? 'text-success' : 'text-danger'">
+                                                ${{ splitTotal.toFixed(2) }}
+                                                <span v-if="splitValid"> ✓</span>
+                                                <span v-else> ≠ ${{ parseFloat(editDraft.amount).toFixed(2) }}</span>
+                                            </span>
+                                        </div>
+                                    </template>
+
+                                    <!-- Single category (not for transfers) -->
+                                    <PickerField
+                                        v-else-if="editingItem?.display?.type !== 'transfer'"
+                                        v-model="editDraft.category_id"
+                                        label="Category"
+                                        :options="categories"
+                                        placeholder="Unassigned"
+                                        grouped
+                                        group-items-key="categories"
+                                        searchable
+                                        :null-option="{ label: 'Unassigned' }"
+                                        :border-bottom="false"
+                                    />
+                                </div>
+
+                                <!-- Cleared toggle — separate card, same as Create form -->
+                                <div class="mx-3 mt-3 bg-surface rounded-xl overflow-hidden">
+                                    <ToggleField
+                                        v-model="editDraft.cleared"
+                                        label="Cleared"
+                                        on-label="Cleared"
+                                        off-label="Not yet"
+                                        :border-bottom="false"
+                                    />
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </Transition>
+
             </div>
         </Transition>
     </Teleport>

@@ -22,6 +22,10 @@ class User extends Authenticatable
         'tutorial_step',
         'has_completed_learn_tutorial',
         'has_completed_setup_tutorial',
+        'has_completed_plan_tutorial',
+        'has_completed_transactions_tutorial',
+        'has_completed_splits_tutorial',
+        'has_completed_recurring_tutorial',
     ];
 
     protected $hidden = [
@@ -37,6 +41,10 @@ class User extends Authenticatable
             'ai_enabled' => 'boolean',
             'has_completed_learn_tutorial' => 'boolean',
             'has_completed_setup_tutorial' => 'boolean',
+            'has_completed_plan_tutorial' => 'boolean',
+            'has_completed_transactions_tutorial' => 'boolean',
+            'has_completed_splits_tutorial' => 'boolean',
+            'has_completed_recurring_tutorial' => 'boolean',
         ];
     }
 

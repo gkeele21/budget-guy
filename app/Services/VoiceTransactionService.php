@@ -572,7 +572,7 @@ PROMPT;
         $amount = $tx['type'] === 'expense' ? -abs($tx['amount']) : abs($tx['amount']);
 
         $account = Account::find($tx['account_id']);
-        $cleared = $account && $account->type === 'cash';
+        $cleared = array_key_exists('cleared', $tx) ? (bool) $tx['cleared'] : ($account && $account->type === 'cash');
 
         $transaction = Transaction::create([
             'budget_id' => $budget->id,
@@ -619,8 +619,8 @@ PROMPT;
         $fromAccount = Account::find($tx['account_id']);
         $toAccount = Account::find($tx['to_account_id']);
 
-        $fromCleared = $fromAccount && $fromAccount->type === 'cash';
-        $toCleared = $toAccount && $toAccount->type === 'cash';
+        $fromCleared = array_key_exists('cleared', $tx) ? (bool) $tx['cleared'] : ($fromAccount && $fromAccount->type === 'cash');
+        $toCleared = array_key_exists('cleared', $tx) ? (bool) $tx['cleared'] : ($toAccount && $toAccount->type === 'cash');
 
         $fromTransaction = Transaction::create([
             'budget_id' => $budget->id,

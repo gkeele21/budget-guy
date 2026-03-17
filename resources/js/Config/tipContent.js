@@ -53,14 +53,25 @@ export const tips = {
         warning: { title: 'Credit card payments', text: 'When you pay your credit card from checking, record it as a transfer. The spending already came out of your categories when you made the purchases.' },
         relatedTips: ['credit-cards']
     },
+    'entering-transactions': {
+        emoji: '📝',
+        title: 'Entering transactions',
+        mascotTip: "Record purchases as they happen — it only takes a few seconds and keeps your budget accurate!",
+        content: `<p>Tap the <strong>+</strong> button on the Transactions page (or <strong>+ Transaction</strong> on the Budget page) to record a purchase.</p><p>Fill in the basics:</p><ul><li><strong>Type</strong> — Expense, Income, or Transfer</li><li><strong>Date</strong> — defaults to today</li><li><strong>Account</strong> — which account the money came from</li><li><strong>Payee</strong> — who you paid (Budget Guy remembers payees and can auto-fill the category next time!)</li><li><strong>Amount</strong> — how much you spent or received</li><li><strong>Category</strong> — which envelope the money comes out of</li></ul><p>The key habit is recording transactions <strong>as they happen</strong>. The more current your budget, the better your spending decisions.</p>`,
+        formula: null,
+        warning: null,
+        guidedTour: { track: 'transactions', label: 'Try the Add Transaction Tour' },
+        relatedTips: ['split-transactions', 'how-envelopes-work', 'voice-transactions']
+    },
     'split-transactions': {
         emoji: '✂️',
         title: 'Splitting a transaction',
         mascotTip: "One receipt, multiple categories? Splits let you divide a single transaction across different envelopes!",
-        content: `<p>Sometimes a single purchase spans multiple categories — like a Target run where you buy groceries AND a birthday gift.</p><p>Use <strong>split transactions</strong> to divide the total across categories. Each split gets its own category and amount, and together they add up to the total.</p>`,
-        formula: null,
+        content: `<p>Sometimes a single purchase spans multiple categories — like a Target run where you buy groceries AND a birthday gift.</p><p>To split a transaction:</p><ol><li>Tap the <strong>Category</strong> field and choose <strong>"Split Transaction..."</strong></li><li>Add categories and amounts for each part of the purchase</li><li>The <strong>Remaining</strong> bar shows when your splits are balanced</li><li>Tap <strong>Save Split</strong> when the remaining amount hits $0</li></ol><p>You can even <strong>mix income & expenses</strong> in a single split — useful for things like refunds on a larger purchase.</p>`,
+        formula: { lines: ['Target run total: $85.00', 'Groceries: $52.00', 'Gift (Shopping): $33.00'], result: 'Remaining: $0.00 ✓' },
         warning: null,
-        relatedTips: ['how-envelopes-work']
+        guidedTour: { track: 'splits', label: 'Try the Split Transaction Tour' },
+        relatedTips: ['entering-transactions', 'how-envelopes-work']
     },
     'recurring-transactions': {
         emoji: '🔁',
@@ -69,6 +80,7 @@ export const tips = {
         content: `<p><strong>Recurring transactions</strong> are bills or income that repeat on a schedule — rent, subscriptions, paychecks, etc.</p><p>When you set one up, Budget Guy will show upcoming expected transactions in your Plan view and can auto-create them when they're due.</p>`,
         formula: null,
         warning: null,
+        guidedTour: { track: 'recurring', label: 'Try the Recurring Bills Tour' },
         relatedTips: ['plan-projections']
     },
     'voice-transactions': {
@@ -83,11 +95,12 @@ export const tips = {
     'plan-projections': {
         emoji: '📊',
         title: 'Using the Plan view',
-        mascotTip: "The Plan view is your crystal ball — it shows you what's coming up so you're never surprised by a bill!",
-        content: `<p>The <strong>Plan</strong> tab shows your upcoming financial picture — recurring bills due soon, projected account balances, and expected income.</p><p>Use it to look ahead and make sure you'll have enough money when bills come due.</p>`,
-        formula: null,
+        mascotTip: "The Plan view is your crystal ball — set your income, project your spending, and see if your budget balances before the month even starts!",
+        content: `<p>The <strong>Plan</strong> tab helps you build a spending plan for the month ahead.</p><p><strong>How it works:</strong></p><ol><li><strong>Set your income</strong> — enter your expected monthly income at the top</li><li><strong>Set projections</strong> — enter how much you plan to assign to each category</li><li><strong>Check "Left to Allocate"</strong> — this shows Income minus Projections. Green means you have room; red means you've over-planned</li></ol><p><strong>Handy shortcuts</strong> (in the menu):</p><ul><li><strong>Copy Defaults to Projections</strong> — pre-fill from your saved defaults</li><li><strong>Apply Projections to Budget</strong> — push your plan straight into this month's budget</li><li><strong>Save Projections as Defaults</strong> — save for reuse next month</li></ul><p>The Plan page is perfect for the start of each month — map out your spending, then apply it all at once.</p>`,
+        formula: { lines: ['Expected income: $4,200', 'Total projected: $4,100'], result: 'Left to allocate: $100' },
         warning: null,
-        relatedTips: ['recurring-transactions']
+        guidedTour: { track: 'plan', label: 'Try the Plan Budget Tour' },
+        relatedTips: ['recurring-transactions', 'ready-to-assign']
     },
     'credit-cards': {
         emoji: '💳',

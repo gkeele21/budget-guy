@@ -3,8 +3,6 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 
-defineOptions({ layout: AppLayout });
-
 const search = ref('');
 
 const groups = [
@@ -21,8 +19,9 @@ const groups = [
         label: 'Common Tasks',
         tips: [
             { slug: 'move-money', emoji: '🔄', title: 'Moving money between categories' },
-            { slug: 'transfers', emoji: '↔️', title: 'Transfers between accounts' },
+            { slug: 'entering-transactions', emoji: '📝', title: 'Entering transactions' },
             { slug: 'split-transactions', emoji: '✂️', title: 'Splitting a transaction' },
+            { slug: 'transfers', emoji: '↔️', title: 'Transfers between accounts' },
             { slug: 'recurring-transactions', emoji: '🔁', title: 'Setting up recurring transactions' },
         ],
     },
@@ -51,6 +50,16 @@ const filteredGroups = computed(() => {
 
 <template>
     <Head title="Quick Tips" />
+
+    <AppLayout>
+        <template #title>Quick Tips</template>
+        <template #header-left>
+            <Link href="/tutorial" class="p-2 -ml-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+            </Link>
+        </template>
 
     <!-- Search Bar -->
     <div class="px-4 py-3">
@@ -100,4 +109,5 @@ const filteredGroups = computed(() => {
             <p class="text-sm text-muted">No tips found for "{{ search }}"</p>
         </div>
     </div>
+    </AppLayout>
 </template>

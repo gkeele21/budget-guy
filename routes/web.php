@@ -120,6 +120,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/tutorial', [TutorialController::class, 'hub'])->name('tutorial.hub');
     Route::post('/tutorial/learn', [TutorialController::class, 'startLearn'])->name('tutorial.start-learn');
     Route::post('/tutorial/setup', [TutorialController::class, 'startSetup'])->name('tutorial.start-setup');
+    Route::post('/tutorial/plan', [TutorialController::class, 'startPlan'])->name('tutorial.start-plan');
+    Route::post('/tutorial/transactions', [TutorialController::class, 'startTransactions'])->name('tutorial.start-transactions');
+    Route::post('/tutorial/splits', [TutorialController::class, 'startSplits'])->name('tutorial.start-splits');
+    Route::post('/tutorial/recurring', [TutorialController::class, 'startRecurring'])->name('tutorial.start-recurring');
     Route::put('/tutorial/step', [TutorialController::class, 'updateStep'])->name('tutorial.update-step');
     Route::post('/tutorial/complete', [TutorialController::class, 'complete'])->name('tutorial.complete');
     Route::get('/tutorial/tips', [TutorialController::class, 'tips'])->name('tutorial.tips');

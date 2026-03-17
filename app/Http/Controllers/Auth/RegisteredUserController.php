@@ -46,7 +46,7 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        // Redirect new users to setup wizard
-        return redirect(route('onboarding.setup', absolute: false));
+        // Redirect new users to tutorial hub so they can choose to learn or set up
+        return redirect(route('tutorial.hub', absolute: false));
     }
 }

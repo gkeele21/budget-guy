@@ -24,6 +24,7 @@ const props = defineProps({
     transactions: Object,
     accounts: Array,
     payees: Array,
+    categories: Array,
     currentAccountId: Number,
     currentPayeeId: Number,
     searchQuery: String,
@@ -1017,6 +1018,8 @@ onMounted(() => {
         <VoiceOverlay
             :show="showVoiceOverlay"
             :accounts="accounts"
+            :categories="categories"
+            :payees="payees"
             @close="showVoiceOverlay = false"
             @created="handleVoiceCreated"
         />

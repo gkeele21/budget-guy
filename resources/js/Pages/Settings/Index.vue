@@ -231,6 +231,16 @@ const logout = () => {
                         </div>
                         <span class="text-subtle">›</span>
                     </Link>
+                    <Link
+                        href="/tutorial"
+                        class="flex items-center justify-between p-4 hover:bg-surface-overlay"
+                    >
+                        <div class="flex items-center gap-3">
+                            <span class="text-xl">🎓</span>
+                            <span class="text-body">Help & Tutorials</span>
+                        </div>
+                        <span class="text-subtle">›</span>
+                    </Link>
                     <button
                         @click="logout"
                         class="w-full flex items-center gap-3 p-4 hover:bg-surface-overlay text-left"
