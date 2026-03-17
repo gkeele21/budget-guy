@@ -70,7 +70,7 @@ import Button from '@/Components/Base/Button.vue';
             </div>
 
             <!-- Bottom Actions -->
-            <div class="space-y-3 mt-5">
+            <div class="flex flex-col gap-4 mt-5">
                 <Link :href="route('register')">
                     <Button class="w-full" size="lg">Create Account</Button>
                 </Link>
