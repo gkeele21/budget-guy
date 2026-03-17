@@ -191,6 +191,19 @@ class TransactionController extends Controller
             ->orderBy('name')
             ->get(['id', 'name']);
 
+        $categories = $budget->categoryGroups()
+            ->with(['categories' => fn($q) => $q->where('is_hidden', false)->orderBy('sort_order')])
+            ->orderBy('sort_order')
+            ->get()
+            ->map(fn($group) => [
+                'id' => $group->id,
+                'name' => $group->name,
+                'categories' => $group->categories->map(fn($c) => [
+                    'id' => $c->id,
+                    'name' => $c->name,
+                ])->values(),
+            ]);
+
         // Load recurring transactions for the "Recurring" tab
         $categoryNames = $budget->categoryGroups()
             ->with('categories')
@@ -239,6 +252,7 @@ class TransactionController extends Controller
             'transactions' => $groupedTransactions,
             'accounts' => $accounts,
             'payees' => $payees,
+            'categories' => $categories,
             'currentAccountId' => $accountFilter ? (int) $accountFilter : null,
             'currentPayeeId' => $payeeFilter ? (int) $payeeFilter : null,
             'searchQuery' => $searchQuery,

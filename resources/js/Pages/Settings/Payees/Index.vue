@@ -34,23 +34,10 @@ const filteredPayees = computed(() => {
     return props.payees.filter(p => p.name.toLowerCase().includes(query));
 });
 
-const flatCategories = computed(() => {
-    const result = [];
-    props.categories.forEach(group => {
-        group.categories.forEach(cat => {
-            result.push({
-                ...cat,
-                groupName: group.name,
-            });
-        });
-    });
-    return result;
-});
-
 const openEditModal = (payee) => {
     editingPayee.value = payee;
     editForm.name = payee.name;
-    editForm.default_category_id = payee.default_category_id || '';
+    editForm.default_category_id = payee.default_category_id || null;
     showEditModal.value = true;
 };
 
@@ -84,10 +71,6 @@ const deletePayee = () => {
     });
 };
 
-const getCategoryName = (categoryId) => {
-    const cat = flatCategories.value.find(c => c.id === categoryId);
-    return cat ? `${cat.icon || ''} ${cat.name}`.trim() : 'None';
-};
 </script>
 
 <template>
@@ -176,6 +159,7 @@ const getCategoryName = (categoryId) => {
                         label="Default Category"
                         :options="categories"
                         placeholder="None"
+                        :null-option="{ label: 'None' }"
                         grouped
                         group-items-key="categories"
                         searchable

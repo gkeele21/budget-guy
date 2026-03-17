@@ -3,11 +3,57 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 import Toggle from '@/Components/Base/Toggle.vue';
 import Button from '@/Components/Base/Button.vue';
 import AmountField from '@/Components/Form/AmountField.vue';
+import TutorialOverlay from '@/Components/Tutorial/TutorialOverlay.vue';
 import { Head, router } from '@inertiajs/vue3';
-import { ref, computed, reactive, watch } from 'vue';
+import { ref, computed, reactive, watch, onMounted } from 'vue';
 import { useTheme } from '@/Composables/useTheme.js';
+import { useTutorial } from '@/Composables/useTutorial.js';
 
 const { showCategoryIcons } = useTheme();
+const tutorial = useTutorial();
+
+// Start watching for auto-advance conditions
+onMounted(() => {
+    if (tutorial.isActive.value) {
+        tutorial.watchForCompletion();
+    }
+});
+
+const finishLearnTutorial = () => {
+    router.post('/tutorial/complete', { track: 'learn' }, {
+        onSuccess: () => router.visit('/budget'),
+    });
+};
+
+const handleTutorialPrimary = () => {
+    const step = tutorial.currentStep.value;
+    if (step?.id === 'complete' && tutorial.track.value === 'learn') {
+        finishLearnTutorial();
+    } else if (step?.id === 'complete' && tutorial.track.value === 'setup') {
+        tutorial.complete();
+    } else if (!step?.autoAdvance) {
+        tutorial.advance();
+    }
+};
+
+const handleTutorialSecondary = () => {
+    const step = tutorial.currentStep.value;
+    if (step?.id === 'complete' && tutorial.track.value === 'learn') {
+        finishLearnTutorial();
+    } else if (tutorial.track.value === 'learn') {
+        finishLearnTutorial();
+    } else {
+        tutorial.skip();
+    }
+};
+
+const handleTutorialExit = () => {
+    if (tutorial.track.value === 'learn') {
+        finishLearnTutorial();
+    } else {
+        tutorial.complete();
+    }
+};
 
 const props = defineProps({
     month: String,
@@ -511,6 +557,7 @@ const showMoveToast = (amount, from, to, remaining = null) => {
 
             <!-- Ready to Assign -->
             <div
+                data-tutorial="ready-to-assign"
                 class="rounded-card px-4 py-2 flex items-center justify-between relative"
                 :class="summary.toBudget >= 0 ? 'bg-primary' : 'bg-danger'"
             >
@@ -683,7 +730,7 @@ const showMoveToast = (amount, from, to, remaining = null) => {
             </div>
 
             <!-- Category Groups -->
-            <div v-for="group in categoryGroups" :key="group.id" class="space-y-2">
+            <div data-tutorial="category-list" v-for="group in categoryGroups" :key="group.id" class="space-y-2">
                 <h2 class="text-sm font-semibold text-warning uppercase tracking-wide px-1">
                     {{ group.name }}
                 </h2>
@@ -701,6 +748,7 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                     <div
                         v-for="category in group.categories"
                         :key="category.id"
+                        :data-tutorial="'category-' + category.name.toLowerCase().replace(/\s+/g, '-')"
                         class="border-b border-border last:border-b-0"
                     >
                         <!-- Main Row -->
@@ -961,5 +1009,16 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                 </div>
             </Transition>
         </Teleport>
+        <!-- Tutorial Overlay -->
+        <TutorialOverlay
+            v-if="tutorial.isActive.value"
+            :active="tutorial.isActive.value"
+            :track="tutorial.track.value"
+            :step="tutorial.currentStep.value?.id"
+            :steps="tutorial.steps.value"
+            @primary="handleTutorialPrimary"
+            @secondary="handleTutorialSecondary"
+            @exit="handleTutorialExit"
+        />
     </AppLayout>
 </template>

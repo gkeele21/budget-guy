@@ -124,6 +124,7 @@ class VoiceTransactionController extends Controller
             'transactions.*.splits' => 'nullable|array',
             'transactions.*.splits.*.category_id' => 'nullable|integer',
             'transactions.*.splits.*.amount' => 'required|numeric|min:0.01',
+            'transactions.*.cleared' => 'sometimes|boolean',
         ]);
 
         $budget = Auth::user()->currentBudget;

@@ -1,6 +1,8 @@
 <script setup>
-import { Head, useForm, Link } from '@inertiajs/vue3';
+import { Head, useForm, Link, router } from '@inertiajs/vue3';
 import { ref, computed, watch } from 'vue';
+import TutorialOverlay from '@/Components/Tutorial/TutorialOverlay.vue';
+import { useTutorial } from '@/Composables/useTutorial.js';
 import SegmentedControl from '@/Components/Form/SegmentedControl.vue';
 import AutocompleteField from '@/Components/Form/AutocompleteField.vue';
 import AmountField from '@/Components/Form/AmountField.vue';
@@ -105,6 +107,31 @@ const getSaveButtonVariant = () => {
     return form.type === 'expense' ? 'expense' : 'income';
 };
 
+const tutorial = useTutorial();
+
+const handleTutorialPrimary = () => {
+    const step = tutorial.currentStep.value;
+    if (step?.id === 'complete') {
+        router.post('/tutorial/complete', { track: 'recurring' }, {
+            onSuccess: () => router.visit(route('recurring.index')),
+        });
+    } else {
+        tutorial.advance();
+    }
+};
+
+const handleTutorialSecondary = () => {
+    router.post('/tutorial/complete', { track: 'recurring' }, {
+        onSuccess: () => router.visit(route('recurring.index')),
+    });
+};
+
+const handleTutorialExit = () => {
+    router.post('/tutorial/complete', { track: 'recurring' }, {
+        onSuccess: () => router.visit(route('recurring.index')),
+    });
+};
+
 // Split transaction state
 const showSplitModal = ref(false);
 
@@ -170,9 +197,9 @@ const handleSplitClose = () => {
             </div>
         </div>
 
-        <form @submit.prevent="submit" class="flex-1 flex flex-col">
+        <form data-tutorial="recurring-form" @submit.prevent="submit" class="flex-1 flex flex-col">
             <!-- Type Toggle -->
-            <div class="mx-3 mt-3">
+            <div data-tutorial="recurring-type" class="mx-3 mt-3">
                 <SegmentedControl
                     v-model="form.type"
                     :options="typeOptions"
@@ -185,6 +212,7 @@ const handleSplitClose = () => {
                 <DateField
                     v-model="form.next_date"
                     label="Next Date"
+                    data-tutorial="recurring-next-date"
                 />
 
                 <!-- Account -->
@@ -202,6 +230,7 @@ const handleSplitClose = () => {
                     placeholder="Who is this for?"
                     :suggestions="payees"
                     @select="selectPayee"
+                    data-tutorial="recurring-payee"
                 />
 
                 <!-- Amount -->
@@ -210,6 +239,7 @@ const handleSplitClose = () => {
                     label="Amount"
                     :transaction-type="form.type"
                     :error="form.errors.amount"
+                    data-tutorial="recurring-amount"
                 />
 
                 <!-- Category -->
@@ -247,6 +277,7 @@ const handleSplitClose = () => {
                     label="Frequency"
                     :options="frequencyOptions"
                     placeholder="Select frequency"
+                    data-tutorial="recurring-frequency"
                 />
 
                 <!-- End -->
@@ -295,6 +326,18 @@ const handleSplitClose = () => {
             :initial-items="splitInitialItems"
             @save="handleSplitSave"
             @close="handleSplitClose"
+        />
+
+        <!-- Tutorial Overlay -->
+        <TutorialOverlay
+            v-if="tutorial.isActive.value && tutorial.track.value === 'recurring'"
+            :active="tutorial.isActive.value"
+            :track="tutorial.track.value"
+            :step="tutorial.currentStepId.value"
+            :steps="tutorial.steps.value"
+            @primary="handleTutorialPrimary"
+            @secondary="handleTutorialSecondary"
+            @exit="handleTutorialExit"
         />
     </div>
 </template>

@@ -2,11 +2,37 @@
 import AppLayout from '@/Layouts/AppLayout.vue';
 import AmountField from '@/Components/Form/AmountField.vue';
 import Button from '@/Components/Base/Button.vue';
+import TutorialOverlay from '@/Components/Tutorial/TutorialOverlay.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { ref, computed, reactive } from 'vue';
 import { useTheme } from '@/Composables/useTheme.js';
+import { useTutorial } from '@/Composables/useTutorial.js';
 
 const { showCategoryIcons } = useTheme();
+const tutorial = useTutorial();
+
+const handleTutorialPrimary = () => {
+    const step = tutorial.currentStep.value;
+    if (step?.id === 'complete') {
+        router.post('/tutorial/complete', { track: 'plan' }, {
+            onSuccess: () => router.visit('/plan'),
+        });
+    } else {
+        tutorial.advance();
+    }
+};
+
+const handleTutorialSecondary = () => {
+    router.post('/tutorial/complete', { track: 'plan' }, {
+        onSuccess: () => router.visit('/plan'),
+    });
+};
+
+const handleTutorialExit = () => {
+    router.post('/tutorial/complete', { track: 'plan' }, {
+        onSuccess: () => router.visit('/plan'),
+    });
+};
 
 const props = defineProps({
     categoryGroups: Array,
@@ -268,7 +294,7 @@ const showToast = (message, type = 'success') => {
             </Transition>
 
             <!-- Projection Header (Sticky) -->
-            <div class="sticky top-0 z-10 bg-surface rounded-card">
+            <div data-tutorial="plan-header" class="sticky top-0 z-10 bg-surface rounded-card">
                 <!-- Top Row: Title + Income + Menu -->
                 <div class="flex items-center justify-between px-4 py-3 border-b border-border">
                     <div class="flex items-center gap-2">
@@ -286,9 +312,11 @@ const showToast = (message, type = 'success') => {
                             transaction-type="income"
                             @blur="onIncomeBlur"
                             class="w-28"
+                            data-tutorial="plan-income"
                         />
                         <div class="relative">
                             <button
+                                data-tutorial="plan-menu"
                                 @click="toggleMenu"
                                 class="p-1 rounded hover:bg-surface-overlay"
                             >
@@ -390,7 +418,7 @@ const showToast = (message, type = 'success') => {
                             {{ formatCurrency(totalProjected) }}
                         </div>
                     </div>
-                    <div>
+                    <div data-tutorial="plan-left-to-allocate">
                         <div class="text-xs text-subtle uppercase">Left to Allocate</div>
                         <div
                             class="font-semibold text-base"
@@ -412,8 +440,8 @@ const showToast = (message, type = 'success') => {
                     <!-- Column Headers -->
                     <div class="grid grid-cols-[1fr_4.5rem_6rem] gap-px px-2 py-2 bg-secondary/10 text-xs text-subtle uppercase border-b border-secondary/10">
                         <div>Category</div>
-                        <div class="text-right">Default</div>
-                        <div class="text-right">Projected</div>
+                        <div data-tutorial="plan-defaults-col" class="text-right">Default</div>
+                        <div data-tutorial="plan-projected-col" class="text-right">Projected</div>
                     </div>
 
                     <!-- Category Rows -->
@@ -494,5 +522,15 @@ const showToast = (message, type = 'success') => {
                 </div>
             </Transition>
         </div>
+        <TutorialOverlay
+            v-if="tutorial.isActive.value && tutorial.track.value === 'plan'"
+            :active="tutorial.isActive.value"
+            :track="tutorial.track.value"
+            :step="tutorial.currentStepId.value"
+            :steps="tutorial.steps.value"
+            @primary="handleTutorialPrimary"
+            @secondary="handleTutorialSecondary"
+            @exit="handleTutorialExit"
+        />
     </AppLayout>
 </template>
