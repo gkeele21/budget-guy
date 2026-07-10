@@ -8,6 +8,7 @@ use App\Models\SplitTransaction;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -612,7 +613,10 @@ class TransactionController extends Controller
             }
         }
 
-        $params = $request->only([
+        // Read filters from the query string only — the PUT body also contains
+        // `type` and `cleared` (the transaction's own fields), which would otherwise
+        // leak in and replace the active list filters.
+        $params = Arr::only($request->query(), [
             'account', 'search', 'month', 'start_date', 'end_date',
             'cleared', 'unassigned', 'type', 'payee',
         ]);
@@ -642,7 +646,7 @@ class TransactionController extends Controller
             Payee::where('id', $payeeId)->delete();
         }
 
-        $params = $request->only([
+        $params = Arr::only($request->query(), [
             'account', 'search', 'month', 'start_date', 'end_date',
             'cleared', 'unassigned', 'type', 'payee',
         ]);
