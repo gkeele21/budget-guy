@@ -770,10 +770,13 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                                 color="text-body"
                             />
 
-                            <!-- Spent -->
-                            <div class="text-right text-sm text-subtle">
+                            <!-- Spent (Clickable) -->
+                            <a
+                                :href="route('budget.category-detail', { month: month, category: category.id })"
+                                class="text-right text-sm text-subtle hover:text-primary transition-colors"
+                            >
                                 ${{ formatNumber(-category.spent) }}
-                            </div>
+                            </a>
 
                             <!-- Balance/Available (Clickable if overspent) -->
                             <div

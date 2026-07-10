@@ -7,6 +7,7 @@ const props = defineProps({
     month: String,
     category: Object,
     transactions: Array,
+    earliestMonth: String,
 });
 
 const formatCurrency = (amount) => {
@@ -58,6 +59,28 @@ const groupedTransactions = computed(() => {
         }));
 });
 
+const previousMonth = computed(() => {
+    const [year, month] = props.month.split('-').map(Number);
+    const date = new Date(year, month - 1, 1); // month is 0-indexed
+    date.setMonth(date.getMonth() - 1);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+});
+
+const nextMonth = computed(() => {
+    const [year, month] = props.month.split('-').map(Number);
+    const date = new Date(year, month - 1, 1); // month is 0-indexed
+    date.setMonth(date.getMonth() + 1);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+});
+
+const canGoBack = computed(() => {
+    return !props.earliestMonth || props.month > props.earliestMonth;
+});
+
+const navigateMonth = (month) => {
+    router.get(route('budget.category-detail', { month, category: props.category.id }));
+};
+
 const getAmountColor = (amount, type) => {
     if (type === 'transfer') return 'text-info';
     return amount < 0 ? 'text-danger' : 'text-success';
@@ -86,9 +109,29 @@ const isOverspent = props.category.available < 0;
         </template>
 
         <div class="p-4 space-y-4">
-            <!-- Month & Category Header -->
-            <div class="text-center text-sm text-subtle">
-                {{ formatMonth(month) }}
+            <!-- Month Selector -->
+            <div class="flex items-center justify-between bg-surface rounded-card px-3 py-2">
+                <button
+                    @click="navigateMonth(previousMonth)"
+                    :disabled="!canGoBack"
+                    :class="[
+                        'p-2 rounded-full',
+                        canGoBack ? 'hover:bg-surface-overlay' : 'opacity-30 cursor-not-allowed'
+                    ]"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
+                <span class="font-semibold text-body">{{ formatMonth(month) }}</span>
+                <button
+                    @click="navigateMonth(nextMonth)"
+                    class="p-2 hover:bg-surface-overlay rounded-full"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
             </div>
 
             <!-- Budget Summary Card -->

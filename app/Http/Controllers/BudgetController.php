@@ -658,6 +658,13 @@ class BudgetController extends Controller
         $spent = $categoryModel->getSpentForMonth($month);
         $available = $categoryModel->getAvailableForMonth($month);
 
+        // Earliest month: user-set start month, or fallback to first account creation
+        $earliestMonth = $budget->start_month;
+        if (!$earliestMonth) {
+            $firstAccount = $budget->accounts()->orderBy('created_at')->first();
+            $earliestMonth = $firstAccount ? $firstAccount->created_at->format('Y-m') : $month;
+        }
+
         // Get transactions for this category in this month
         $transactions = $budget->transactions()
             ->with(['account', 'payee'])
@@ -705,6 +712,7 @@ class BudgetController extends Controller
                 'available' => (float) $available,
             ],
             'transactions' => $transactions,
+            'earliestMonth' => $earliestMonth,
         ]);
     }
 }
