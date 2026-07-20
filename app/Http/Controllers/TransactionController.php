@@ -42,7 +42,7 @@ class TransactionController extends Controller
         }
 
         $query = $budget->transactions()
-            ->with(['account', 'category', 'payee', 'splits.category', 'transferPair.account'])
+            ->with(['account', 'category', 'payee', 'splits.category', 'transferPair.account', 'transferPair.category'])
             ->orderBy('date', 'desc')
             ->orderBy('created_at', 'desc');
 
@@ -163,9 +163,12 @@ class TransactionController extends Controller
                 : ($t->payee?->name ?? 'Unknown'),
             'account' => $t->account->name,
             'account_id' => $t->account_id,
+            // Transfers carry their category on the outflow side; surface it on
+            // both sides so the category (e.g. Mortgage) shows regardless of
+            // which account you're viewing.
             'category' => $t->isSplit()
                 ? 'Split (' . $t->splits->count() . ')'
-                : ($t->category?->name ?? null),
+                : ($t->category?->name ?? $t->transferPair?->category?->name ?? null),
             'category_id' => $t->category_id,
             'amount' => (float) $t->amount,
             'type' => $t->type,
