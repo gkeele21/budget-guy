@@ -155,7 +155,7 @@ const deleteAccount = () => {
                     :border-bottom="false"
                 />
                 <p class="px-4 pb-3 text-xs text-subtle">
-                    Budgeted accounts track spending against your category envelopes. Turn off for accounts you want to track the balance of without budgeting (e.g., investments, mortgages).
+                    Budgeted accounts track spending against your category envelopes. Turn off for accounts you only want to track the balance of (e.g., investments, mortgages) — none of their transactions affect your budget or Ready to Assign, so you can record interest, escrow, or growth here without touching your envelopes.
                 </p>
             </div>
 

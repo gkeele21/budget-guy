@@ -80,4 +80,19 @@ class Transaction extends Model
     {
         return $this->splits()->exists();
     }
+
+    /**
+     * Limit to transactions on budget-tracked accounts.
+     *
+     * Off-budget accounts (e.g. mortgages, investments) are excluded from all
+     * budget math — their income, spending, and unassigned activity must not
+     * affect category envelopes or Ready to Assign. Their balances are still
+     * tracked in full on the account itself.
+     */
+    public function scopeOnBudget($query)
+    {
+        return $query->whereHas('account', function ($q) {
+            $q->where('is_on_budget', true);
+        });
+    }
 }

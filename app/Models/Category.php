@@ -62,12 +62,13 @@ class Category extends Model
         $endDate = date('Y-m-t', strtotime($startDate));
 
         $directActivity = (float) $this->transactions()
+            ->onBudget()
             ->whereBetween('date', [$startDate, $endDate])
             ->sum('amount');
 
         $splitActivity = (float) $this->splitTransactions()
             ->whereHas('transaction', function ($query) use ($startDate, $endDate) {
-                $query->whereBetween('date', [$startDate, $endDate]);
+                $query->onBudget()->whereBetween('date', [$startDate, $endDate]);
             })
             ->sum('amount');
 
@@ -88,12 +89,13 @@ class Category extends Model
         $endDate = date('Y-m-t', strtotime($month . '-01'));
 
         $directActivity = (float) $this->transactions()
+            ->onBudget()
             ->where('date', '<=', $endDate)
             ->sum('amount');
 
         $splitActivity = (float) $this->splitTransactions()
             ->whereHas('transaction', function ($query) use ($endDate) {
-                $query->where('date', '<=', $endDate);
+                $query->onBudget()->where('date', '<=', $endDate);
             })
             ->sum('amount');
 

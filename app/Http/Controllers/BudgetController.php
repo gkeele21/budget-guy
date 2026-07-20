@@ -37,6 +37,7 @@ class BudgetController extends Controller
 
         // Single query to get total spent per category in the date range
         $spentData = \App\Models\Transaction::whereIn('category_id', $categoryIds)
+            ->onBudget()
             ->whereIn('type', ['expense', 'transfer'])
             ->whereBetween('date', [$startDate, $endDate])
             ->selectRaw('category_id, SUM(ABS(amount)) as total_spent, COUNT(DISTINCT DATE_FORMAT(date, "%Y-%m")) as months_with_data')
@@ -173,6 +174,7 @@ class BudgetController extends Controller
         $monthEnd = date('Y-m-t', strtotime($monthStart));
 
         $unassignedQuery = $budget->transactions()
+            ->onBudget()
             ->whereNull('category_id')
             ->where('type', 'expense')
             ->whereDoesntHave('splits')
@@ -208,11 +210,13 @@ class BudgetController extends Controller
         // Expenses don't affect Ready to Assign — they come out of category envelopes
         // Assigned income (income with a category) goes directly into envelopes, not Ready to Assign
         $priorIncomeTotal = $budget->transactions()
+            ->onBudget()
             ->where('type', 'income')
             ->where('date', '<', $monthStart)
             ->sum('amount');
 
         $priorAssignedIncomeSimple = $budget->transactions()
+            ->onBudget()
             ->where('type', 'income')
             ->whereNotNull('category_id')
             ->whereDoesntHave('splits')
@@ -221,7 +225,8 @@ class BudgetController extends Controller
 
         $priorAssignedIncomeSplits = SplitTransaction::whereNotNull('category_id')
             ->whereHas('transaction', function ($q) use ($budget, $monthStart) {
-                $q->where('budget_id', $budget->id)
+                $q->onBudget()
+                    ->where('budget_id', $budget->id)
                     ->where('type', 'income')
                     ->where('date', '<', $monthStart);
             })
@@ -237,12 +242,14 @@ class BudgetController extends Controller
 
         // This month's total income
         $thisMonthIncome = $budget->transactions()
+            ->onBudget()
             ->where('type', 'income')
             ->whereBetween('date', [$monthStart, $monthEnd])
             ->sum('amount');
 
         // Assigned income = categorized simple income + categorized split lines on income transactions
         $assignedIncomeSimple = $budget->transactions()
+            ->onBudget()
             ->where('type', 'income')
             ->whereNotNull('category_id')
             ->whereDoesntHave('splits')
@@ -251,7 +258,8 @@ class BudgetController extends Controller
 
         $assignedIncomeSplits = SplitTransaction::whereNotNull('category_id')
             ->whereHas('transaction', function ($q) use ($budget, $monthStart, $monthEnd) {
-                $q->where('budget_id', $budget->id)
+                $q->onBudget()
+                    ->where('budget_id', $budget->id)
                     ->where('type', 'income')
                     ->whereBetween('date', [$monthStart, $monthEnd]);
             })
@@ -263,6 +271,7 @@ class BudgetController extends Controller
         // Earned income transactions for the popover
         // 1. Simple non-split income with no category
         $simpleIncomeTransactions = $budget->transactions()
+            ->onBudget()
             ->where('type', 'income')
             ->whereNull('category_id')
             ->whereDoesntHave('splits')
@@ -273,6 +282,7 @@ class BudgetController extends Controller
 
         // 2. Split income transactions with uncategorized lines
         $splitIncomeTransactions = $budget->transactions()
+            ->onBudget()
             ->where('type', 'income')
             ->whereHas('splits', function ($q) {
                 $q->whereNull('category_id');
@@ -667,6 +677,7 @@ class BudgetController extends Controller
 
         // Get transactions for this category in this month
         $transactions = $budget->transactions()
+            ->onBudget()
             ->with(['account', 'payee'])
             ->where(function ($query) use ($category) {
                 // Direct category match

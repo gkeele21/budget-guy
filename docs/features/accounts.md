@@ -11,6 +11,27 @@ Accounts represent your bank accounts, credit cards, and cash. They track balanc
 - **Current Balance**: Starting balance + sum of all transactions
 - **Cleared Balance**: Starting balance + sum of cleared transactions
 - **Closed Account**: Hidden from main views but history preserved
+- **On/Off Budget** (`is_on_budget`): Whether the account participates in the budget
+
+## On-Budget vs Off-Budget Accounts
+
+The **Track in Budget** toggle (`is_on_budget`) controls whether an account participates in the budget at all.
+
+- **On-budget (default):** Normal spending/saving accounts. Their transactions flow into category envelopes and Ready to Assign as usual.
+- **Off-budget:** Accounts you only want to track the balance of — mortgages, loans, investments. **None of their transactions affect the budget.** They are excluded from category spending, income, unassigned spending, and Ready to Assign (including the starting balance). The account balance itself is still tracked in full.
+
+**Why transactions are excluded, not just the starting balance:** Off-budget means the account lives outside your budget entirely. This lets you record activity that shouldn't touch your envelopes — loan interest, escrow, investment growth — directly on the account without it appearing as spending or income in the budget.
+
+Implementation: `Transaction::scopeOnBudget()` filters to `accounts.is_on_budget = true`, and every budget-math query in `BudgetController::index` plus `Category::getSpentForMonth`/`getCumulativeSpentThrough` applies it.
+
+### Mortgage / Loan Workflow
+
+A mortgage payment is part principal (reduces the loan) and part interest + escrow (real cost). To keep both the budget and the loan balance honest:
+
+1. Record the **full payment** as a **Transfer** from your on-budget checking account → the off-budget loan account, categorized (e.g. "Mortgage"). This gives one clean line on checking that matches your bank statement, and deducts the full payment from the Mortgage envelope (the transfer's category sits on the on-budget checking side, so it still counts).
+2. The loan balance will now show slightly *less* owed than reality, because the full payment was applied to it. **Optionally**, add interest and escrow as expenses **directly inside the loan account** to correct the balance to match your lender. Because the account is off-budget, these entries don't affect your budget in any way.
+
+If you skip step 2, the loan balance is a known approximation, but every on-budget account still reconciles exactly.
 
 ## Code Locations
 
