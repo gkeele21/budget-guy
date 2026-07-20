@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, nextTick } from 'vue';
 import Modal from '@/Components/Base/Modal.vue';
 import BottomSheet from '@/Components/Base/BottomSheet.vue';
 import Button from '@/Components/Base/Button.vue';
@@ -19,7 +19,16 @@ const emit = defineEmits(['close', 'save']);
 const splitItems = ref([{ category_id: '', amount: '' }]);
 const splitCategorySheetIndex = ref(null);
 const splitCategorySearch = ref('');
+const splitCategorySearchInput = ref(null);
 const mixedMode = ref(false);
+
+// Focus the search input when the category picker opens, so typing filters
+// immediately (matches the add-transaction category picker behavior).
+watch(splitCategorySheetIndex, (index) => {
+    if (index !== null) {
+        nextTick(() => splitCategorySearchInput.value?.focus());
+    }
+});
 
 // When turning off mixed mode, reset all items to the parent type
 watch(mixedMode, (isMixed) => {
@@ -322,6 +331,7 @@ const handleCancel = () => {
                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
                 <input
+                    ref="splitCategorySearchInput"
                     v-model="splitCategorySearch"
                     type="text"
                     placeholder="Search..."
