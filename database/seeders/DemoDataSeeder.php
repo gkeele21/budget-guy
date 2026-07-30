@@ -17,33 +17,48 @@ use Illuminate\Support\Facades\Hash;
 
 class DemoDataSeeder extends Seeder
 {
+    private const DEMO_USERNAME = 'demo';
+
+    /** Complete months of history seeded before the current month. */
+    private const MONTHS_OF_HISTORY = 1;
+
+    /** Ready to Assign the demo budget should land on in the current month. */
+    private const TARGET_READY_TO_ASSIGN = 2500.00;
+
     /**
      * Create realistic budget demo data.
      * Run with: php artisan db:seed --class=DemoDataSeeder
      *
+     * Safe to re-run — wipes the previous demo user and budget first.
+     *
      * Creates:
-     * - 1 demo user
+     * - 1 demo user (username "demo", password "password")
      * - 1 budget
-     * - 7 accounts (checking, savings, 3 credit cards, cash, emergency fund)
-     * - 5 category groups with ~20 categories
+     * - 6 accounts (checking, savings, 3 credit cards, cash)
+     * - 6 category groups with 22 categories
      * - 5 recurring transactions
-     * - 3 months of realistic transactions
+     * - transactions from the start of the prior month through today
+     * - monthly budget amounts for the prior month(s) and the current month
      */
     public function run(): void
     {
+        // Wipe any previous demo data so this seeder can be run repeatedly.
+        $this->reset();
+
         // Create demo user
         $user = User::create([
             'name' => 'Demo User',
-            'email' => 'demo@budgetguy.com',
+            'username' => self::DEMO_USERNAME,
             'password' => Hash::make('password'),
-            'email_verified_at' => now(),
         ]);
 
-        // Create budget
+        // Create budget — start_month must reach back to the oldest seeded
+        // month, otherwise the budget view can't navigate that far back.
         $budget = Budget::create([
             'name' => 'Personal Budget',
             'owner_id' => $user->id,
             'default_monthly_income' => 5500.00,
+            'start_month' => Carbon::now()->subMonths(self::MONTHS_OF_HISTORY)->format('Y-m'),
         ]);
 
         // Associate user with budget
@@ -67,18 +82,41 @@ class DemoDataSeeder extends Seeder
         // Create recurring transactions
         $this->createRecurringTransactions($budget, $accounts, $categories, $payees);
 
-        // Create monthly budgets for last 3 months
-        $this->createMonthlyBudgets($categories);
-
-        // Create transactions for the last 3 months
+        // Transactions run before the monthly budgets: the amounts assigned
+        // below are calibrated against the income these actually generate.
         $this->createTransactions($budget, $user, $accounts, $categories, $payees);
+
+        // Assign monthly budget amounts for every seeded month, current included
+        $this->createMonthlyBudgets($budget, $categories);
+    }
+
+    /**
+     * Delete the demo user and everything owned by their budgets.
+     *
+     * Budget deletion cascades at the DB level to accounts, category groups,
+     * categories, monthly budgets, payees, transactions, splits and recurring
+     * transactions, so removing the budgets is enough to leave no orphans.
+     */
+    private function reset(): void
+    {
+        $user = User::where('username', self::DEMO_USERNAME)->first();
+
+        if (!$user) {
+            return;
+        }
+
+        foreach (Budget::where('owner_id', $user->id)->get() as $budget) {
+            $budget->delete();
+        }
+
+        $user->delete();
     }
 
     private function createAccounts(Budget $budget): array
     {
         $accountsData = [
             ['name' => 'Main Checking', 'type' => 'bank', 'starting_balance' => 2500.00],
-            ['name' => 'Savings Account', 'type' => 'bank', 'starting_balance' => 15000.00],
+            ['name' => 'Savings Account', 'type' => 'bank', 'starting_balance' => 8000.00],
             ['name' => 'Chase Sapphire', 'type' => 'credit', 'starting_balance' => -450.00],
             ['name' => 'Amazon Card', 'type' => 'credit', 'starting_balance' => -125.00],
             ['name' => 'Capital One', 'type' => 'credit', 'starting_balance' => -200.00],
@@ -117,7 +155,7 @@ class DemoDataSeeder extends Seeder
             'Food & Dining' => [
                 ['name' => 'Groceries', 'icon' => '🛒', 'default_amount' => 500.00],
                 ['name' => 'Restaurants', 'icon' => '🍽️', 'default_amount' => 200.00],
-                ['name' => 'Coffee', 'icon' => '☕', 'default_amount' => 50.00],
+                ['name' => 'Soda', 'icon' => '🥤', 'default_amount' => 50.00],
             ],
             'Personal' => [
                 ['name' => 'Clothing', 'icon' => '👕', 'default_amount' => 100.00],
@@ -187,8 +225,8 @@ class DemoDataSeeder extends Seeder
             ['name' => 'Chipotle', 'category' => 'Restaurants'],
             ['name' => 'Thai Kitchen', 'category' => 'Restaurants'],
             ['name' => 'Pizza Hut', 'category' => 'Restaurants'],
-            ['name' => 'Starbucks', 'category' => 'Coffee'],
-            ['name' => 'Local Coffee Shop', 'category' => 'Coffee'],
+            ['name' => 'Swig', 'category' => 'Soda'],
+            ['name' => 'Local Coffee Shop', 'category' => 'Soda'],
 
             // Personal
             ['name' => 'Target', 'category' => 'Clothing'],
@@ -270,10 +308,16 @@ class DemoDataSeeder extends Seeder
         ];
 
         foreach ($recurringData as $data) {
+            $categoryId = $data['category'] ? ($categories[$data['category']]->id ?? null) : null;
+
             RecurringTransaction::create([
                 'budget_id' => $budget->id,
                 'account_id' => $checking->id,
-                'category_id' => $data['category'] ? ($categories[$data['category']]->id ?? null) : null,
+                // Stored as a JSON array of {amount, category_id} so a recurring
+                // transaction can be split across categories.
+                'categories' => $categoryId
+                    ? [['amount' => $data['amount'], 'category_id' => $categoryId]]
+                    : null,
                 'payee_id' => $payees[$data['payee']]->id ?? null,
                 'amount' => $data['amount'],
                 'type' => $data['type'],
@@ -284,54 +328,48 @@ class DemoDataSeeder extends Seeder
         }
     }
 
-    private function createMonthlyBudgets(array $categories): void
+    private function createMonthlyBudgets(Budget $budget, array $categories): void
     {
-        // Budget for 3 complete months only (not the current partial month)
-        // The current month will start with $0 budgeted so user can see "Ready to Assign"
-        $firstMonth = Carbon::now()->subMonths(3)->format('Y-m');
-        $months = [
-            $firstMonth,
-            Carbon::now()->subMonths(2)->format('Y-m'),
-            Carbon::now()->subMonth()->format('Y-m'),
-        ];
+        // Every seeded month gets its categories funded at their default amount,
+        // including the current month.
+        $months = [];
+        for ($back = self::MONTHS_OF_HISTORY; $back >= 0; $back--) {
+            $months[] = Carbon::now()->subMonths($back)->format('Y-m');
+        }
+        $firstMonth = $months[0];
 
-        // YNAB-style budgeting: toBudget = startingBalances + income + expenses - budgeted
-        // (expenses are negative, so they reduce the available amount)
+        // Ready to Assign = starting balances + unassigned income - budgeted.
+        // Expenses never touch it — they come out of category envelopes.
         //
-        // For $0 toBudget: budgeted = startingBalances + income + expenses
-        //
-        // Our totals across 3 months (approximate):
-        // - Starting balances: $16,875 (includes -$775 credit card debt)
-        // - Income: ~$16,500 (6 paychecks × $2,750)
-        // - Expenses: ~-$13,000 (varies with random amounts)
-        //
-        // Total available: ~$20,375
-        //
-        // Default expense budgets per month: ~$4,355
-        // Over 3 months: ~$13,065
-        // Remaining for savings: ~$7,310
-        //
-        // Strategy: Budget expense defaults each month, put remaining in savings
-        // First month: $10,000 to Emergency Fund (matches most of savings account)
-        // Other months: $0 to Emergency Fund (it's fully funded)
-        // All months: Skip General Savings default to avoid overbudgeting
-        //
-        // This way total budgeted ≈ ($4,355 - $500) × 3 + $10,000 = $11,565 + $10,000 = $21,565
-        // Close enough to available that we'll have a small "Ready to Assign" amount
+        // So to land on a chosen Ready to Assign, the surplus beyond the default
+        // amounts is dumped into Emergency Fund in the first seeded month. This
+        // is derived from the transactions already created rather than
+        // hardcoded, so it stays correct if MONTHS_OF_HISTORY or any default
+        // amount changes.
+        $startingBalances = $budget->accounts()->where('is_on_budget', true)->sum('starting_balance');
+
+        // All seeded income is uncategorized, so all of it reaches Ready to Assign.
+        $totalIncome = $budget->transactions()->where('type', 'income')->sum('amount');
+
+        // Emergency Fund's own default is $0 — it only ever holds the surplus.
+        $defaultsPerMonth = array_sum(array_map(
+            fn (Category $category) => (float) $category->default_amount,
+            $categories
+        ));
+
+        $surplus = $startingBalances + $totalIncome
+            - ($defaultsPerMonth * count($months))
+            - self::TARGET_READY_TO_ASSIGN;
+
+        $emergencyFundAmount = max(0, round($surplus, 2));
 
         foreach ($categories as $name => $category) {
             foreach ($months as $month) {
                 $budgetedAmount = $category->default_amount;
 
-                // Emergency Fund: $10k in first month only, then $0
+                // Emergency Fund absorbs the surplus, in the first month only
                 if ($name === 'Emergency Fund') {
-                    $budgetedAmount = ($month === $firstMonth) ? 10000.00 : 0.00;
-                }
-
-                // General Savings: $1,500/month (surplus income goes here)
-                // This absorbs the extra income beyond expense budgets
-                if ($name === 'General Savings') {
-                    $budgetedAmount = 1500.00;
+                    $budgetedAmount = ($month === $firstMonth) ? $emergencyFundAmount : 0.00;
                 }
 
                 MonthlyBudget::create([
@@ -351,7 +389,7 @@ class DemoDataSeeder extends Seeder
         $amazon = $accounts['Amazon Card'];
         $cash = $accounts['Cash Wallet'];
 
-        $startDate = Carbon::now()->subMonths(3)->startOfMonth();
+        $startDate = Carbon::now()->subMonths(self::MONTHS_OF_HISTORY)->startOfMonth();
         $endDate = Carbon::now();
 
         // Helper to create a transaction
@@ -490,10 +528,10 @@ class DemoDataSeeder extends Seeder
                 $coffeeDate = $monthStart->copy()->addDays(rand(1, 28));
                 if ($coffeeDate <= $endDate && $coffeeDate <= $monthEnd) {
                     $cleared = !$isCurrentMonth || $coffeeDate < Carbon::now()->subDays(3);
-                    $shops = ['Starbucks', 'Local Coffee Shop'];
+                    $shops = ['Swig', 'Local Coffee Shop'];
                     $shop = $shops[array_rand($shops)];
                     $amount = -1 * (rand(4, 8) + (rand(0, 99) / 100));
-                    $createTx($coffeeDate, $amazon, $shop, 'Coffee', round($amount, 2), 'expense', $cleared);
+                    $createTx($coffeeDate, $amazon, $shop, 'Soda', round($amount, 2), 'expense', $cleared);
                 }
             }
 
@@ -588,25 +626,30 @@ class DemoDataSeeder extends Seeder
             $currentDate = $monthEnd->copy()->addDay();
         }
 
+        // One-off extras. These must stay inside [$startDate, $endDate] — a date
+        // before $startDate would land in a month the budget view can't reach,
+        // since start_month only goes back MONTHS_OF_HISTORY.
+        $inWindow = fn (Carbon $date) => $date >= $startDate && $date <= $endDate;
+
         // Add a few side gig income transactions sporadically
         $sideGigDate = Carbon::now()->subMonth()->addDays(rand(5, 20));
-        if ($sideGigDate <= $endDate) {
+        if ($inWindow($sideGigDate)) {
             $createTx($sideGigDate, $checking, 'Side Gig Income', null, 350.00, 'income', true, 'Freelance project');
         }
 
         // Add haircut every 6 weeks-ish
         $haircutDate = Carbon::now()->subMonths(2)->addDays(10);
-        if ($haircutDate <= $endDate) {
+        if ($inWindow($haircutDate)) {
             $createTx($haircutDate, $cash, 'Supercuts', 'Haircut', -25.00, 'expense', true);
         }
         $haircutDate2 = Carbon::now()->subDays(20);
-        if ($haircutDate2 <= $endDate) {
+        if ($inWindow($haircutDate2)) {
             $createTx($haircutDate2, $cash, 'Supercuts', 'Haircut', -25.00, 'expense', true);
         }
 
         // Pharmacy visit
         $pharmacyDate = Carbon::now()->subMonth()->addDays(5);
-        if ($pharmacyDate <= $endDate) {
+        if ($inWindow($pharmacyDate)) {
             $createTx($pharmacyDate, $amazon, 'CVS Pharmacy', 'Health & Medical', -32.50, 'expense', true);
         }
     }
