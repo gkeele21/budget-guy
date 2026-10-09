@@ -114,6 +114,9 @@ Transactions are the core data of the budgeting system. Every expense, income, a
 2. Add multiple category/amount pairs
 3. Bar shows remaining to assign (yellow = unassigned, green = balanced)
 4. Must balance to total amount
+   - While unbalanced, each line shows a **Fill** button that sets it to total − all other lines,
+     overwriting any existing amount (e.g. a recurring split after the bill total changed)
+   - Disabled when the other lines already exceed the total (`SplitModal.vue`)
 5. Save creates parent transaction + split records
 6. Shows as "3 Categories" in transaction list
 

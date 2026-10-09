@@ -133,6 +133,34 @@ const remainingAmount = computed(() => {
 
 const isSplitBalanced = computed(() => Math.abs(remainingAmount.value) < 0.01);
 
+// "Rest": the amount this line needs so the split balances — total minus every
+// other line. Overwrites whatever the line already has (e.g. amounts carried
+// over from a recurring split after the total changed).
+const signedTotal = computed(() => (props.defaultType === 'expense' ? -1 : 1) * absTotal.value);
+
+const restFor = (index) => {
+    const others = splitItems.value.reduce(
+        (sum, item, i) => i === index ? sum : sum + (parseFloat(item.amount) || 0),
+        0,
+    );
+    return Math.round((signedTotal.value - others) * 100) / 100;
+};
+
+const canFillRest = (index) => {
+    const rest = restFor(index);
+    if (Math.abs(rest) < 0.01) return false;
+    // In simple mode every line shares the parent's sign; a flipped sign means
+    // the other lines already exceed the total, so there's nothing left to take.
+    if (!mixedMode.value) return props.defaultType === 'expense' ? rest < 0 : rest > 0;
+    return true;
+};
+
+const fillRest = (item, index) => {
+    const rest = restFor(index);
+    if (mixedMode.value) item.type = rest < 0 ? 'expense' : 'income';
+    item.amount = rest.toFixed(2);
+};
+
 const splitTypeOptions = [
     { value: 'expense', label: 'Expense', color: 'expense' },
     { value: 'income', label: 'Income', color: 'income' },
@@ -219,6 +247,16 @@ const handleCancel = () => {
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                             </svg>
                         </button>
+                        <Button
+                            v-if="!isSplitBalanced"
+                            variant="outline"
+                            size="sm"
+                            class="!px-2 !py-1 text-xs flex-shrink-0 ml-2"
+                            :disabled="!canFillRest(index)"
+                            @click="fillRest(item, index)"
+                        >
+                            Fill
+                        </Button>
                         <AmountField
                             :model-value="item.amount"
                             :transaction-type="defaultType"
@@ -269,6 +307,16 @@ const handleCancel = () => {
                                 @update:model-value="onSplitTypeChange(item, $event)"
                                 class="flex-1"
                             />
+                            <Button
+                                v-if="!isSplitBalanced"
+                                variant="outline"
+                                size="sm"
+                                class="!px-2 !py-1 text-xs flex-shrink-0"
+                                :disabled="!canFillRest(index)"
+                                @click="fillRest(item, index)"
+                            >
+                                Fill
+                            </Button>
                             <AmountField
                                 :model-value="item.amount"
                                 :transaction-type="item.type"
