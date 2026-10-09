@@ -32,6 +32,9 @@ The Budget view is the primary screen where users manage their monthly envelope 
 1. Use arrows to go to previous/next month
 2. Budget data loads for selected month
 3. Can view historical months or plan ahead
+4. Tap the month name to open a quick month/year picker (`MonthPickerSheet`) and jump directly
+   - Months before `earliestMonth` are disabled; years go up to next year
+   - "This Month" shortcut appears when viewing any other month
 
 ### Edit Category Budget
 1. Tap on a category's budgeted amount

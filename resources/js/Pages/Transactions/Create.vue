@@ -48,6 +48,7 @@ const props = defineProps({
     accounts: Array,
     categories: Array,
     payees: Array,
+    lastDate: { type: String, default: null },
 });
 
 // Use account from URL query param if present, otherwise first account
@@ -58,13 +59,19 @@ const defaultAccountId = (() => {
     return props.accounts[0]?.id || '';
 })();
 
+// Preserve the list's filters (account tab, month, etc.) through the create round-trip
+const filterParams = Object.fromEntries(urlParams);
+const storeRoute = urlParams.toString()
+    ? route('transactions.store') + '?' + urlParams.toString()
+    : route('transactions.store');
+
 const form = useForm({
     type: 'expense',
     amount: '',  // Signed: negative for expenses, positive for income
     account_id: defaultAccountId,
     category_id: '',
     payee_name: '',
-    date: (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })(),
+    date: props.lastDate || (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })(),
     cleared: false,
     memo: '',
     to_account_id: '',
@@ -126,13 +133,13 @@ const submit = () => {
         return;
     }
 
-    form.post(route('transactions.store'));
+    form.post(storeRoute);
 };
 
 const submitWithPayeeUpdate = (updateDefault) => {
     form.update_payee_default = updateDefault;
     showPayeeDefaultPrompt.value = false;
-    form.post(route('transactions.store'));
+    form.post(storeRoute);
 };
 
 const splitInitialItems = computed(() => {
@@ -179,7 +186,7 @@ const showVoiceOverlay = ref(false);
 const handleVoiceCreated = ({ batchId }) => {
     showVoiceOverlay.value = false;
     // Redirect to transactions index — the new transactions show there with highlights
-    router.visit(route('transactions.index'));
+    router.visit(route('transactions.index', filterParams));
 };
 </script>
 
@@ -191,7 +198,7 @@ const handleVoiceCreated = ({ batchId }) => {
         <div class="bg-surface border-b border-border px-4 py-3 safe-area-top">
             <div class="flex items-center justify-between">
                 <Link
-                    :href="route('transactions.index')"
+                    :href="route('transactions.index', filterParams)"
                     class="text-subtle font-medium flex items-center gap-1"
                 >
                     <span class="text-lg">×</span> Cancel
@@ -226,6 +233,7 @@ const handleVoiceCreated = ({ batchId }) => {
                 <DateField
                     v-model="form.date"
                     label="Date"
+                    today-shortcut
                 />
 
                 <!-- Account / From -->

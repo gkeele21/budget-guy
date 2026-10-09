@@ -41,6 +41,10 @@ Categories are the "envelopes" in envelope budgeting. Money is allocated to cate
 1. Go to Settings → Categories
 2. See all groups with their categories
 3. Each category shows: icon, name, default amount
+4. Each group header shows the sum of its categories' default amounts
+5. A "Total Default Budget" card at the top sums default amounts across all groups
+   - Hidden categories are excluded from both totals (they don't appear on Budget/Plan)
+   - Computed client-side in `Settings/Categories/Index.vue` from the default amounts already on the page
 
 ### Add Category Group
 1. Go to Settings → Categories

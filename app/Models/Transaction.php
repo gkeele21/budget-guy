@@ -78,7 +78,10 @@ class Transaction extends Model
 
     public function isSplit(): bool
     {
-        return $this->splits()->exists();
+        // Use eager-loaded splits when available — avoids one query per transaction in lists
+        return $this->relationLoaded('splits')
+            ? $this->splits->isNotEmpty()
+            : $this->splits()->exists();
     }
 
     /**

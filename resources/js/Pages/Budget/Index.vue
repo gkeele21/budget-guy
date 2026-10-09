@@ -3,6 +3,7 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 import Toggle from '@/Components/Base/Toggle.vue';
 import Button from '@/Components/Base/Button.vue';
 import AmountField from '@/Components/Form/AmountField.vue';
+import MonthPickerSheet from '@/Components/Form/MonthPickerSheet.vue';
 import TutorialOverlay from '@/Components/Tutorial/TutorialOverlay.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { ref, computed, reactive, watch, onMounted } from 'vue';
@@ -185,6 +186,12 @@ const nextMonth = computed(() => {
 
 const navigateMonth = (month) => {
     router.get(route('budget.index', { month }));
+};
+
+const showMonthPicker = ref(false);
+const jumpToMonth = (month) => {
+    showMonthPicker.value = false;
+    if (month !== props.month) navigateMonth(month);
 };
 
 const saveAmount = (categoryId) => {
@@ -496,7 +503,12 @@ const showMoveToast = (amount, from, to, remaining = null) => {
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                     </svg>
                 </button>
-                <span class="font-semibold text-body">{{ formatMonth(month) }}</span>
+                <Button variant="ghost" size="sm" @click="showMonthPicker = true">
+                    <span class="text-body">{{ formatMonth(month) }}</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1 text-subtle" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </Button>
                 <button
                     @click="navigateMonth(nextMonth)"
                     class="p-2 hover:bg-surface-overlay rounded-full"
@@ -1013,6 +1025,14 @@ const showMoveToast = (amount, from, to, remaining = null) => {
             </Transition>
         </Teleport>
         <!-- Tutorial Overlay -->
+        <MonthPickerSheet
+            :show="showMonthPicker"
+            :model-value="month"
+            :min="earliestMonth"
+            @select="jumpToMonth"
+            @close="showMonthPicker = false"
+        />
+
         <TutorialOverlay
             v-if="tutorial.isActive.value"
             :active="tutorial.isActive.value"

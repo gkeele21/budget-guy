@@ -186,6 +186,17 @@ const formatCurrency = (amount) => {
     }).format(amount);
 };
 
+// Hidden categories are excluded since they don't appear on Budget or Plan
+const groupDefaultTotal = (group) => {
+    return group.categories
+        .filter(c => !c.is_hidden)
+        .reduce((sum, c) => sum + (parseFloat(c.default_amount) || 0), 0);
+};
+
+const budgetDefaultTotal = computed(() => {
+    return orderedGroups.value.reduce((sum, g) => sum + groupDefaultTotal(g), 0);
+});
+
 const emojiGrid = props.emojiGrid;
 
 // Auto-fill category name from icon label if name is empty
@@ -252,6 +263,15 @@ const isGroupCollapsed = (groupId) => {
                 </svg>
             </button>
 
+            <!-- Total of default amounts across all groups -->
+            <div class="flex items-center justify-between px-4 py-3 rounded-card bg-info/30 border-2 border-info/40">
+                <div>
+                    <div class="text-sm font-semibold text-body">Total Default Budget</div>
+                    <div class="text-xs text-subtle">All visible categories</div>
+                </div>
+                <span class="font-mono font-semibold text-body">{{ formatCurrency(budgetDefaultTotal) }}</span>
+            </div>
+
             <!-- Add Group Button -->
             <Button
                 variant="outline"
@@ -302,6 +322,9 @@ const isGroupCollapsed = (groupId) => {
                                 {{ group.name }}
                             </button>
                             <span class="text-xs text-subtle font-normal">({{ group.categories.length }})</span>
+                            <span class="ml-auto font-mono text-sm font-semibold text-body">
+                                {{ formatCurrency(groupDefaultTotal(group)) }}
+                            </span>
                         </div>
 
                         <!-- Collapsible categories list -->

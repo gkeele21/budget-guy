@@ -137,6 +137,23 @@ class TransactionController extends Controller
             });
         }
 
+        // When browsing (no date range, search, or payee filter), load only the most
+        // recent N months; "Load more" raises N. The window is anchored on the latest
+        // transaction (capped at today) so the first page is never empty.
+        $loadedMonths = max(2, (int) $request->get('months', 2));
+        $olderAvailable = false;
+        $listQuery = $query;
+
+        if (!$startDate && !$endDate && !$searchQuery && !$payeeFilter) {
+            $latest = (clone $query)->reorder()->max('date');
+            if ($latest) {
+                $anchor = Carbon::parse(min($latest, now()->toDateString()));
+                $cutoff = $anchor->startOfMonth()->subMonths($loadedMonths - 1)->toDateString();
+                $olderAvailable = (clone $query)->reorder()->where('date', '<', $cutoff)->exists();
+                $listQuery = (clone $query)->where('date', '>=', $cutoff);
+            }
+        }
+
         // Compute summary stats from the same filtered query
         // Income = earned (uncategorized non-split) + uncategorized split lines on income transactions
         $summaryStats = DB::query()
@@ -153,7 +170,7 @@ class TransactionController extends Controller
 
         $summaryStats->income = (float) $summaryStats->income + (float) $incomeFromSplits;
 
-        $transactions = $query->get()->map(fn($t) => [
+        $transactions = $listQuery->get()->map(fn($t) => [
             'id' => $t->id,
             'date' => $t->date->format('Y-m-d'),
             'payee' => $t->type === 'transfer'
@@ -275,6 +292,8 @@ class TransactionController extends Controller
             'typeFilter' => $typeFilter ?? 'all',
             'recurring' => $recurringTransactions,
             'monthFilter' => $monthFilter,
+            'loadedMonths' => $loadedMonths,
+            'olderAvailable' => $olderAvailable,
             'summary' => [
                 'income' => (float) $summaryStats->income,
                 'spent' => (float) $summaryStats->spent,
@@ -318,6 +337,9 @@ class TransactionController extends Controller
             'accounts' => $accounts,
             'categories' => $categories,
             'payees' => $payees,
+            // Last date saved this session, so catch-up entry keeps the same date.
+            // Expires with the session (idle timeout), so the next visit starts at today.
+            'lastDate' => session('last_transaction_date'),
         ]);
     }
 
@@ -439,7 +461,16 @@ class TransactionController extends Controller
             });
         }
 
-        return redirect()->route('transactions.index');
+        session(['last_transaction_date' => $validated['date']]);
+
+        // Read filters from the query string only — the POST body's `type` and
+        // `cleared` are the new transaction's own fields, not list filters.
+        $params = Arr::only($request->query(), [
+            'account', 'search', 'month', 'start_date', 'end_date',
+            'cleared', 'unassigned', 'type', 'payee', 'months',
+        ]);
+
+        return redirect()->route('transactions.index', array_filter($params));
     }
 
     public function edit(Transaction $transaction)
@@ -621,7 +652,7 @@ class TransactionController extends Controller
         // leak in and replace the active list filters.
         $params = Arr::only($request->query(), [
             'account', 'search', 'month', 'start_date', 'end_date',
-            'cleared', 'unassigned', 'type', 'payee',
+            'cleared', 'unassigned', 'type', 'payee', 'months',
         ]);
 
         return redirect()->route('transactions.index', array_filter($params))
@@ -651,7 +682,7 @@ class TransactionController extends Controller
 
         $params = Arr::only($request->query(), [
             'account', 'search', 'month', 'start_date', 'end_date',
-            'cleared', 'unassigned', 'type', 'payee',
+            'cleared', 'unassigned', 'type', 'payee', 'months',
         ]);
 
         return redirect()->route('transactions.index', array_filter($params));

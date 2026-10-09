@@ -216,6 +216,22 @@ const submit = () => {
 />
 ```
 
+### MonthPickerSheet
+
+Bottom sheet with a year switcher and a 4×3 month grid. Values are `'YYYY-MM'`.
+
+```vue
+<MonthPickerSheet
+    :show="showMonthPicker"
+    :model-value="month"
+    :min="earliestMonth"
+    @select="jumpToMonth"
+    @close="showMonthPicker = false"
+/>
+```
+
+Selected month uses `primary`, the current calendar month `outline`; months before `min` are disabled.
+
 ### DateField
 
 ```vue
@@ -223,8 +239,11 @@ const submit = () => {
     v-model="form.date"
     label="Date"
     :error="form.errors.date"
+    today-shortcut
 />
 ```
+
+`today-shortcut` shows a small "Today" button beside the date whenever the value isn't today.
 
 ### ToggleField
 

@@ -35,6 +35,8 @@ const props = defineProps({
     recurring: Array,
     monthFilter: String,
     typeFilter: String,
+    loadedMonths: { type: Number, default: 2 },
+    olderAvailable: { type: Boolean, default: false },
     summary: Object,
 });
 
@@ -93,6 +95,26 @@ const buildParams = () => {
     if (localTypeFilter.value && localTypeFilter.value !== 'all') params.type = localTypeFilter.value;
     if (localPayeeFilter.value) params.payee = localPayeeFilter.value;
     return params;
+};
+
+// Filters plus how many months are loaded — for round-trips (edit, create, delete)
+// that should return to the same list. Filter changes use buildParams() alone,
+// which resets the list to the default window.
+const listParams = () => {
+    const params = buildParams();
+    if (props.loadedMonths > 2) params.months = props.loadedMonths;
+    return params;
+};
+
+const loadingMore = ref(false);
+const loadMore = () => {
+    router.get(route('transactions.index'), { ...buildParams(), months: props.loadedMonths + 2 }, {
+        preserveState: true,
+        preserveScroll: true,
+        only: ['transactions', 'loadedMonths', 'olderAvailable'],
+        onStart: () => { loadingMore.value = true; },
+        onFinish: () => { loadingMore.value = false; },
+    });
 };
 
 // Watch for search query changes with debounce
@@ -216,10 +238,13 @@ const filterByAccount = (accountId) => {
 
 const toggleCleared = (transaction) => {
     const newClearedState = !transaction.cleared;
+    // Flip immediately so the circle responds on tap; the reload reconciles afterwards
+    transaction.cleared = newClearedState;
+    showClearedToast(transaction, newClearedState);
     router.post(route('transactions.toggle-cleared', transaction.id), {}, {
         preserveScroll: true,
-        onSuccess: () => {
-            showClearedToast(transaction, newClearedState);
+        onError: () => {
+            transaction.cleared = !newClearedState;
         },
     });
 };
@@ -296,7 +321,7 @@ const closeOtherSwipes = (exceptId) => {
 };
 
 const deleteTransaction = (transaction) => {
-    router.delete(route('transactions.destroy', transaction.id), {
+    router.delete(route('transactions.destroy', { transaction: transaction.id, ...listParams() }), {
         preserveScroll: true,
         onSuccess: () => {
             if (toastTimeout) clearTimeout(toastTimeout);
@@ -792,7 +817,7 @@ onMounted(() => {
                             >
                                 <Link
                                     :id="'tx-' + transaction.id"
-                                    :href="route('transactions.edit', { transaction: transaction.id, ...buildParams() })"
+                                    :href="route('transactions.edit', { transaction: transaction.id, ...listParams() })"
                                     class="block bg-surface rounded-card p-3 shadow-sm border-l-4"
                                     :class="{
                                         'border-danger': transaction.type === 'expense',
@@ -878,7 +903,7 @@ onMounted(() => {
                                 v-for="tx in monthTxs"
                                 :key="tx.id"
                                 :id="'tx-' + tx.id"
-                                :href="route('transactions.edit', { transaction: tx.id, ...buildParams() })"
+                                :href="route('transactions.edit', { transaction: tx.id, ...listParams() })"
                                 class="flex items-center px-3 py-2 text-sm"
                                 :class="{
                                     'voice-highlight': highlightedIds.has(tx.id),
@@ -895,6 +920,17 @@ onMounted(() => {
                         </div>
                     </div>
                 </template>
+
+                <!-- Load older months -->
+                <Button
+                    v-if="olderAvailable"
+                    variant="outline"
+                    full-width
+                    :loading="loadingMore"
+                    @click="loadMore"
+                >
+                    Load 2 more months
+                </Button>
 
                 <!-- Empty State -->
                 <div
@@ -1108,7 +1144,7 @@ onMounted(() => {
                     </svg>
                 </span>
             </button>
-            <FAB :href="viewMode === 'all' ? route('transactions.create', currentAccountId ? { account: currentAccountId } : {}) : route('recurring.create')" />
+            <FAB :href="viewMode === 'all' ? route('transactions.create', listParams()) : route('recurring.create')" />
         </template>
     </AppLayout>
 </template>

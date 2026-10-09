@@ -134,6 +134,24 @@ Transactions are the core data of the budgeting system. Every expense, income, a
 ### Cleared Status
 - Filter by cleared/uncleared
 
+### Paging (Load More)
+- When browsing (no month/date range, search, or payee filter), the list loads only the 2 most recent months
+- Window is anchored on the latest transaction's month (capped at today), so the first page is never empty
+- "Load 2 more months" button bumps the `months` query param by 2 (partial Inertia reload of `transactions`)
+- `months` is carried through edit/create/delete/toggle-cleared round-trips; changing a filter resets it
+- Summary totals (income/spent/net) still cover the full filtered set, not just loaded months
+
+### Remembered Date (Create)
+- Saving a new transaction stores its date in the session (`last_transaction_date`)
+- The Create page defaults to that date, so catch-up entry for a past day only needs the date changed once
+- Expires with the session (`SESSION_LIFETIME`, 120 min idle), so a later visit defaults to today again
+- A "Today" button beside the date resets it in one tap
+
+### Filters Persist Through Create/Edit
+- Active filters (account tab, month, search, etc.) ride along as query params to Create/Edit
+- Save, Cancel, and Delete return to the list with the same filters applied
+- The store/update/destroy controllers read filters from the **query string only**; the form body's `type`/`cleared` are the transaction's own fields and must not replace list filters
+
 ## Payee Defaults
 
 When a payee is selected:

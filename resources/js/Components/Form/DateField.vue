@@ -2,6 +2,7 @@
 import { ref, computed, watch, nextTick } from 'vue';
 import FormRow from './FormRow.vue';
 import BottomSheet from '@/Components/Base/BottomSheet.vue';
+import Button from '@/Components/Base/Button.vue';
 
 const props = defineProps({
     modelValue: { type: String, default: '' },
@@ -13,6 +14,8 @@ const props = defineProps({
     min: { type: String, default: null },
     max: { type: String, default: null },
     clearable: { type: Boolean, default: false },
+    // Show a "Today" shortcut when the selected date isn't today
+    todayShortcut: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(['update:modelValue', 'clear']);
@@ -199,6 +202,11 @@ const selectItem = (type, value) => {
 };
 
 // Format date for display
+const todayString = (() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+})();
+
 const displayValue = computed(() => {
     if (!props.modelValue) return null;
 
@@ -228,6 +236,16 @@ const tempDisplayValue = computed(() => {
 
 <template>
     <FormRow :label="label" :border-bottom="borderBottom" :error="error">
+        <Button
+            v-if="todayShortcut && modelValue !== todayString"
+            variant="outline"
+            size="sm"
+            class="mr-2"
+            :disabled="disabled"
+            @click="emit('update:modelValue', todayString)"
+        >
+            Today
+        </Button>
         <button
             type="button"
             @click="openPicker"

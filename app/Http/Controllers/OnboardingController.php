@@ -15,6 +15,11 @@ class OnboardingController extends Controller
 {
     public function welcome()
     {
+        // Logged-in users skip the landing page and go straight into the app
+        if (Auth::check()) {
+            return redirect()->route('dashboard');
+        }
+
         return Inertia::render('Onboarding/Index');
     }
 
